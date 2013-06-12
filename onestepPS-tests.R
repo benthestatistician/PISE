@@ -1,0 +1,60 @@
+source("onestepPS.R")
+library(optmatch)
+library(RItools)
+library(survival)
+data(nuclearplants)
+### Pair matching on a Mahalanobis distance
+mhd  <- mdist(pr ~ t1 + t2, data = nuclearplants)
+pm1 <- pairmatch(mhd)
+fm1 <- fullmatch(mhd)
+oneOverStratSize(pm1)
+oneOverStratSize(fm1)
+tapply(oneOverStratSize(fm1), fm1, sd)
+###getN(pm1); all.equal(nlevels(pm1), getN(pm1))
+###getN(fm1)
+###getNH.over.2(pm1)
+###getNH.over.2(fm1)
+
+o0 <- makeXandCombdiffX(pr~t1+t2, as.factor(nuclearplants$pt), data=nuclearplants)
+identical(o0, makeXandCombdiffX(pr~t1+t2, ~pt, data=nuclearplants) )
+
+o1p <- makeXandCombdiffX(pr~t1+t2, pm1, data=nuclearplants)
+v1p <- getVarCombdiffX(o1p$xmat, pm1)
+identical(v1p, getVarCombdiffX(o1p))
+xbh1p <- getXbetahat(o1p,v1p)
+csres1p <- imbalChisq(o1p,v1p)
+csres1p -
+xBalance(pr~t1+t2, pm1, data=nuclearplants, report="chisquare.test")$overall
+xbhsd1p <- getXbetahatSDs(o1p,v1p)
+extrapZ(o1p,v1p)
+extrapZ(o1p,v1p, verbose=T)
+summary(as.vector(xbh1p)/xbhsd1p)
+summary(as.vector(xbh1p)/max(xbhsd1p))
+
+o1f <- makeXandCombdiffX(pr~t1+t2, fm1, data=nuclearplants)
+v1f <- getVarCombdiffX(o1f$xmat, fm1)
+xbh1f <- getXbetahat(o1f,v1f)
+csres1f <- imbalChisq(o1f,v1f)
+csres1f -
+xBalance(pr~t1+t2, fm1, data=nuclearplants, report="chisquare.test")$overall
+xbhsd1f <- getXbetahatSDs(o1f,v1f)
+extrapZ(o1f,v1f)
+
+
+library(survival)
+fullfmla <- update.formula(nuclearplants[-1], pr~.-pr)
+o2p <- makeXandCombdiffX(fullfmla, pm1, data=nuclearplants)
+v2p <- getVarCombdiffX(o2p)
+imbalChisq(o2p,v2p)
+extrapZ(o2p,v2p)
+cl2p <- clogit(update.formula(fullfmla, ~.+strata(pm1)), data=nuclearplants)
+imbalChisq(cl2p)
+extrapZ(cl2p, pm1)
+
+o2f <- makeXandCombdiffX(fullfmla, pm1, data=nuclearplants)
+v2f <- getVarCombdiffX(o2f)
+imbalChisq(o2f,v2f)
+extrapZ(o2f,v2f)
+cl2f <- clogit(update.formula(fullfmla, ~.+strata(fm1)), data=nuclearplants)
+imbalChisq(cl2f)
+extrapZ(cl2f, fm1)

@@ -1,0 +1,173 @@
+
+R version 2.11.0 (2010-04-22)
+Copyright (C) 2010 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> source("onestepPS.R")
+> library(optmatch)
+You're loading optmatch, by Ben Hansen, a package for flexible
+ and optimal matching.  Important license information:
+ The optmatch package makes essential use of D. P. Bertsekas
+ and P. Tseng's RELAX-IV algorithm and code, as well as
+ Bertsekas' AUCTION algorithm and code.
+ Bertsekas and Tseng freely permit their software to be used for
+ research purposes, but non-research uses, including the use of it
+ to 'satisfy in any part commercial delivery requirements to
+ government or industry,' require a special agreement with them.
+ By extension, this requirement applies to any use of the 
+ fullmatch() function. (If you are using another package that has
+ loaded optmatch, then you will probably be using fullmatch indirectly.)
+ For more information, enter relaxinfo() at the command line
+> library(RItools)
+> library(survival)
+> data(nuclearplants)
+> ### Pair matching on a Mahalanobis distance
+> mhd  <- mdist(pr ~ t1 + t2, data = nuclearplants)
+> pm1 <- pairmatch(mhd)
+> fm1 <- fullmatch(mhd)
+> oneOverStratSize(pm1)
+  I   A   J   B   M   C   N   S   U   D   V   E   W   F   X   G   Z   a   b   c 
+0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 
+> oneOverStratSize(fm1)
+        H         I         A         J         B         K         L         M 
+0.0909091 0.5000000 0.2500000 0.1666667 0.2500000 0.0909091 0.0909091 0.0909091 
+        C         N         O         P         Q         R         S         T 
+0.0909091 0.2500000 0.1666667 0.0909091 0.3333333 0.0909091 0.1666667 0.1666667 
+        U         D         V         E         W         F         X         G 
+0.5000000 0.5000000 0.5000000 0.3333333 0.1666667 0.5000000 0.3333333 0.5000000 
+        Y         Z         d         e         f         a         b         c 
+0.0909091 0.5000000 0.0909091 0.0909091 0.0909091 0.1666667 0.2500000 0.5000000 
+> tapply(oneOverStratSize(fm1), fm1, sd)
+ m.1 m.10  m.2  m.5  m.6  m.7  m.8  m.9 
+   0    0    0    0    0    0    0    0 
+> ###getN(pm1); all.equal(nlevels(pm1), getN(pm1))
+> ###getN(fm1)
+> ###getNH.over.2(pm1)
+> ###getNH.over.2(fm1)
+> 
+> o0 <- makeXandCombdiffX(pr~t1+t2, as.factor(nuclearplants$pt), data=nuclearplants)
+> identical(o0, makeXandCombdiffX(pr~t1+t2, ~pt, data=nuclearplants) )
+[1] TRUE
+> 
+> o1p <- makeXandCombdiffX(pr~t1+t2, pm1, data=nuclearplants)
+> v1p <- getVarCombdiffX(o1p$xmat, pm1)
+> identical(v1p, getVarCombdiffX(o1p))
+[1] TRUE
+> xbh1p <- getXbetahat(o1p,v1p)
+> csres1p <- imbalChisq(o1p,v1p)
+> csres1p -
++ xBalance(pr~t1+t2, pm1, data=nuclearplants, report="chisquare.test")$overall
+         chisquare df       p.value
+strat 6.217249e-15  0 -2.081668e-16
+> xbhsd1p <- getXbetahatSDs(o1p,v1p)
+> extrapZ(o1p,v1p)
+            maxPSdiff               n.comps          dev.to.maxSD 
+            1.1219017            20.0000000             1.6701610 
+                    p dev.to.medianSD.or.SD                    p  
+            0.9488752             2.3152100             0.2060144 
+> extrapZ(o1p,v1p, verbose=T)
+$maxPSdiff
+[1] 1.121902
+
+$n.comps
+[1] 20
+
+$dev.to.maxSD
+[1] 1.670161
+
+$p
+[1] 0.9488752
+
+$dev.to.medianSD.or.SD
+[1] 2.31521
+
+$`p `
+[1] 0.2060144
+
+$PShat
+      Min.    1st Qu.     Median       Mean    3rd Qu.       Max. 
+-1.122e+00 -6.809e-01 -3.893e-16  3.323e-17  6.809e-01  1.122e+00 
+
+$PShatSDs
+     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+1.688e-16 2.368e-01 4.242e-01 4.024e-01 5.248e-01 6.717e-01 
+
+> summary(as.vector(xbh1p)/xbhsd1p)
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+-2.3150 -2.0430 -0.2123 -0.2307  1.3320  2.3150 
+> summary(as.vector(xbh1p)/max(xbhsd1p))
+      Min.    1st Qu.     Median       Mean    3rd Qu.       Max. 
+-1.670e+00 -1.014e+00 -5.796e-16  5.237e-17  1.014e+00  1.670e+00 
+> 
+> o1f <- makeXandCombdiffX(pr~t1+t2, fm1, data=nuclearplants)
+> v1f <- getVarCombdiffX(o1f$xmat, fm1)
+> xbh1f <- getXbetahat(o1f,v1f)
+> csres1f <- imbalChisq(o1f,v1f)
+> csres1f -
++ xBalance(pr~t1+t2, fm1, data=nuclearplants, report="chisquare.test")$overall
+          chisquare df      p.value
+strat -8.881784e-15  0 4.857226e-16
+> xbhsd1f <- getXbetahatSDs(o1f,v1f)
+> extrapZ(o1f,v1f)
+            maxPSdiff               n.comps          dev.to.maxSD 
+            2.9587080            32.0000000             1.6482875 
+                    p dev.to.medianSD.or.SD                    p  
+            1.0000000             2.0914392             0.5838194 
+> 
+> 
+> library(survival)
+> fullfmla <- update.formula(nuclearplants[-1], pr~.-pr)
+> o2p <- makeXandCombdiffX(fullfmla, pm1, data=nuclearplants)
+> v2p <- getVarCombdiffX(o2p)
+> imbalChisq(o2p,v2p)
+chisquare        df   p.value 
+7.6509641 8.0000000 0.4682856 
+> extrapZ(o2p,v2p)
+            maxPSdiff               n.comps          dev.to.maxSD 
+            1.5916898            20.0000000             1.5963621 
+                    p dev.to.medianSD.or.SD                    p  
+            1.0000000             1.7266784             0.8422543 
+> cl2p <- clogit(update.formula(fullfmla, ~.+strata(pm1)), data=nuclearplants)
+> imbalChisq(cl2p)
+   chisquare           df      p.value 
+5.528836e-06 8.000000e+00 1.000000e+00 
+> extrapZ(cl2p, pm1)
+            maxPSdiff               n.comps          dev.to.maxSD 
+         4.960150e+01          2.000000e+01          4.995742e-04 
+                    p dev.to.medianSD.or.SD                    p  
+         1.000000e+00          8.411597e-04          1.000000e+00 
+> 
+> o2f <- makeXandCombdiffX(fullfmla, pm1, data=nuclearplants)
+> v2f <- getVarCombdiffX(o2f)
+> imbalChisq(o2f,v2f)
+chisquare        df   p.value 
+7.6509641 8.0000000 0.4682856 
+> extrapZ(o2f,v2f)
+            maxPSdiff               n.comps          dev.to.maxSD 
+            1.5916898            20.0000000             1.5963621 
+                    p dev.to.medianSD.or.SD                    p  
+            1.0000000             1.7266784             0.8422543 
+> cl2f <- clogit(update.formula(fullfmla, ~.+strata(fm1)), data=nuclearplants)
+> imbalChisq(cl2f)
+chisquare        df   p.value 
+2.9071495 8.0000000 0.9400485 
+> extrapZ(cl2f, fm1)
+            maxPSdiff               n.comps          dev.to.maxSD 
+            19.001119             32.000000              0.703140 
+                    p dev.to.medianSD.or.SD                    p  
+             1.000000              1.427664              1.000000 
+> 

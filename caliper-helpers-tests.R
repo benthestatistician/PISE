@@ -1,0 +1,15 @@
+require("optmatch")
+data(nuclearplants)
+source("caliper-helpers.R")
+source("PSdiffs+SDs.R")
+aGlm <- glm(pr~.-(pr+cost), family=binomial(), data=nuclearplants)
+std_psdiff_se(aGlm, inverse.sd.scaling=FALSE)
+aPSd <- getPSdiffs(aGlm)
+summary(as.vector(aPSd$SEs))
+
+std_psdiff_se(aGlm, inverse.sd.scaling=TRUE)
+
+require("sandwich")
+std_psdiff_se(aGlm, covariance.extractor=sandwich, inverse.sd.scaling=FALSE)
+bPSd <- getPSdiffs(aGlm, covariance.extractor=sandwich)
+summary(as.vector(bPSd$SEs))
