@@ -7,6 +7,7 @@
 \title{Full matching in a study of coaching for the SAT (condensed treatment)}
 \author{Ben Hansen}
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 \maketitle
 
 This is a condensed, ever-so-slightly simplified session culminating
@@ -16,7 +17,7 @@ case study''  \citep{hansen2009b}.  The longer, unsimplfied session is
 available in a similar format.  
 
 The match this script leads to combines propensity and
-prognostic scores in a way that I've found reliably and effectively to
+prognostic scores in a way that I've found reliable and effective to
 reduce bias while limiting the losses of sample size and precision
 that can sometimes accompany matching-based analysis.
 
@@ -35,7 +36,7 @@ sessionInfo()
 
 
 \subsection{the Race$\times$ SES subclassification}
-The reasons to subclassify prior to matching are that large matching problems can take a lot of time, more time than several smaller matching problems taken to gether, at the same time that subclassifying is more intuitive than propensity score matching.
+The reasons to subclassify prior to matching are that large matching problems can take a lot of time, more time than several smaller matching problems taken together, at the same time that subclassifying is more intuitive than propensity score matching.
 
 As noted by \citet{hansen:klopfer:2006}, the matching algorithm \texttt{optmatch} is based on uses roughly $O(n^{3}\log n)$ floating point operations, where $n$ is the sample size.  Comparing this estimate for the problem of matching without subclasses to that of matching withing Race$\times$ SES subclasses gives:
 <<>>=
@@ -96,35 +97,44 @@ ppty$score <- ppty$model$linear.predictors
 all.equal(names(ppty$score), row.names(satcoach))
 @ 
 
-<<fig=t,height=6,width=4,prefix.string=Pptyboxplot>>=
-boxplot(ppty$score~factor(satcoach$Coach, labels=c("Not coached", "Coached")), 
+<<fig=TRUE,height=6,width=4,prefix.string=Pptyboxplot>>=
+boxplot(ppty$model, names=c("Not Coached", "Coached"),
         ylab="Linear propensity scores", xlab="", varwidth = TRUE)
 @ 
 
 \section{Full matching on the propensity score}
 \label{sec:full-match-prop}
 To match within Race$\times$SES subclasses, we only need to calculate discrepancies on the propensity score (and/or on whatever else we may decided to match on) within these subclasses.  
+
+First we create a block of possible matches.
 <<>>=
-ppty$dist <- mdist(ppty$model, structure.fmla =~ethn3levels+dadsed)
+ppty$blocks <- exactMatch(Coach ~ ethn3levels + dadsed,data=satcoach)
 @ 
-<<echo=f>>=
-numdmats1 <- length(ppty$dist)
-numentries1 <- sum(sapply(ppty$dist,function(x) prod(dim(x))))
+<<echo=FALSE>>=
+numdmats1 <- length(levels(ppty$blocks@groups))
+numentries1 <- sum(sapply(ppty$blocks,function(x) prod(dim(x))))
 @ 
-This incidentally reduces the burden of the problem on memory: matching within subclasses involves storing \Sexpr{numdmats1} distance matrices, with \Sexpr{signif(numentries1,3)} entries in total, whereas matching without subclasses requires us to store one large \Sexpr{with(satcoach, sum(as.logical(Coach)))} $\times$ \Sexpr{with(satcoach, sum(!Coach))} matrix, with \Sexpr{signif(with(satcoach, prod(table(Coach))),3)} entries.
+This incidentally reduces the burden of the problem on memory: matching within subclasses involves calculating and storing \Sexpr{numdmats1} distance matrices, with \Sexpr{signif(numentries1,3)} entries in total, whereas matching without subclasses requires us to store and calculate one large \Sexpr{with(satcoach, sum(as.logical(Coach)))} $\times$ \Sexpr{with(satcoach, sum(!Coach))} matrix, with \Sexpr{signif(with(satcoach, prod(table(Coach))),3)} entries.
 
 \subsection{Propensity score full matching}
 
 Plain-vanilla full matching on the propensity score (within Race$\times$SES subclasses).
 <<>>=
-fm.ppty <- fullmatch(ppty$dist)
-summary(fm.ppty, ppty$model) 
+#fm.ppty <- fullmatch(ppty$model, within=ppty$blocks, data=satcoach)
+#will replace following 2 lines
+ppty$dist<-match_on(ppty$model, within=ppty$blocks, data=satcoach)
+fm.ppty<-fullmatch(ppty$dist,data=satcoach)
+summary(fm.ppty,ppty$model) 
+stratumStructure(fm.ppty, min.controls=0.2, max.controls=5)
 @ 
 
 Balance looks good, but there are outliers in terms of matched distances on the propensity score.  This is something to avoid \citep{hansen2009}.  Calipers are the natural remedy:
 <<>>=
-fm.ppty.clpr050 <- fullmatch(ppty$dist + caliper(ppty$dist, width=.5))
-summary(fm.ppty.clpr050, ppty$model)
+#fm.ppty.clpr050 <- fullmatch(ppty$model, within=ppty$dist, data=satcoach, caliper=0.5)
+ppty$dist.clpr050 <-match_on(ppty$model, within=ppty$blocks, caliper=0.5, data=satcoach)
+fm.ppty.clpr050 <- fullmatch(ppty$dist.clpr050, data=satcoach)
+summary(fm.ppty.clpr050,ppty$model)
+stratumStructure(fm.ppty.clpr050,min.controls=0.2, max.controls=5)
 @ 
 Note that the addition of this caliper has caused some treatment group
 members to go unmatched --- these are the ``1:0'' matched sets noted
@@ -188,13 +198,15 @@ pg.ppty$fmla <- Coach ~ psatv + psatm + presatv + presatm +
 
 Here's how the ordinary propensity and the prognostic propensity differ in terms of how they separate treatment and control groups.
 
-<<fig=t,height=6,width=8,prefix.string=Pptyboxplots>>=
+<<fig=TRUE,height=6,width=8,prefix.string=Pptyboxplots>>=
 pg.ppty$score <- pg.ppty$model$linear.predictor 
 all.equal(names(pg.ppty$score), row.names(satcoach))
 par(mfrow=c(1,2))
-boxplot(ppty$score~factor(satcoach$Coach, labels=c("Not coached", "Coached")), 
+boxplot(ppty$model, namess=c("Not coached", "Coached"), 
 ylab="Ordinary propensity scores", xlab="", varwidth = TRUE, ylim=range(ppty$score))
-boxplot(pg.ppty$score~factor(satcoach$Coach, labels=c("Not coached", "Coached")), ylab="Focused propensity scores", xlab="", varwidth = TRUE, ylim=range(ppty$score))
+boxplot(pg.ppty$model, names=c("Not coached", "Coached"), 
+        ylab="Focused propensity scores", xlab="", varwidth = TRUE, 
+        ylim=range(ppty$score))
 par(mfrow=c(1,1))
 lm1 <- lm(ppty$score~Coach, data=satcoach)
 (ppty$meansep <- coef(lm1)['Coach']/sqrt(mean(residuals(lm1)^2)))
@@ -205,18 +217,14 @@ rm(lm1)
 
 \subsection{Full matching on propensity and prognostic propensity scores}
 
-Distance on the prognostic score (to begin with, without calipers).  Note the complaint from the distance-making functions about the stratifying variables not being in the propensity specification.  Given that they are included in the ordinary propensity score, and we'll putting in a caliper on that, it's nothing to worry about.  However, we do have to take a special step to tell \texttt{mdist()} where to find the variables \texttt{ethn3levels} and \texttt{dadsed}, since they weren't used in the model we're feeding to \texttt{mdist()} as a basis for constructing this propensity score.
+Distance on the prognostic score (to begin with, without calipers).  Note the complaint from the distance-making functions about the stratifying variables not being in the propensity specification.  Given that they are included in the ordinary propensity score, and we'll be putting in a caliper on that, it's nothing to worry about.
 <<>>=
-pg.ppty$dist <- mdist(pg.ppty$model, 
-                      structure.fmla =~satcoach$ethn3levels+satcoach$dadsed)
-@ 
-
-<<>>=
-
-pg.ppty$dist.with.ppty.calipers <- 
-  pg.ppty$dist +
-  caliper(ppty$dist, width=.5)
-fm.pgppty.pptyclpr <- fullmatch(pg.ppty$dist.with.ppty.calipers)
+pg.ppty$blocks <- exactMatch(Coach ~ ethn3levels + dadsed, data=satcoach)
+pg.ppty$dist <- match_on(pg.ppty$model, within=pg.ppty$blocks, data=satcoach)
+pg.ppty$dist.with.ppty.calipers <- caliper(pg.ppty$dist, width=0.5)
+fm.pgppty.pptyclpr <- fullmatch(pg.ppty$dist.with.ppty.calipers,data=satcoach)
+#fm.pgppty.pptyclpr <- fullmatch(pg.ppty$model, within=pg.ppty$blocks, data=satcoach, caliper=0.5)
+#previous will replace pg.ppty$dist and pg.ppty$dist.with.ppty.calipers and fm.pgppty.pptyclpr
 
 @ 
 
@@ -230,12 +238,12 @@ the (ordinary) propensity score.
 <<>>=
 
 summary(fm.pgppty.pptyclpr, ppty$model)
-
+stratumStructure(fm.pgppty.pptyclpr,min.controls=0.2,max.controls=5)
 @ 
 
 Plot of balance on variables contributing to focused/prognostic
 propensity score.
-<<fig=t,prefix.string=smallloveplot>>=
+<<fig=TRUE,prefix.string=smallloveplot>>=
 
 (xb <- 
  xBalance(Coach ~ pg.v + pg.m + psat.NA + psatv + psatm + 
@@ -356,5 +364,6 @@ range((-5:45)[pvals.math>=.05])
 
 \bibliographystyle{asa}
 \bibliography{abbrev_long,biomedicalapplications,causalinference,misc,computing}
+
 
 \end{document}
