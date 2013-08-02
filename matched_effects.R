@@ -32,9 +32,12 @@
 ##' J. Amer. Statist. Assoc. 107/496 833-843.
 ##' @author Ben B Hansen
 matched_effects <- function(x, matches, weighting.scheme=c('ETT','harmonic')[1], keep.differences=FALSE, ...) {
-  stopifnot(inherits(matches, "optmatch"),
-            'contrast.group' %in% names(attributes(matches)),
-            is.character(weighting.scheme))
+  if (!inherits(matches, "optmatch")) {
+    stop("matches must be an optmatch object")
+  }
+  if (!'contrast.group' %in% names(attributes(matches))) {
+    stop("matches does not have proper contrast.group attribute.\nPlease ensure it is a proper optmatch object.")
+  }
   UseMethod("matched_effects")
 }
 
@@ -45,11 +48,17 @@ matched_effects.default <- function(x, matches, weighting.scheme=c('ETT','harmon
 }
 
 matched_effects.matrix <- function(x, matches, weighting.scheme=c('ETT','harmonic')[1], keep.differences=FALSE, ...) {
-  stopifnot(is.numeric(x), nrow(x)==length(matches))
+  if (!is.numeric(x)) {
+    stop("x must be numeric")
+  }
+  if (nrow(x) != length(matches)) {
+    stop("The number of rows of x must equal the length of matches")
+  }
+
   Zz <- attr(matches, "contrast.group")
-  scheme <- pmatch(weighting.scheme, c("ETT", "ett", "harmonic"))
-  stopifnot(!is.na(scheme))
-  wt.fct <- if(scheme %in% c(1,2)) function(z) sum(as.logical(z)) else function(z) (2*(length(z)-1)/length(z))
+  scheme <- pmatch(tolower(weighting.scheme), c("ett", "harmonic"), nomatch=0)
+  if (scheme == 0) stop("Improper weighting.scheme entered. Choose ETT or harmonic")
+  wt.fct <- if(scheme == 1) function(z) sum(as.logical(z)) else function(z) (2*(length(z)-1)/length(z))
   weights.unscaled <- unlist(tapply(Zz, matches, wt.fct, simplify=FALSE)) # speed me up!
   ms.diffs <- sapply(as.numeric(levels(matches)), # use data.table instead
                      function(mat) {
