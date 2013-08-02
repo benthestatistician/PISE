@@ -202,7 +202,7 @@ Here's how the ordinary propensity and the prognostic propensity differ in terms
 pg.ppty$score <- pg.ppty$model$linear.predictor 
 all.equal(names(pg.ppty$score), row.names(satcoach))
 par(mfrow=c(1,2))
-boxplot(ppty$model, namess=c("Not coached", "Coached"), 
+boxplot(ppty$model, names=c("Not coached", "Coached"), 
 ylab="Ordinary propensity scores", xlab="", varwidth = TRUE, ylim=range(ppty$score))
 boxplot(pg.ppty$model, names=c("Not coached", "Coached"), 
         ylab="Focused propensity scores", xlab="", varwidth = TRUE, 
