@@ -120,19 +120,20 @@ This incidentally reduces the burden of the problem on memory: matching within s
 
 Plain-vanilla full matching on the propensity score (within Race$\times$SES subclasses).
 <<>>=
-#fm.ppty <- fullmatch(ppty$model, within=ppty$blocks, data=satcoach)
-#will replace following 2 lines
-ppty$dist<-match_on(ppty$model, within=ppty$blocks, data=satcoach)
-fm.ppty<-fullmatch(ppty$dist,data=satcoach)
+###as of v 0.8-5, replaces subseq 2 lines
+fm.ppty <- fullmatch(ppty$model, within=ppty$blocks, data=satcoach)
+###ppty$dist<-match_on(ppty$model, within=ppty$blocks, data=satcoach)
+###fm.ppty<-fullmatch(ppty$dist,data=satcoach)
 summary(fm.ppty,ppty$model) 
 stratumStructure(fm.ppty, min.controls=0.2, max.controls=5)
 @ 
 
 Balance looks good, but there are outliers in terms of matched distances on the propensity score.  This is something to avoid \citep{hansen2009}.  Calipers are the natural remedy:
 <<>>=
-#fm.ppty.clpr050 <- fullmatch(ppty$model, within=ppty$dist, data=satcoach, caliper=0.5)
-ppty$dist.clpr050 <-match_on(ppty$model, within=ppty$blocks, caliper=0.5, data=satcoach)
-fm.ppty.clpr050 <- fullmatch(ppty$dist.clpr050, data=satcoach)
+###as of v 0.8-5, replaces subseq 2 lines
+fm.ppty.clpr050 <- fullmatch(ppty$model, within=ppty$dist, data=satcoach, caliper=0.5)
+##ppty$dist.clpr050 <-match_on(ppty$model, within=ppty$blocks, caliper=0.5, data=satcoach)
+##fm.ppty.clpr050 <- fullmatch(ppty$dist.clpr050, data=satcoach)
 summary(fm.ppty.clpr050,ppty$model)
 stratumStructure(fm.ppty.clpr050,min.controls=0.2, max.controls=5)
 @ 
@@ -220,11 +221,13 @@ rm(lm1)
 Distance on the prognostic score (to begin with, without calipers).  Note the complaint from the distance-making functions about the stratifying variables not being in the propensity specification.  Given that they are included in the ordinary propensity score, and we'll be putting in a caliper on that, it's nothing to worry about.
 <<>>=
 pg.ppty$blocks <- exactMatch(Coach ~ ethn3levels + dadsed, data=satcoach)
-pg.ppty$dist <- match_on(pg.ppty$model, within=pg.ppty$blocks, data=satcoach)
-pg.ppty$dist.with.ppty.calipers <- caliper(pg.ppty$dist, width=0.5)
-fm.pgppty.pptyclpr <- fullmatch(pg.ppty$dist.with.ppty.calipers,data=satcoach)
-#fm.pgppty.pptyclpr <- fullmatch(pg.ppty$model, within=pg.ppty$blocks, data=satcoach, caliper=0.5)
-#previous will replace pg.ppty$dist and pg.ppty$dist.with.ppty.calipers and fm.pgppty.pptyclpr
+###as of v 0.8-5, next 3 lines replaced by subseq 1 lines
+###pg.ppty$dist <- match_on(pg.ppty$model, within=pg.ppty$blocks, data=satcoach)
+###pg.ppty$dist.with.ppty.calipers <- caliper(pg.ppty$dist, width=0.5)
+###fm.pgppty.pptyclpr <- fullmatch(pg.ppty$dist.with.ppty.calipers,data=satcoach)
+fm.pgppty.pptyclpr <- fullmatch(pg.ppty$model, within=pg.ppty$blocks, data=satcoach, caliper=0.5)
+###previous replaces commented lines prior, obviating need for 
+###pg.ppty$dist and pg.ppty$dist.with.ppty.calipers and fm.pgppty.pptyclpr
 
 @ 
 
@@ -363,7 +366,43 @@ range((-5:45)[pvals.math>=.05])
 
 
 \bibliographystyle{asa}
-\bibliography{abbrev_long,biomedicalapplications,causalinference,misc,computing}
+%\bibliography{abbrev_long,biomedicalapplications,causalinference,misc,computing}
+\begin{thebibliography}{6}
+\newcommand{\enquote}[1]{``#1''}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem[{Hansen(2004)}]{hansen:2004}
+Hansen, B.~B. (2004), \enquote{Full matching in an observational study of
+  coaching for the {SAT},} \textit{Journal of the American Statistical
+  Association}, 99, 609--618.
+
+\bibitem[{Hansen(2009)}]{hansen2009}
+--- (2009), \enquote{Propensity score matching to recover latent experiments:
+  diagnostics and asymptotics,} Tech. Rep. 486, Statistics Department,
+  University of Michigan.
+
+\bibitem[{Hansen(2011)}]{hansen2009b}
+--- (2011), \enquote{Propensity score matching to extract latent experiments
+  from nonexperimental data: A case study,} in \textit{Looking Back:
+  Proceedings of a Conference in Honor of Paul W. Holland}, eds. Dorans, N. and
+  Sinharay, S., Springer, chap.~9, pp. 149--181.
+
+\bibitem[{Hansen and Bowers(2008)}]{hansen:bowers:2008}
+Hansen, B.~B. and Bowers, J. (2008), \enquote{Covariate balance in simple,
+  stratified and clustered comparative studies,} \textit{Statistical Science},
+  23, 219--236.
+
+\bibitem[{Hansen and Klopfer(2006)}]{hansen:klopfer:2006}
+Hansen, B.~B. and Klopfer, S.~O. (2006), \enquote{Optimal full matching and
+  related designs via network flows,} \textit{Journal of Computational and
+  Graphical Statistics}, 15, 609--627.
+
+\bibitem[{Rosenbaum(2002)}]{rosenbaum:2002a}
+Rosenbaum, P.~R. (2002), \enquote{Covariance adjustment in randomized
+  experiments and observational studies,} \textit{Statistical Science}, 17,
+  286--327.
+
+\end{thebibliography}
 
 
 \end{document}
