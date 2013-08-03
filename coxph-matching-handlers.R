@@ -115,11 +115,17 @@ setMethod("match_on", "coxph", function(x, within = NULL, caliper = NULL, standa
 
 ##' Method to create smaller \code{InfinitySparseMatrix}-es from larger ones, by 
 ##' collapsing blocks of a given \code{InfinitySparseMatrix} using a user-supplied function.
+##'
+##' The usage scenario for which this method was developed is risk set matching, where matches are to be made between "exposed" and "unexposed" subjects but the data are organized into subject-year observations, or more generally subject/time period observations.  Then the method is used to pass from subject/time period distances to distances in terms of subjects alone. The user is required to specify the mapping from subject/time units  to subjects, by way of the\code{by}  argument, with the function inferring the classification of subjects as exposed or unexposed from this and from the provided distance \code {x}.  a subject for whom some corresponding subject/time unit observation is presented as treated or exposed, i.e. appears as a row of \code {x}, is regarded as belonging to the exposed group, i.e. defines a row of the return value of the function; all remaining subjects are regarded as unexposed, and define columns of the return value of the function.
+##'
+##' The value appearing at row i and column j of the returned distance will be the result of applying \code{FUN} to the submatrix of \code{x} defined by including all rows of \code{x} mapped by \code{by} into i and all columns of \code{x} mapped by \code{by} into j.  If \code{x} has no such rows or no such columns, then the returned distance disallows matches between i and j.
 ##' 
-##' The \code{InfinitySparseMatrix}, \code{x}, must have non-NULL row and column names. \code{by} is required to have matching names: If a factor is supplied as the \code{by} argument, it must have names; a data frame is required to have row names.  In either case, the names must include each character appearing in the row and column names of x.
+##' The \code{InfinitySparseMatrix}, \code{x}, is required to have non-NULL row and column names. \code{by} is required to have matching names: If a factor is supplied as the \code{by} argument, it must have names; a data frame is required to have row names.  In either case, the names must include each character string appearing as a row or column name of x.
 ##'
-##' For each level of \code{by}, unit names corresponding to that level either must all appear within the row names of \code{x} or must all appear within the column names of \code{x}.  This behaviour may change once I figure out appropriate conventions for handling situations when this is not true.
+##' There's no built-in mechanism for recording which rows and columns of \code{x} contributed to determining a particular entry of the return value.  There may be ways to trick the function into providing this.  However, if in \code{x} each subject presents as exposed in at most one time period, then one might infer from data used to produce \code{x} the specific time period corresponding to each row of the return value,  and in this way map (subject, subject) pairs corresponding to entries of the return value back to the (subject/time period, subject/time period) pairs associating with entries of \code{x}.  For risk set matching applications, commonly subjects will  Become exposed to during most one time period, so this assumption is fulfilled automatically. For applications where the exposure may occur more than once over time,  it may be advisable either to zero out all but one of these exposures or to conceptually redefine one subject as several subjects, one for each time period in which a separate exposure event occurs.
 ##'
+##' 
+##' 
 ##' (In the future it might be nice to add an optional \code{data} argument, permitting \code{by} to be specified as a formula or expression that then gets evaluated within \code{data}.)
 ##' @title 
 ##' @param x An InfinitySparseMatrix object, as created by \code{\link{match_on}}, \code{\link{caliper}} or \code{\link{exactMatch}}.
@@ -128,7 +134,8 @@ setMethod("match_on", "coxph", function(x, within = NULL, caliper = NULL, standa
 ##' @param ... Additional arguments to be passed to \code{FUN}.
 ##' @return An \code{InfinitySparseMatrix}, with row and column names taken from levels of \code{by}
 ##' @author Ben Hansen
-setMethod("aggregate", "InfinitySparseMatrix",  function(x, by, FUN, ...)
+setMethod("aggregate", "InfinitySparseMatrix",
+          function(x, by, FUN=function(x) min(x, na.rm=TRUE), ...)
   {
     stopifnot(!is.null(x@colnames), !is.null(x@rownames),
               is.factor(by) || is.character(by) || is.data.frame(by),
@@ -136,7 +143,31 @@ setMethod("aggregate", "InfinitySparseMatrix",  function(x, by, FUN, ...)
               !(is.factor(by) || is.character(by)) || !is.null(names(by)),
               !is.data.frame(by) || !is.null(row.names(by))
               )
-    stop("aggregate method for InfinitySparseMatrix-es not implemented yet")
+    stopifnot(is.factor(by)) # get rid of this later
+    stopifnot(all((rnx <- rownames(x))%in% names(by)),
+              all((cnx <- colnames(x))%in% names(by))
+              )
+    txsubj <- tapply(names(by), by, function(nms) any(nms %in% rnx))
+    txsubj <- names(txsubj[txsubj])
+    ctlsubj <- setdiff(levels(by), txsubj)
+    x <- x[, by[rownames(x)] %in% ctlsubj ] # get rid of cols not meeting our def of unexposed
+    dists <- rows <- cols <- numeric(0)
+    rnms <- cnms <- character(0)
+    for (ts in txsubj)
+      for (ctls in tctsubj)
+        {
+          xrns <- rownames(x) %in% names(by[by==ts])
+          xcns <- colnames(x) %in% names(by[by==ctls])
+          if (any(xrns) & any(xcns))
+            {
+              rnms <- c(rnms, ts)
+              cnms <- c(cnms, ctls)
+              rows <- c(rows, which(ts==txsubj))
+              cols <- c(cols, which(ctls==ctlsubj))
+              dists <- c(dists, FUN(as.matrix(x[xrns, xcns])) )
+            }
+        }
+    optmatch:::makeInfinitySparseMatrix(dists, cols, rows, colnames=cnms, rownames=rnms)
   }
     )
 

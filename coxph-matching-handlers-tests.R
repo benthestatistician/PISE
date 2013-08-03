@@ -48,12 +48,7 @@ with(matchons, expect_equal(test1c < Inf, test1d < Inf))
 test_that(matchons$cluster1 <- match_on(coxph(Surv(time, status) ~ rx + cluster(litter), rats)), gives_warning())
 test_that(matchons$frailty1 <- match_on(coxph(Surv(time, status) ~ rx + frailty(litter), rats)), gives_warning())
 
-### Test of ISM method for aggregate -- to be written
 
-
-### Calipers.  match_on's caliper= option not working at present; so use caliper()
-### optmatch doesn't seem to unit test equivalence of use of caliper= arg w/ results of caliper(),
-### so I'm suspicious that the problem may be there.
 models$heart1 <- coxph(Surv(start, stop, event) ~ age + year + transplant + cluster(id), data=heart)
 matchons$heart1 <- match_on(models$heart1)
 coxps <- predict(models$heart1)
@@ -91,3 +86,9 @@ xBalance(event~age + year + transplant,
            cal1.0=~matches$heart1.w.cal1),
          data=heart,
          report = c('adj.means', 'z.scores', 'chisquare.test'))
+
+
+### Test of ISM method for aggregate -- to be written
+### row and column names insisted upon for blocked and ordinary ISMs
+
+### rows of result contain all and only the subjects (levels of by) presenting in some row of x

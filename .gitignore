@@ -1,0 +1,5 @@
+# History files
+.Rhistory
+
+# private data files likely to sit around in working copies
+satcoach.RData
