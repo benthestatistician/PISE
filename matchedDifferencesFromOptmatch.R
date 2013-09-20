@@ -178,3 +178,15 @@ PSdiffs <- function(PSmodel, amatch, covariance.extractor=vcov)
                       stringsAsFactors=FALSE)
     ans
   }
+
+
+model.matrix.bayesglm <- function(x,...)
+  {
+model.matrixBayes(terms(x),data=model.frame(x),
+                        contrasts.arg=x$contrasts,
+        		keep.order=x$keep.order,
+                        drop.baseline=x$drop.baseline,...)
+  }
+
+
+  
