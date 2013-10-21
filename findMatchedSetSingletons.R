@@ -1,6 +1,6 @@
 ##' .. content for \description{} (no empty lines) ..
-##'  For matched pairs, the singleton is just the treatment group member, ie pairs are grouped with one-many matched sets.
 ##' .. content for \details{} ..
+##'  For matched pairs, the singleton is just the treatment group member, ie pairs are grouped with one-many matched sets.
 ##' @title Identify the one among one-many and many-one matched sets
 ##' @param omatch An optmatch object
 ##' @return list of named vectors theOne.name, a character vector;
@@ -15,15 +15,18 @@ stopifnot(inherits(omatch, "optmatch"),
           )
 nlev <- nlevels(omatch)
 levs <- levels(omatch)
-isOneMany <- (table(omatch[theTx, drop=FALSE]) <2) #ATTN PLEASE
-### probably need to coerce
-### this to vector/remove weird table attribute
+mtab <- table(omatch[theTx, drop=FALSE])
+
+if (!all.equal(dimnames(mtab)[[1]], levs)) # shouldn't happen
+  mtab <- mtab[levs] # a guess at how to fix if does happen.  Also warn?
+
+isOneMany <- as.logical(mtab <2)
+names(isOneMany) <- levs
 
 theOne.pos <- integer(nlev)
-theOne.name <- character(nlev)
 names(theOne.pos) <- levs
 
-for (lev in levs) theOne.pos[lev] <- which(omatch==lev && theTx==isOneMany[lev])
+for (lev in levs) theOne.pos[lev] <- which(omatch==lev & theTx==isOneMany[lev])
 theOne.name <- names(omatch)[theOne.pos]
 names(theOne.name) <- levs
 
