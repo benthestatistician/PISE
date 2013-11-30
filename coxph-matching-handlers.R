@@ -65,9 +65,14 @@ return(tmp)
 #' @param within specification of potential matches to be excluded a priori, typically produced by \code{\link{exactMatch}}, \code{\link{caliper}} or some combination thereof.
 #' @param ... additional arguments for the \code{\link{match_on}}'s numeric method
 #' @examples
-#' a <- 1
-#' class(a) <- "lm"
-#' MyHappyFunction(a)
+#' test1 <- list(time=c(4,3,1,1,2,2,3), 
+#'                   status=c(1,1,1,0,1,1,0), 
+#'                   x=c(0,2,1,1,1,0,0), 
+#'                   sex=c(0,0,0,0,1,1,1)) 
+#' mo1 = match_on( coxph(Surv(time, status) ~ x, test1) )
+#' print( fullmatch(mo1), grouped=T)
+#' mo2 = match_on( coxph(Surv(time, status) ~ x + strata(sex), test1) )
+#' print( fullmatch(mo2), grouped=T)
 #'
 #' @rdname match_on-methods
 #' @docType methods
