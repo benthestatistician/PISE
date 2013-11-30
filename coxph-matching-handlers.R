@@ -1,6 +1,6 @@
-setOldClass("Surv")
-setOldClass("coxph")
-setOldClass(c("coxph.penal", "coxph"), S4Class="coxph")
+##setOldClass("coxph") #not needed since match_on became S3
+##setOldClass(c("coxph.penal", "coxph"), S4Class="coxph")
+setOldClass("Surv") #exactMatch still appears to be S4
 
 convertSurv2to3 <- function(x)
   {
@@ -71,7 +71,7 @@ return(tmp)
 #'
 #' @rdname match_on-methods
 #' @docType methods
-setMethod("match_on", "coxph", function(x, within = NULL, caliper = NULL, standardization.scale=NULL, ...)
+match_on.coxph <- function(x, within = NULL, caliper = NULL, standardization.scale=NULL, ...)
           {
 ### First apply exactMatch() to the Surv within the coxph, creating 
 ### a within object encoding Tx vs Cntl, which observations at risk when each event happened, time of event.
@@ -110,7 +110,6 @@ setMethod("match_on", "coxph", function(x, within = NULL, caliper = NULL, standa
               }
             match_on(x=fitteds, within=within0, caliper=caliper, z=experiencedEvent, ...)
           }
-)
 
 
 ##' Method to create smaller \code{InfinitySparseMatrix}-es from larger ones, by 

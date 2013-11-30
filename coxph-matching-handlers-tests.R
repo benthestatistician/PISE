@@ -32,7 +32,7 @@ expect_identical(as.matrix(matchons$test1a)[-1,], as.matrix(matchons$test2a))
 
 matchons$test1b <- match_on( coxph(Surv(time, status) ~ x, test1) )
 expect_is(matchons$test1b, "InfinitySparseMatrix")
-expect_equal(dim(matchons$test1a), dim(matchons$test2a) + 1:0) # Got to here
+expect_equal(dim(matchons$test1a), dim(matchons$test2a) + 1:0) 
 
 ### With strata(), match_on() should only entertain within-stratum pairings
 matchons$test1c <- match_on( coxph(Surv(time, status) ~ x + strata(sex), test1) )
@@ -65,7 +65,7 @@ expect_that(with(matchons, all(as.matrix(heart1)[is.finite(as.matrix(heart.cal1)
 matchons$heart1.w.cal0 <- match_on(coxps, z=heart$event, within=w1, caliper=1)
 expect_that(with(matchons, all(as.matrix(heart1.w.cal0)[is.finite(as.matrix(heart1.w.cal0))] <= 1)), is_true())
 
-matchons$heart1.w.cal1 <- match_on(models$heart1, caliper=1) # bombs here.  how come?  bug appears to be local
+matchons$heart1.w.cal1 <- match_on(models$heart1, caliper=1) 
 expect_that(with(matchons, all(as.matrix(heart1.w.cal1)[is.finite(as.matrix(heart1.w.cal1))] <= 1)), is_true())
 
 summary(with(matchons, as.matrix(heart1.w.cal1)[is.finite(as.matrix(heart1.w.cal1))]))
