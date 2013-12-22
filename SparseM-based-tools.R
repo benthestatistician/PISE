@@ -60,4 +60,40 @@ stratum_summing_SparseM <- function(thefactor)
         dimension=c(nlevels(thefactor), nn)
         )
   }
+##' .. content for \description{} (no empty lines) ..
+##' Stratum-wise means for a numeric variable or matrix of numeric variables.
+##' Based on sparse matrix multiplication, to limit memory consumption.
+##' .. content for \details{} ..
+##' The within-stratum calculation is effectively \code{mean(x,na.rm=T)}.
+##' Stratum-variable combinations for which there are no non-NA 
+##' observations receive the value NA; this is the only circumstance
+##' under which NAs are returned.
+##' @title Stratum wise means
+##' @param mat numeric vector or matrix (\code{matrix.csr}s are allowed)
+##' @param fac factor defining the strata
+##' @return A matrix (dense) of dimension \code{nlevels(fac)} by \code{ncol(mat)}
+##' @author Ben B Hansen
+stratMeans <- function(mat, fac)
+                       {
+                           stopifnot(is.numeric(mat),
+                                     inherits(mat, "matrix") || inherits(mat, "matrix.csr") || is.null(dim(mat)),
+                                     is.null(dim(mat)) || nrow(mat)==length(fac),
+                                     !is.null(dim(mat)) || length(mat)==length(fac)
+                                     )
+                                     
+                           # calculate sums w/in each stratum/matched set
+                           ssmat <- stratum_summing_SparseM(fac)
+                           mat_notisNA <- !is.na(mat)
+                           mat_NAas0 <- ifelse(mat_notisNA, mat, 0)
+                           ssums <- ssmat%*%mat_NAas0
+                           ssums <- as.matrix(ssums)
 
+                           # stratum counts of non-missing obses
+                           dm <- dim(mat_notisNA)
+                           mat_notisNA <- as.numeric(mat_notisNA)
+                           dim(mat_notisNA) <- dm
+                           snotNA <- ssmat%*%mat_notisNA
+                           snotNA <- as.matrix(snotNA)
+                           snotNA[snotNA==0] <- NA
+                           ssums/snotNA
+                       }
