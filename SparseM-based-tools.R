@@ -16,19 +16,19 @@ stopifnot(require("SparseM"), inherits(thefactor, "factor")
 theNA <- ##if (inherits(thefactor, "optmatch")) !matched(thefactor) else
 is.na(thefactor)
 
-  if (all(theNA)) warning("No non-NA's in thefactor") else {
+  if (all(theNA)) stop("No non-NA's in thefactor") else {
   if (any(theNA) && !inherits(thefactor, "optmatch")) warning("NA's found in thefactor.")
 }
 
 nlev <- nlevels(thefactor)
 nobs <- length(thefactor)
 theint <- as.integer(thefactor)
-if (any(theNA)) theint[theNA] <- nlev + 1L:sum(theNA)
+if (any(theNA)) theint[theNA] <- 1L#nlev + 1L:sum(theNA)
 new("matrix.csr",
     ja=theint,
     ia=1L:(nobs+1L),
     ra=(1L-theNA),
-    dimension = c(nobs, nlev+sum(theNA))
+    dimension = c(nobs, nlev) #+sum(theNA)
     )
   }
 

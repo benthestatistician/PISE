@@ -22,6 +22,24 @@ shouldError <- function(expr, msg = "Exception should be thrown") {
 
 themat <- as.matrix(subset(nuclearplants, select=t1:cap))
 thefac <- as.factor(nuclearplants$pt)
+
+### Using sparse matrices to strip out fixed effects
+stratmeans1 <- fitted(lm(themat~thefac))
+dimnames(stratmeans1) <- NULL
+all.equal(stratmeans1,
+          fitted(SparseM:::slm.fit(SparseMMFromFactor(thefac),
+                                 themat)
+                 )
+          )
+
+### NAs in the factor variable just don't get associated w/ any stratum
+thefac1 <- thefac
+thefac1[1] <- NA
+
+all.equal(rep(0, nlevels(thefac)),
+          as.matrix(SparseMMFromFactor(thefac1))[1,]
+          )
+
 factab <- as.vector(table(thefac))
 stratum_summing_SparseM(thefac) %*%themat
 
