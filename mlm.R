@@ -32,13 +32,17 @@ library(SparseM)
 ##' @param ... additional arguments passed to `model.frame`
 ##' @return object of class `lm`
 ##' @author Ben B Hansen
-mlm <- function(formula, data, ms.weights=c(ett, harmonic), fit.type="lm", fit.control = list(NULL), na.action = na.pass, ...) {
+mlm <- function(formula, data, ms.weights = ett, fit.type="lm", fit.control = list(NULL), na.action = na.pass, ...) {
   parsed <- parseMatchingProblem(formula, data, na.action, ...)
 
-  noNAs <- fill.NAs(parsed$mf[, -parsed$match, drop = FALSE])
+  outcome <- model.response(parsed$mf)
+  weights <- model.weights(parsed$mf)
+  offset <- model.offset(parsed$mf)
+  
+  # this will be a nearly filled in model matrix (ie. all factors expanded), but without an intercept
+  noNAs <- fill.NAs(parsed$fmla, parsed$mf)
 
-  theMatch <- parsed$mf[, parsed$match]
-  names(theMatch) <- rownames(parsed$mf)
+  theMatch <- parsed$match
 
   checkNA <- function(i) {
     if (is.null(i)) {
@@ -47,18 +51,51 @@ mlm <- function(formula, data, ms.weights=c(ett, harmonic), fit.type="lm", fit.c
     return(is.na(i))
   }
 
-  remove <- with(parsed,
-                 checkNA(model.weights(mf)) |
-                 is.na(model.response(mf)) |  
-                 is.na(mf[, match]))
+  remove <- !with(parsed,
+                  checkNA(weights) |
+                  is.na(outcome) |  
+                  is.na(theMatch))
 
-  noNAs <- noNAs[, remove]
-  theMatch <- theMatch[, remove]
+  noNAs <- model.matrix(parsed$fmla, noNAs[remove, ])
+  if ("(Intercept)" %in% colnames(noNAs)) {
+    noNAs <- noNAs[, -which("(Intercept)" %in% colnames(noNAs))]
+  }
 
-  
-  
-  
+  theMatch <- theMatch[remove]
+  outcome <- outcome[remove]
+  weights <- weights[remove]
+
+  z <- attr(theMatch, "contrast.group")
+  nt <- sapply(levels(theMatch), function(l) { sum(theMatch == l & z) })
+  nc <- sapply(levels(theMatch), function(l) { sum(theMatch == l & !z) })
+
+  missingTorC <- nt == 0 | nc == 0 
+  nt <- nt[!missingTorC]
+  nc <- nc[!missingTorC]
+
+  matchCsr <- as(theMatch, "matrix.csr")
+  matchCsr <- matchCsr[!missingTorC, ]
+
+  # make the design matrix for the matched sets
+  # switching back to dense representation since the we don't expect many zero's in the design matrix
+  X <- as.matrix(matchCsr %*% as.matrix(noNAs)) 
+  colnames(X) <- colnames(noNAs)
+  # the rows are the matched sets (but we don't need to include those)
+
+  # add treatment indicator if there is not one
+  # an intercept column will turn up as all zeros
+  isConst <- apply(X, 2, function(col) { all(col == col[1]) })
+  if (!any(isConst)) {
+    X <- cbind(X, z = 1)
+  }
+
+  Y <- matchCsr %*% outcome
+
+  fit.weights <- ms.weights(nt, nc)
+
+  lm.wfit(X, Y, w = fit.weights, offset = offset)
 }
+
 
 # This next line should get put in the makeOptmatch.R file. It provides S4 compatability.
 setOldClass(c("optmatch", "factor"))
@@ -122,6 +159,25 @@ parseMatchingProblem <- function(formula, data, na.action = na.pass, ...) {
     stop("You must include precisely one matching in the formula.")
   }
 
-  return(list(mf = mf,
-              match = which(isMatch)))
+  match <- mf[, isMatch, drop = TRUE]
+  names(match) <- rownames(data)
+
+  mname <- colnames(mf)[isMatch]
+
+  # now that we've peeled out the match, the match out of the formula
+  # I dislike string hacking on formulas, but I can't think of a better way to do this.
+  fparts <- as.character(formula)
+  fstr <- strsplit(fparts[3], " \\+ ")[[1]]
+  keep <- grep(pattern = mname, fstr, value = TRUE, invert = TRUE)
+
+  newf <- as.formula(paste(fparts[2], "~", paste(keep, collapse = "+")))
+
+  # now make a new model frame, using the reduce form of the formula
+  mf <- model.frame(newf, data, na.action = na.action, ...)
+  
+  return(
+      list(
+          fmla = newf,
+          mf = mf,
+          match = match))
 }
