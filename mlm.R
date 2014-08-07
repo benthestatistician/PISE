@@ -1,5 +1,5 @@
 ##'
-##' ##' .. content for \description{} (no empty lines) ..
+##' .. content for \description{} (no empty lines) ..
 ##'
 ##' .. content for \details{} ..
 ##' - Build the model frame as in `lm`, except use `na.pass`
@@ -29,10 +29,9 @@
 ##' @param ... additional arguments passed to `model.frame`
 ##' @return object of class `lm`
 ##' @author Ben B Hansen
-mlm <- function(formula, data, ms.weights=c(ett, harmonic), fit.type="lm", fit.type=list(NULL),...)
-    {
+mlm <- function(formula, data, ms.weights=c(ett, harmonic), fit.type="lm", fit.control = list(NULL),...) {
 
-    }
+}
 
 ##' .. content for \description{} (no empty lines) ..
 ##'
@@ -75,3 +74,25 @@ setAs("optmatch", "matrix.csr", function(from)
 
 ett <- function(n.t,n.c) n.t
 harmonic <-  function (n.t, n.c) 2*(1/n.t + 1/n.c)^-1
+
+#' Helper to parse a matched analysis from a formula and a data.frame.
+#'
+#' @param formula The formula.
+#' @param data The data.frame containing terms in the formula.
+#' @param ... Other arguments passed to `model.frame`.
+#' @return A list with: `mf` a model frame stripped of the optmatch argument, `match` the matched factor.
+parseMatchingProblem <- function(formula, data) {
+  mf <- model.frame(formula, data)
+
+  isMatch <- sapply(mf, function(i) { inherits(i, "optmatch") })
+
+  if (sum(isMatch) != 1) {
+    stop("You must include precisely one matching in the formula.")
+  }
+
+  tmp <- mf[, isMatch, drop = TRUE]
+  names(tmp) <- rownames(mf)
+
+  return(list(mf = mf[, !isMatch, drop = FALSE],
+              match = tmp))
+}
