@@ -37,14 +37,22 @@ test_that("parseMatchingProblem", {
 test_that("optmatch -> matrix.csr", {
   data(nuclearplants)
 
+  ### start with the most straightforward case: everyone is matched
   mmm <- fullmatch(pr ~ t1 + t2 + cap, data = nuclearplants)
+
   csr <- as(mmm, "matrix.csr")
 
   expect_is(csr, "matrix.csr")
   expect_equal(dim(csr), c(nlevels(mmm), length(mmm)))
 
   csrm <- as.matrix(csr) # cast it back to dense matrix for testing
-  grps <- apply(csrm, 2, function(col) { which(col != 0) })
+  grps <- apply(csrm, 2, function(col) {
+    tmp <- which(col != 0)
+    if (length(tmp) == 0) {
+      return(NA)
+    }
+    return(tmp)
+  })
 
   tmp <- table(grps, mmm)
   expect_true(all(diag(tmp) != 0))
@@ -54,5 +62,84 @@ test_that("optmatch -> matrix.csr", {
   expect_true(all(rowSums(csrm) == 0))
 
   expect_equal(as.vector(csr %*% rep(1, length(mmm))), rep(0, nlevels(mmm)))
+
+  ### next case: not everyone is match
+  mmm <- pairmatch(pr ~ t1 + t2 + cap, data = nuclearplants)
+
+  csr <- as(mmm, "matrix.csr")
+
+  expect_is(csr, "matrix.csr")
+  expect_equal(dim(csr), c(nlevels(mmm), length(mmm)))
+
+  csrm <- as.matrix(csr) # cast it back to dense matrix for testing
+  grps <- apply(csrm, 2, function(col) {
+    tmp <- which(col != 0)
+    if (length(tmp) == 0) {
+      return(NA)
+    }
+    return(tmp)
+  })
+
+  tmp <- table(grps, mmm)
+  expect_true(all(diag(tmp) != 0))
+  diag(tmp) <- 0
+  expect_true(all(tmp == 0))
+
+  expect_true(all(rowSums(csrm) == 0))
+
+  expect_equal(as.vector(csr %*% rep(1, length(mmm))), rep(0, nlevels(mmm)))
+
+  ### knock a specific group
+  mmm <- fullmatch(pr ~ t1 + t2 + cap, data = nuclearplants)
+  mmm <- mmm[mmm != levels(mmm)[1]]
+
+  csr <- as(mmm, "matrix.csr")
+
+  expect_is(csr, "matrix.csr")
+  expect_equal(dim(csr), c(nlevels(mmm), length(mmm)))
+
+  csrm <- as.matrix(csr) # cast it back to dense matrix for testing
+  grps <- apply(csrm, 2, function(col) {
+    tmp <- which(col != 0)
+    if (length(tmp) == 0) {
+      return(NA)
+    }
+    return(tmp)
+  })
+
+  tmp <- table(grps, mmm)
+  expect_true(all(tmp[, 1] == 0))
+  expect_true(all(diag(tmp[,-1]) != 0))
+
+  expect_true(all(rowSums(csrm) == 0))
+
+  expect_equal(as.vector(csr %*% rep(1, length(mmm))), rep(0, nlevels(mmm)))
   
+  ### remove only a treated member
+  mmm <- fullmatch(pr ~ t1 + t2 + cap, data = nuclearplants)
+  mmm <- mmm[!(mmm == levels(mmm)[1] & nuclearplants$pr == 1)]
+
+  csr <- as(mmm, "matrix.csr")
+
+  expect_is(csr, "matrix.csr")
+  expect_equal(dim(csr), c(nlevels(mmm), length(mmm)))
+
+  csrm <- as.matrix(csr) # cast it back to dense matrix for testing
+  grps <- apply(csrm, 2, function(col) {
+    tmp <- which(col != 0)
+    if (length(tmp) == 0) {
+      return(NA)
+    }
+    return(tmp)
+  })
+
+  tmp <- table(grps, mmm)
+  expect_true(all(tmp[, 1] == 0))
+  expect_true(all(diag(tmp[,-1]) != 0))
+
+  expect_true(all(rowSums(csrm) == 0))
+
+  expect_equal(as.vector(csr %*% rep(1, length(mmm))), rep(0, nlevels(mmm)))
 })
+
+
