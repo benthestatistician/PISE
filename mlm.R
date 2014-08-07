@@ -1,3 +1,6 @@
+library(optmatch)
+library(SparseM)
+
 ##'
 ##' .. content for \description{} (no empty lines) ..
 ##'
@@ -29,9 +32,36 @@
 ##' @param ... additional arguments passed to `model.frame`
 ##' @return object of class `lm`
 ##' @author Ben B Hansen
-mlm <- function(formula, data, ms.weights=c(ett, harmonic), fit.type="lm", fit.control = list(NULL),...) {
+mlm <- function(formula, data, ms.weights=c(ett, harmonic), fit.type="lm", fit.control = list(NULL), na.action = na.pass, ...) {
+  parsed <- parseMatchingProblem(formula, data, na.action, ...)
 
+  noNAs <- fill.NAs(parsed$mf[, -parsed$match, drop = FALSE])
+
+  theMatch <- parsed$mf[, parsed$match]
+  names(theMatch) <- rownames(parsed$mf)
+
+  checkNA <- function(i) {
+    if (is.null(i)) {
+      return(FALSE)
+    }
+    return(is.na(i))
+  }
+
+  remove <- with(parsed,
+                 checkNA(model.weights(mf)) |
+                 is.na(model.response(mf)) |  
+                 is.na(mf[, match]))
+
+  noNAs <- noNAs[, remove]
+  theMatch <- theMatch[, remove]
+
+  
+  
+  
 }
+
+# This next line should get put in the makeOptmatch.R file. It provides S4 compatability.
+setOldClass(c("optmatch", "factor"))
 
 ##' .. content for \description{} (no empty lines) ..
 ##'
@@ -41,36 +71,38 @@ mlm <- function(formula, data, ms.weights=c(ett, harmonic), fit.type="lm", fit.c
 ##' @return A matrix.csr object by which to left-multiply vectors
 ##' and model matrices in order to assemble matched differences.
 ##' @author Ben B Hansen
-setAs("optmatch", "matrix.csr", function(from)
-      {
-    # treatment variable, a logical
-          zz <- attr(from, "contrast.group")
-    # list of positions of treatment member(s), then
-    # control group members; by matched set
-          pos.tc <- lapply( levels(from), function(lev) c(which(from==lev & zz),
-                                                        which(from==lev & !zz))
-                           )
-    # starting positions for rows of the csr matrix
-          rowstarts <- 1+c(0, cumsum(sapply(pos.tc, length)))
-          rowstarts <- as.integer(rowstarts)
-    # each row has 1st tx and then ctl, but we need to know how many of each      
-          n.t <- as.integer(table(from[zz, drop=FALSE]))
-          n.c <- as.integer(table(from))-n.t
-    # if either t or c unrepresented in a matched set, null out other group's contrib
-    # (this can happen due to `from` having been subsetted, perhaps b/c of NAs elsewhere)
-          tscale <- ifelse(n.c&n.t, 1/n.t, 0)
-          cscale <- ifelse(n.c&n.t, -1/n.c, 0)
-    # multipliers to go in positions pos.tc
-          multipliers <- rep(as.vector(rbind(tscale, cscale)),
-                             as.vector(rbind(n.t, n.c)) )
-          new("matrix.csr",
-              ra=multipliers,
-              ja=unlist(pos.tc),
-              ia=rowstarts,
-              dimension=c(nlevels(from), length(from))
-              )
-}
-      )
+setAs("optmatch", "matrix.csr", function(from) {
+  # treatment variable, a logical
+  zz <- optmatch:::toZ(attr(from, "contrast.group")) # can remove the explicit namespace when this goes in the optmatch pkg
+
+  # list of positions of treatment member(s), then
+  # control group members; by matched set
+  pos.tc <- lapply( levels(from), function(lev) c(which(from==lev & zz),
+                                                  which(from==lev & !zz)))
+
+  # starting positions for rows of the csr matrix
+  rowstarts <- 1 + c(0, cumsum(sapply(pos.tc, length)))
+  rowstarts <- as.integer(rowstarts)
+
+  # each row has 1st tx and then ctl, but we need to know how many of each      
+  n.t <- as.integer(table(from[zz, drop = FALSE]))
+  n.c <- as.integer(table(from))-n.t
+
+  # if either t or c unrepresented in a matched set, null out other group's contrib
+  # (this can happen due to `from` having been subsetted, perhaps b/c of NAs elsewhere)
+  tscale <- ifelse(n.c&n.t, 1/n.t, 0)
+  cscale <- ifelse(n.c&n.t, -1/n.c, 0)
+
+  # multipliers to go in positions pos.tc
+  multipliers <- rep(as.vector(rbind(tscale, cscale)),
+                     as.vector(rbind(n.t, n.c)) )
+
+  new("matrix.csr",
+      ra = multipliers,
+      ja = unlist(pos.tc),
+      ia = rowstarts,
+      dimension = c(nlevels(from), length(from)))
+})
 
 ett <- function(n.t,n.c) n.t
 harmonic <-  function (n.t, n.c) 2*(1/n.t + 1/n.c)^-1
@@ -80,9 +112,9 @@ harmonic <-  function (n.t, n.c) 2*(1/n.t + 1/n.c)^-1
 #' @param formula The formula.
 #' @param data The data.frame containing terms in the formula.
 #' @param ... Other arguments passed to `model.frame`.
-#' @return A list with: `mf` a model frame stripped of the optmatch argument, `match` the matched factor.
-parseMatchingProblem <- function(formula, data) {
-  mf <- model.frame(formula, data)
+#' @return A list with: `mf` a model frame stripped of the optmatch argument, `match` the matched factor
+parseMatchingProblem <- function(formula, data, na.action = na.pass, ...) {
+  mf <- model.frame(formula, data, na.action = na.action, ...)
 
   isMatch <- sapply(mf, function(i) { inherits(i, "optmatch") })
 
@@ -90,9 +122,6 @@ parseMatchingProblem <- function(formula, data) {
     stop("You must include precisely one matching in the formula.")
   }
 
-  tmp <- mf[, isMatch, drop = TRUE]
-  names(tmp) <- rownames(mf)
-
-  return(list(mf = mf[, !isMatch, drop = FALSE],
-              match = tmp))
+  return(list(mf = mf,
+              match = which(isMatch)))
 }

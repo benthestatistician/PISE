@@ -19,15 +19,40 @@ test_that("parseMatchingProblem", {
   res <- parseMatchingProblem(cost ~ pr + pt + mmm, n2)
   
   expect_is(res$mf, "data.frame")
-  expect_is(res$match, "optmatch")
+  expect_is(res$match, "integer")
+  expect_equal(length(res$match), 1)
 
-  expect_equal(res$match, mmm)
-  expect_equal(dim(res$mf)[2], 3) # cost, pr, pt, but not mmm
+  expect_equivalent(res$mf[, res$match], mmm)
+  expect_equal(dim(res$mf)[2], 4) # cost, pr, pt, and mmm
 
   mmm2 <- fullmatch(pr ~ t1, data = nuclearplants)
   n3 <- cbind(n2, mmm2)
-  expect_equal(parseMatchingProblem(cost ~ pr + mmm, n3)$match, mmm)
+  res2 <- parseMatchingProblem(cost ~ pr + mmm, n3)
+  expect_equivalent(res2$mf[, res2$match], mmm)
   expect_error(parseMatchingProblem(cost ~ pr + mmm + mmm2, n3), "one")
                
   expect_error(parseMatchingProblem(cost ~ pr, n3), "include")
+})
+
+test_that("optmatch -> matrix.csr", {
+  data(nuclearplants)
+
+  mmm <- fullmatch(pr ~ t1 + t2 + cap, data = nuclearplants)
+  csr <- as(mmm, "matrix.csr")
+
+  expect_is(csr, "matrix.csr")
+  expect_equal(dim(csr), c(nlevels(mmm), length(mmm)))
+
+  csrm <- as.matrix(csr) # cast it back to dense matrix for testing
+  grps <- apply(csrm, 2, function(col) { which(col != 0) })
+
+  tmp <- table(grps, mmm)
+  expect_true(all(diag(tmp) != 0))
+  diag(tmp) <- 0
+  expect_true(all(tmp == 0))
+
+  expect_true(all(rowSums(csrm) == 0))
+
+  expect_equal(as.vector(csr %*% rep(1, length(mmm))), rep(0, nlevels(mmm)))
+  
 })
