@@ -142,4 +142,23 @@ test_that("optmatch -> matrix.csr", {
   expect_equal(as.vector(csr %*% rep(1, length(mmm))), rep(0, nlevels(mmm)))
 })
 
+test_that("mlm", {
+  
+  data(nuclearplants)
+  mmm <- fullmatch(pr ~ t1 + t2 + cap, data = nuclearplants)
 
+  n2 <- cbind(nuclearplants, mmm)
+
+  # these are non-failure tests. just checking for errors
+  # fails: mlm(cost ~ mmm, data = n2)
+  mlm(cost ~ t1 + t2 + mmm, data = n2)
+  mlm(cost ~ t1 + t2 + mmm, data = n2, fit.type = "robust")
+  mlm(cost ~ t1 + t2 + mmm, data = n2, ms.weights = harmonic)
+ 
+  ppp <- pairmatch(pr ~ t1 + t2 + cap, data = nuclearplants)
+  n3 <- cbind(nuclearplants, ppp)
+
+  mlm(cost ~ t1 + ppp, data = n3)
+  mlm(cost ~ t1 + ppp, data = n3, fit.type = "robust")
+  mlm(cost ~ t1 + ppp, data = n3, ms.weights = harmonic)
+})

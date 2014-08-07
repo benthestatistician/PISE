@@ -32,7 +32,7 @@ library(SparseM)
 ##' @param ... additional arguments passed to `model.frame`
 ##' @return object of class `lm`
 ##' @author Ben B Hansen
-mlm <- function(formula, data, ms.weights = ett, fit.type="lm", fit.control = list(NULL), na.action = na.pass, ...) {
+mlm <- function(formula, data, ms.weights = ett, fit.type = "lm", fit.control = list(NULL), na.action = na.pass, ...) {
   parsed <- parseMatchingProblem(formula, data, na.action, ...)
 
   outcome <- model.response(parsed$mf)
@@ -93,6 +93,16 @@ mlm <- function(formula, data, ms.weights = ett, fit.type="lm", fit.control = li
 
   fit.weights <- ms.weights(nt, nc)
 
+
+  if ((fit.type == "robust" || fit.type == "rlm")) {
+    if(require(MASS)) {
+      return(rlm(X, Y, weights = fit.weights))
+    } else {
+      warning("MASS package not found, cannot use robust regression fit.") # this should probably never happen. MASS in in base now.
+    }
+  }
+
+  # can't fit with rlm package. fall back to good old lm
   lm.wfit(X, Y, w = fit.weights, offset = offset)
 }
 
