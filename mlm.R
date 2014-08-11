@@ -56,9 +56,9 @@ mlm <- function(formula, data, ms.weights = ett, fit.type = "lm", fit.control = 
                   is.na(outcome) |  
                   is.na(theMatch))
 
-  noNAs <- model.matrix(parsed$fmla, noNAs[remove, ])
+  noNAs <- model.matrix(parsed$fmla, noNAs[remove, , drop = FALSE])
   if ("(Intercept)" %in% colnames(noNAs)) {
-    noNAs <- noNAs[, -which("(Intercept)" %in% colnames(noNAs))]
+    noNAs <- noNAs[, -which("(Intercept)" %in% colnames(noNAs)), drop = FALSE]
   }
 
   theMatch <- theMatch[remove]
@@ -76,17 +76,21 @@ mlm <- function(formula, data, ms.weights = ett, fit.type = "lm", fit.control = 
   matchCsr <- as(theMatch, "matrix.csr")
   matchCsr <- matchCsr[!missingTorC, ]
 
-  # make the design matrix for the matched sets
-  # switching back to dense representation since the we don't expect many zero's in the design matrix
-  X <- as.matrix(matchCsr %*% as.matrix(noNAs)) 
-  colnames(X) <- colnames(noNAs)
-  # the rows are the matched sets (but we don't need to include those)
+  if (ncol(noNAs) == 0) {
+    X <- matrix(1, ncol = 1, nrow = nlevels(theMatch), dimnames = list(levels(theMatch), "z"))
+  } else {
+    # make the design matrix for the matched sets
+    # switching back to dense representation since the we don't expect many zero's in the design matrix
+    X <- as.matrix(matchCsr %*% as.matrix(noNAs)) 
+    colnames(X) <- colnames(noNAs)
+    # the rows are the matched sets (but we don't need to include those)
 
-  # add treatment indicator if there is not one
-  # an intercept column will turn up as all zeros
-  isConst <- apply(X, 2, function(col) { all(col == col[1]) })
-  if (!any(isConst)) {
-    X <- cbind(X, z = 1)
+    # add treatment indicator if there is not one
+    # an intercept column will turn up as all zeros
+    isConst <- apply(X, 2, function(col) { all(col == col[1]) })
+    if (!any(isConst)) {
+      X <- cbind(X, z = 1)
+    }
   }
 
   Y <- matchCsr %*% outcome
@@ -180,6 +184,9 @@ parseMatchingProblem <- function(formula, data, na.action = na.pass, ...) {
   fstr <- strsplit(fparts[3], " \\+ ")[[1]]
   keep <- grep(pattern = mname, fstr, value = TRUE, invert = TRUE)
 
+  if (length(keep) == 0) {
+    keep <- "1"
+  }
   newf <- as.formula(paste(fparts[2], "~", paste(keep, collapse = "+")))
 
   # now make a new model frame, using the reduce form of the formula

@@ -150,7 +150,8 @@ test_that("mlm", {
   n2 <- cbind(nuclearplants, mmm)
 
   # these are non-failure tests. just checking for errors
-  # fails: mlm(cost ~ mmm, data = n2)
+  mlm(cost ~ mmm, data = n2)
+  mlm(cost ~ mmm + 1, data = n2)
   mlm(cost ~ t1 + t2 + mmm, data = n2)
   mlm(cost ~ t1 + t2 + mmm, data = n2, fit.type = "robust")
   mlm(cost ~ t1 + t2 + mmm, data = n2, ms.weights = harmonic)
