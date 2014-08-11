@@ -34,14 +34,15 @@ library(SparseM)
 ##' @author Ben B Hansen
 mlm <- function(formula, data, ms.weights = ett, fit.type = "lm", fit.control = list(NULL), na.action = na.pass, ...) {
   parsed <- parseMatchingProblem(formula, data, na.action, ...)
-
+  cl <- match.call()
   outcome <- model.response(parsed$mf)
   weights <- model.weights(parsed$mf)
   offset <- model.offset(parsed$mf)
   
   # this will be a nearly filled in model matrix (ie. all factors expanded), but without an intercept
   noNAs <- fill.NAs(parsed$fmla, parsed$mf)
-
+  mt <- terms(update(parsed$fmla, .~.-1), data=noNAs)
+  
   theMatch <- parsed$match
 
   checkNA <- function(i) {
@@ -107,7 +108,12 @@ mlm <- function(formula, data, ms.weights = ett, fit.type = "lm", fit.control = 
   }
 
   # can't fit with rlm package. fall back to good old lm
-  lm.wfit(X, Y, w = fit.weights, offset = offset)
+  z <- lm.wfit(X, Y, w = fit.weights, offset = offset)
+  class(z) <- c(if (ncol(Y)>1) "mlm", "lm")
+  z$offset <- offset
+  z$terms <- mt
+  z$call <- cl
+  z
 }
 
 

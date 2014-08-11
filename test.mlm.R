@@ -163,3 +163,12 @@ test_that("mlm", {
   mlm(cost ~ t1 + ppp, data = n3, fit.type = "robust")
   mlm(cost ~ t1 + ppp, data = n3, ms.weights = harmonic)
 })
+
+test_that("summary.lm extracts proper SEs", {
+  ppp <- pairmatch(pr ~ t1 + t2 + cap, data = nuclearplants)
+  n3 <- cbind(nuclearplants, ppp)
+
+  expect_equal(coef(summary(mlm(cost ~ pr + ppp, data = n3)))[,],
+               coef(summary(lm(cost ~ pr + ppp, data = n3)))["pr",])
+})
+
