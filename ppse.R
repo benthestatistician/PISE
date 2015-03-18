@@ -8,7 +8,7 @@
 ##' @author Mark M. Fredrickson, Ben B. Hansen
 ppse <- function(propensity.glm, covariance.extractor=vcov) {
 
-  stopifnot(inherits(propensity.glm, "glm"))
+##  stopifnot(inherits(propensity.glm, "glm")) #use at own risk 
 
   data <- model.matrix(propensity.glm)
   data <- data[,!colnames(data) == "(Intercept)", drop = FALSE]
