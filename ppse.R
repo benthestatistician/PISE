@@ -4,14 +4,17 @@
 ##' @title SE of propensity-paired differences on a fitted propensity score
 ##' @param propensity.glm fitted propensity score model, of or inheriting from class \code{glm}
 ##' @param covariance.extractor function to extract covarance of fitted model coefficients
+##' @param data.matrix covariate matrix, ordinarily as retrieved by \code{model.matrix} (the default) 
 ##' @return scalar, interpretable as standard error
 ##' @author Mark M. Fredrickson, Ben B. Hansen
-ppse <- function(propensity.glm, covariance.extractor=vcov) {
+ppse <- function(propensity.glm, data.matrix=model.matrix(propensity.glm), covariance.extractor=vcov) {
 
-##  stopifnot(inherits(propensity.glm, "glm")) #use at own risk 
-
-  data <- model.matrix(propensity.glm)
-  data <- data[,!colnames(data) == "(Intercept)", drop = FALSE]
+#  stopifnot(inherits(propensity.glm, "glm")) #use at own risk 
+  stopifnot(!is.null(colnames(data.matrix)),
+            !is.null(names(coef(propensity.glm))),
+            setequal(colnames(data.matrix), names(coef(propensity.glm)))
+            )
+  data <- data.matrix[,!colnames(data.matrix) == "(Intercept)", drop = FALSE]
 
   covx <- cov(data)
 
