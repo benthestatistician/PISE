@@ -7,16 +7,13 @@
 ##' @param data.matrix covariate matrix, ordinarily as retrieved by \code{model.matrix} (the default) 
 ##' @return scalar, interpretable as standard error
 ##' @author Mark M. Fredrickson, Ben B. Hansen
-ppse <- function(propensity.glm, data.matrix=model.matrix(propensity.glm), covariance.extractor=vcov) {
-
+ppse <- function(propensity.glm, data.matrix=model.matrix(propensity.glm), covariance.extractor=vcov) 
+{
 #  stopifnot(inherits(propensity.glm, "glm")) #use at own risk 
   stopifnot(!is.null(colnames(data.matrix)),
             !is.null(names(coef(propensity.glm))),
             setequal(colnames(data.matrix), names(coef(propensity.glm)))
             )
-  data <- data.matrix[,!colnames(data.matrix) == "(Intercept)", drop = FALSE]
-
-  covx <- cov(data)
 
   covb <- covariance.extractor(propensity.glm)
 
@@ -28,16 +25,22 @@ ppse <- function(propensity.glm, data.matrix=model.matrix(propensity.glm), covar
   coeff.not.NA <- !is.na(coeffs)
   coeffs <- coeffs[coeff.not.NA]
 
-### expecting that NA coeffs won't have counterparts in cov matrix  
+### with glms, NA coeffs won't have counterparts in cov matrix
+### with e.g. coxph's that's not the case.  Make uniform.
+  if (!all(coeff.not.NA) && length(coeff.not.NA)==nrow(covb))
+    covb <- covb[coeff.not.NA, coeff.not.NA]
+  
   not.an.intercept <- names(coeffs) != "(Intercept)"
   covb <- covb[not.an.intercept, not.an.intercept]
   
 ### could we ever get a covb with different dim than covx?
 ### is this worth checking? --sure, when there are NA coefs.
 ### addressing that possibility as follows.  
-  coeff.not.NA <- coeff.not.NA[not.an.intercept]
-  covx <- covx[coeff.not.NA, coeff.not.NA]
-  
+  data <- data.matrix[,coeff.not.NA & colnames(data.matrix) != "(Intercept)",
+                      drop = FALSE]
+
+  covx <- cov(data)
+
   # calculate the correction for the expected difference in propensity scores
   ps <- predict(propensity.glm)
   rho.beta <- apply(data, 2, function(xi) { cor(xi, ps) })
