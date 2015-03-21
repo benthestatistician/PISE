@@ -28,10 +28,10 @@ ppse <- function(propensity.glm, data.matrix=model.matrix(propensity.glm), covar
 ### with glms, NA coeffs won't have counterparts in cov matrix
 ### with e.g. coxph's that's not the case.  Make uniform.
   if (!all(coeff.not.NA) && length(coeff.not.NA)==nrow(covb))
-    covb <- covb[coeff.not.NA, coeff.not.NA]
+    covb <- covb[coeff.not.NA, coeff.not.NA, drop=FALSE]
   
   not.an.intercept <- names(coeffs) != "(Intercept)"
-  covb <- covb[not.an.intercept, not.an.intercept]
+  covb <- covb[not.an.intercept, not.an.intercept, drop=FALSE]
   
 ### could we ever get a covb with different dim than covx?
 ### is this worth checking? --sure, when there are NA coefs.
