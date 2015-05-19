@@ -2,7 +2,7 @@ data(nuclearplants, package="optmatch")
 aglm <- glm(pr~.-cost, data=nuclearplants, family=binomial)
 expect_that(ppse(aglm), is_a("numeric"))
 
-## regression test
+test_that("Gives same answer as original version", {
 gpsc <- function(propensity.glm) {
 
   stopifnot(inherits(propensity.glm, "glm"))
@@ -32,4 +32,23 @@ gpsc <- function(propensity.glm) {
 }
 ## here's the regression test
 expect_equal(ppse(aglm), gpsc(aglm))
+}
+)
+
+test_that("appropriately handles strata in formula", {
+    aglm.s <- update(aglm, formula=update(formula(aglm), .~.-ne+strata(ne)))
+    expect_true(ppse(aglm.s) < ppse(aglm))
+} )
+
+## (this test currently fails...)
+test_that("deals with fitted cox models too",
+          {
+test1 <- list(time=c(4,3,1,1,2,2,3), 
+              status=c(1,1,1,0,1,1,0), 
+              x=c(0,2,1,1,1,0,0), 
+              sex=c(0,0,0,0,1,1,1)) 
+aph <- coxph(Surv(time, status) ~ x + strata(sex), test1)
+expect_that(ppse(aph), is_a("numeric"))
+} )
+
 
