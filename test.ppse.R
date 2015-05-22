@@ -36,6 +36,7 @@ expect_equal(ppse(aglm), gpsc(aglm))
 )
 
 test_that("appropriately handles strata in formula", {
+    expect_true(require("survival"))
     aglm.s <- update(aglm, formula=update(formula(aglm), .~.-ne+strata(ne)))
     expect_true(ppse(aglm.s) < ppse(aglm))
 } )

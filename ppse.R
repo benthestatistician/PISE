@@ -52,10 +52,14 @@ ppse.default <- function(object, covariance.extractor=vcov, data=model.frame(obj
         
         S <- if (!all(cols.to.keep))
         {
-            covx[cols.to.keep, cols.to.keep] -
+          n <- nrow(data.matrix)
+          K <- sum(!cols.to.keep)
+          
+            (covx[cols.to.keep, cols.to.keep] -
                 covx[cols.to.keep,!cols.to.keep, drop=FALSE] %*%
                     solve(covx[!cols.to.keep, !cols.to.keep, drop=FALSE],
                           covx[!cols.to.keep, cols.to.keep, drop=FALSE])
+             ) *((n-1)/(n-K))
         } else covx
         
 ### `sandwich` gives me covs for `brglm`'s that lack dimnames.
