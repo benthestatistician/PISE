@@ -11,15 +11,15 @@
 \maketitle
 
 This is a condensed, ever-so-slightly simplified session culminating
-in a full match discussed and recommended in my paper ``Propensity score
+in a prognostic propensity score full match, as discussed and recommended in my paper ``Propensity score
 matching to extract latent experiments from nonexperimental data: A
-case study''  \citep{hansen2009b}.  The longer, unsimplfied session is
+case study''  \citep{hansen2009b}.  The longer, unsimplified session is
 available in a similar format.  
 
-The match this script leads to combines propensity and
-prognostic scores in a way that I've found reliable and effective to
-reduce bias while limiting the losses of sample size and precision
-that can sometimes accompany matching-based analysis.
+%% The match this script leads to combines propensity and
+%% prognostic scores in a way that I've found reliable and effective to
+%% reduce bias while limiting the losses of sample size and precision
+%% that can sometimes accompany matching-based analysis.
 
 <<>>=
 load("satcoach.RData")
@@ -183,9 +183,9 @@ pg.mod$m <-
     data=satcoach, subset=!Coach#!psat.NA
     )
 pg.mod$scorenames <- 
-  c('psatv', 'psatm', 'presatv', 'presatm', 'psat.NA', 'presat.NA')
+  c("psatv", "psatm", "presatv", "presatm", "psat.NA", "presat.NA")
 pg.mod$scores <- 
-  data.frame(satcoach[c('Coach', pg.mod$scorenames)], 
+  data.frame(satcoach[c("Coach", pg.mod$scorenames)], 
              pg.v=predict(pg.mod$v, satcoach),
              pg.m=predict(pg.mod$m, satcoach),
              check.rows=T)
@@ -210,9 +210,9 @@ boxplot(pg.ppty$model, names=c("Not coached", "Coached"),
         ylim=range(ppty$score))
 par(mfrow=c(1,1))
 lm1 <- lm(ppty$score~Coach, data=satcoach)
-(ppty$meansep <- coef(lm1)['Coach']/sqrt(mean(residuals(lm1)^2)))
+(ppty$meansep <- coef(lm1)["Coach"]/sqrt(mean(residuals(lm1)^2)))
 lm1 <- lm(pg.ppty$score~Coach, data=satcoach)
-(pg.ppty$meansep <- coef(lm1)['Coach']/sqrt(mean(residuals(lm1)^2)))
+(pg.ppty$meansep <- coef(lm1)["Coach"]/sqrt(mean(residuals(lm1)^2)))
 rm(lm1)
 @ 
 
@@ -258,11 +258,11 @@ propensity score.
          data=pg.mod$scores)
  )
 plot(xb, legend=FALSE, 
-     thexlab="(Adjusted coached minus uncoached difference)/(pooled sd)")
-legend(x='topright', 
+     xlab="(Adjusted coached minus uncoached difference)/(pooled sd)")
+legend(x="topright", 
        legend=c("initial subclassification",
          "focused PS w/ PS calipers"), 
-       col=rainbow(3), pch=c(19,22,23), bty='n' )
+       col=rainbow(3), pch=c(19,22,23), bty="n" )
 
 @ 
 
@@ -281,7 +281,7 @@ verbfmla <- as.formula(verbfmla)
 $p$-values, a Hodges-Lehmann point estimate and confidence intervals.
 <<>>=
 pvals.verb <- xBalance(verbfmla,strata=fm.pgppty.pptyclpr, data=satcoach,
-                  report=c("p.values"))$results[,'p',1]
+                  report=c("p.values"))$results[,"p",1]
 names(pvals.verb) <- -15:35
 (-15:35)[pvals.verb==max(pvals.verb)]
 range((-15:35)[pvals.verb>=.05])
@@ -294,7 +294,7 @@ mathfmla <-
 paste("Coach ~", paste(paste("I(postsatmath -", -5:45, "*Coach)"), collapse="+"))
 mathfmla <- as.formula(mathfmla)
 pvals.math <- xBalance(mathfmla,strata=fm.pgppty.pptyclpr, data=satcoach,
-                  report=c("p.values"))$results[,'p',1]
+                  report=c("p.values"))$results[,"p",1]
 names(pvals.math) <- -5:45
 (-5:45)[pvals.math==max(pvals.math)]
 range((-5:45)[pvals.math>=.05])
@@ -319,12 +319,12 @@ fmla <- update.formula(fmla.lhs,
 residuals(lm(fmla, data=satcoach))
 })
 adj.vresp <- as.data.frame(adj.vresp)
-names(adj.vresp) <- paste('e', 1:length(adj.vresp), sep="")
+names(adj.vresp) <- paste("e", 1:length(adj.vresp), sep="")
 @ 
 
 Now to compute and extract the confidence interval.
 <<>>=
-xbfmla.rhs <- paste('e', 1:length(adj.vresp), sep="")
+xbfmla.rhs <- paste("e", 1:length(adj.vresp), sep="")
 xbfmla.rhs <- as.formula(paste("~", paste(xbfmla.rhs, collapse="+")))
 
 adj.vresp$Coach <- satcoach$Coach#[matched(fm.pgppty.pptyclpr)]
@@ -332,7 +332,7 @@ pvals.verb <-
   xBalance(update.formula(xbfmla.rhs, Coach ~.),
            strata=fm.pgppty.pptyclpr,#[matched(fm.pgppty.pptyclpr)], 
            data=adj.vresp,
-                  report=c("p.values"))$results[,'p',1]
+                  report=c("p.values"))$results[,"p",1]
 names(pvals.verb) <- -15:35
 (-15:35)[pvals.verb==max(pvals.verb)]
 range((-15:35)[pvals.verb>=.05])
@@ -350,14 +350,14 @@ fmla <- update.formula(fmla.lhs,
 residuals(lm(fmla, data=satcoach))
 })
 adj.mresp <- as.data.frame(adj.mresp)
-names(adj.mresp) <- paste('e', 1:length(adj.mresp), sep="")
+names(adj.mresp) <- paste("e", 1:length(adj.mresp), sep="")
 adj.mresp$Coach <- satcoach$Coach#[matched(fm.pgppty.pptyclpr)]
 
 pvals.math <- 
   xBalance(update.formula(xbfmla.rhs, Coach ~.),
            strata=fm.pgppty.pptyclpr,#[matched(fm.pgppty.pptyclpr)], 
            data=adj.mresp,
-                  report=c("p.values"))$results[,'p',1]
+                  report=c("p.values"))$results[,"p",1]
 names(pvals.math) <- -5:45
 (-5:45)[pvals.math==max(pvals.math)]
 range((-5:45)[pvals.math>=.05])
