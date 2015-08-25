@@ -1,5 +1,8 @@
+source("ppse.R")
+stopifnot(require("testthat"))
 data(nuclearplants, package="optmatch")
 aglm <- glm(pr~.-cost, data=nuclearplants, family=binomial)
+
 expect_that(ppse(aglm), is_a("numeric"))
 
 test_that("Gives same answer as original version", {
@@ -33,8 +36,23 @@ gpsc <- function(propensity.glm) {
 ## here's the regression test
 expect_equal(ppse(aglm), gpsc(aglm))
 }
-)
+          )
 
+test_that("glm.fit's non-update of weights at last stage",
+          {
+              expect_equal(FALSE,
+                           isTRUE(all.equal(getglmQweights(aglm$linear.predictor,family=aglm$family),
+                                            aglm$weights)))
+              expect_true(all(abs(getglmQweights(aglm$linear.predictor,family=aglm$family) - aglm$weights) < 1e-5))
+              
+          }) #(documenting the reason not to just pull weights from the fitted model obj)
+
+test_that("Agreement between ppse.qr & ppse.glm.",{
+    expect_equal(ppse(aglm), ppse(aglm$qr, fitted.model=aglm))
+    expect_equal(ppse(aglm), ppse(aglm$qr, data=model.frame(aglm), fitted.model=aglm))
+    expect_error(ppse(aglm$qr, fitted.model=aglm), # Change this if/when further vcov support added
+                 "only supports vcov as covariance extractor")
+})
 test_that("appropriately handles strata in formula", {
     aglm.s <- update(aglm, formula=update(formula(aglm), .~.-ne+strata(ne)))
     expect_true(ppse(aglm.s) < ppse(aglm))
