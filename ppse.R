@@ -110,7 +110,8 @@ getglmQweights <- function(eta, prior.weights=NULL, family=binomial())
         good <- prior.weights >0 & mu.eta.val !=0
         ifelse(good,prior.weights*mu.eta.val^2/variance(mu),0)
     }
-ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model, ...) 
+ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
+                    coeffs.from.fitted.model=FALSE, tol.coeff.alignment=Inf, ...) 
 {
     stopifnot(inherits(fitted.model, "glm"))
     if (!identical(covariance.extractor,vcov)) stop('ppse.qr only supports vcov as covariance extractor')
@@ -122,34 +123,64 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model, 
     offset <- rep(0, nrow(data))
     eta <- offset +
         fitted.model$linear.predictors # lazy, for now. 
+
+    ## To better reproduce internals of glm, I tried:
+    ## (1) using the weights based on penultimate glm fit,
+    ## not the updated weights as figured by my `getglmQweights`.
+###    weights <- fitted.model$weights
+    ## (2) insisting on convergence,
+###    stopifnot(fitted.model$converged)
+    ## Rationale for requiring convergence: Since we don't also have access to
+    ## penultimate eta's, we're relying on the convergence being far enough along that their differences
+    ## from the final etas are numerically negligible.  I get the impression that the `glm.fit` convergence
+    ## criteria are such as to ensure this.
+    ## None of this made much difference, with the aglm example used in optmatch, I got differences
+    ## in coefficients of order 2e-6 either way. Chalking the discrepancy up (uneasily) to differences
+    ## between numerical calcs used within `C_Cdqrls` and the QR-based method I'm using. 
+    
     weights <- getglmQweights(eta, # refigure weights, since glm.fit doesn't update them
                               prior.weights=fitted.model$prior.weights, # after final iteration
                               family=fitted.model$family)
+
     stopifnot(length(weights)==nrow(data))
     w <- sqrt(weights) 
     good <- !is.na(w) & w>0
-    
+
     data.matrix <- model.matrix(tt, data)
     resids <- fitted.model$residuals
 ##    data.matrix <- data.matrix[good,]
     resids <- resids[good]
     eta <- eta[good]
     w <- w[good]
-    z <- eta + resids # "z" as in `glm.fit`
+    ## NB: successful `getglmQweights` confirms that `linkinv` is there and is a function
+    linkinv <- fitted.model$family$linkinv
+    mu <- linkinv(eta)
+    y <- model.response(data, type="double")
+    y <- y[good]
+    mu.eta <- fitted.model$family$mu.eta
+    mu.etaval <- mu.eta(eta)
+    resids <- (y-mu)/mu.etaval
+    
+    z <- (eta -offset) + resids # "z" as in `glm.fit`
     
 
 ## Next 2 lines seem to be idle...   
 ###    if (ncol(data.matrix) !=length(object$pivot)) stop("length of QR's pivot doesn't match ncol(data.matrix).")
 ###    data.matrix <- data.matrix[,object$pivot]
-## Next calc reflected erroneous linear algebra on my part.    
-###    qtilde.prime <- backsolve(qr.R(object), # qtilde ~= XR^(-1), where X is actual data matrix, XW = QR
-###                        x=t(data.matrix), # specifically, qtilde solves
-###                              transpose=TRUE) # X= qtilde %*% R
     qmat <- qr.Q(object)[good,]
-    ##    qcoeffs <- qr.qty(object,z*w) # doesn't work, returns a object of length length(z).  Likewise for qr.qy(...)
-    qcoeffs <- crossprod(qmat, z*w)
+    ## NB: `qcoeffs <- qr.qty(object,z*w)` doesn't work, returns a object of length length(z),
+    ## not object$rank.  Likewise for qr.qy(...)
+    qcoeffs.from.QR <- crossprod(qmat, z*w)
+    qcoeffs.from.fitted.model <- drop(qr.R(object)%*%coef(fitted.model)[object$pivot])
+    if (is.finite(tol.coeff.alignment))
+        {
+            coeff.diffs <- qcoeffs.from.fitted.model - qcoeffs.from.QR
+            if (max(abs(coeff.diffs)) >= tol.coeff.alignment)
+            stop(paste("QR/reported coefficients differ by up to", prettyNum(abs(coeff.diffs))))
+        }
+    qcoeffs <- if (coeffs.from.fitted.model) qcoeffs.from.fitted.model else qcoeffs.from.QR
 
-##  qtilde is the reweighting of the Q-matrix that corresponds to a rotated X. (Q ~ rotated W*X)    
+    ##  qtilde is the reweighting of the Q-matrix that corresponds to a rotated X. (Q ~ rotated W*X)    
     qtilde <- w^(-1) * qmat
     covqtilde <- cov(qtilde)
 
@@ -158,15 +189,16 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model, 
 
     ## On to estimating (co)variance of the qcoeffs...
     nobs <- sum(good)
-    rdf <- nobs - object$rank
-###    stopifnot(all.equal(fitted.model$linear.predictors[good], drop(qtilde %*% qcoeffs))) # fails...
-    ## but discrepancy is plausibly due fact that fitted.model$weights isn't updated after final iteration.
-    ## it would be nice to have a cross-check against glm results, but I don't see how to do that.
-        browser()
+    stopifnot((rdf <- nobs - object$rank)>0) # i.e., fitted.model$df.residual
+    
+    est.disp <- !(fitted.model$family$family %in% c("poisson", "binomial"))
+    dispersion <-
+        if (est.disp)
+        {              
+            qfitted <- qmat %*% qcoeffs
+            rss <- sum((z*w - qfitted)^2)
+            rss/rdf # q cols have sums of squares = to 1, so division by that is implicit
+        } else 1
+    sqrt(2 * dispersion *sum(diag(Sqperp)))
 
-    ## if we later tinker w/ eta based on the QR, we'll have to adjust z, w in the below
-    qfitted <- qmat %*% qcoeffs
-    rss <- sum((z*w - qfitted)^2)
-    varqcoeffs <- rss/rdf # q cols have sums of squares = to 1, so division by that is implicit
-    sqrt(2 * varqcoeffs*sum(diag(Sqperp)))
 }
