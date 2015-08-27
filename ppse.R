@@ -111,7 +111,8 @@ getglmQweights <- function(eta, prior.weights=NULL, family=binomial())
         ifelse(good,prior.weights*mu.eta.val^2/variance(mu),0)
     }
 ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
-                    coeffs.from.fitted.model=FALSE, tol.coeff.alignment=Inf, ...) 
+                    coeffs.from.fitted.model=FALSE, tol.coeff.alignment=Inf,
+                    return.extras=FALSE,...) 
 {
     stopifnot(inherits(fitted.model, "glm"))
     if (!identical(covariance.extractor,vcov)) stop('ppse.qr only supports vcov as covariance extractor')
@@ -184,7 +185,6 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
     qtilde <- w^(-1) * qmat
     covqtilde <- cov(qtilde)
 
-
     Sqperp <-  makeSperp(covqtilde, qcoeffs)
 
     ## On to estimating (co)variance of the qcoeffs...
@@ -199,6 +199,13 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
             rss <- sum((z*w - qfitted)^2)
             rss/rdf # q cols have sums of squares = to 1, so division by that is implicit
         } else 1
-    sqrt(2 * dispersion *sum(diag(Sqperp)))
-
+    ## because the Q matrix is orthogonal, corresponding nominal Cov-hat is dispersion * Identity
+    ans <- sqrt(2 * dispersion *sum(diag(Sqperp)))
+    if (return.extras)
+        {
+    attr(ans, "dispersion") <- dispersion
+    attr(ans, "scaled.variances") <- (nobs-1)*(mean(w)^-2)*
+        cbind(Winv.dot.Q=diag(covqtilde), Winv.dot.Q.perp= diag(Sqperp))
+}
+    ans
 }
