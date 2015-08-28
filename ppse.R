@@ -209,3 +209,13 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
 }
     ans
 }
+
+ppse.array <- function(object, covariance.extractor=NULL, data=NULL,...)
+  {
+    stopifnot(inherits(object, "array"), length(dim(object))==3,
+              !is.null(dimnames(object)), "cov.beta" %in% dimnames(object)[[3]],
+              "Sperp" %in% dimnames(object)[[3]])
+covb <- object[,,"cov.beta", drop=TRUE]
+Sperp <- object[,,"Sperp", drop=TRUE]
+sqrt(2 * sum(covb * Sperp))
+  }
