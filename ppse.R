@@ -30,30 +30,44 @@ ppse.default <- function(object, covariance.extractor=vcov, data=model.frame(obj
         
         stopifnot(!is.null(colnames(data.matrix)),
                   setequal(colnames(data.matrix), names(coef(object))),
+                  isTRUE(all.equal(colnames(data.matrix), names(coef(object)))),
                   !is.null(attr(data.matrix, "assign"))
                   )
-        
-        covb <- covariance.extractor(object)
-        is.intercept <- attr(data.matrix, "assign")==0
-        covb <- covb[!is.intercept, !is.intercept]
-        covx <- cov(data.matrix)
-        covx <- covx[!is.intercept, !is.intercept]
+
         coeffs <- coef(object)
-        coeffs <- coeffs[!is.intercept]
+        coeffnames <- names(coeffs)
+        coeff.NA <- !is.finite(coef(object))
+        
+        vnames <- coeffnames[!(attr(data.matrix, "assign")==0 | #exclude intercept
+                           coeff.NA)]
+        coeffs <- coeffs[vnames]
+
+        
+        stopifnot(is.null(dimnames(covb <- covariance.extractor(object))) ||
+                  setequal(dimnames(covb)[[1]], coeffnames[!coeff.NA]))
+        
+        if (is.null(dimnames(covb)))
+          {
+            dimnames(covb) <- list(coeffnames[!coeff.NA], coeffnames[!coeff.NA])
+          }
+        covb <- covb[vnames, vnames]
+
+        covx <- cov(data.matrix)
+        covx <- covx[vnames, vnames]
+
         
         terms.to.sweep.out <- survival:::untangle.specials(tt, "strata")$terms ## strata, if present
         
-        cols.to.keep <- !(attr(data.matrix, "assign") %in% terms.to.sweep.out)
-        cols.to.keep <- cols.to.keep[!is.intercept]
+        cols.to.keep <- setdiff(vnames, coeffnames[terms.to.sweep.out])
         
         covb <- covb[cols.to.keep, cols.to.keep, drop=FALSE]
         coeffs <- coeffs[cols.to.keep]
         
         
-        S <- if (!all(cols.to.keep))
+        S <- if (length(cols.to.keep)!=length(vnames))
         {
           n <- nrow(data.matrix)
-          K <- sum(!cols.to.keep)
+          K <- length(vnames) - length(cols.to.keep)
           
             (covx[cols.to.keep, cols.to.keep] -
                 covx[cols.to.keep,!cols.to.keep, drop=FALSE] %*%
@@ -62,18 +76,6 @@ ppse.default <- function(object, covariance.extractor=vcov, data=model.frame(obj
              ) *((n-1)/(n-K))
         } else covx
         
-### `sandwich` gives me covs for `brglm`'s that lack dimnames.
-### so, dropped below in favor of what comes after.
-        ##  covb <- covb[,!colnames(covb) == "(Intercept)", drop = FALSE]
-        ##  covb <- covb[!rownames(covb) == "(Intercept)",, drop = FALSE]
-        coeff.not.NA <- is.finite(coeffs)
-        coeffs <- coeffs[coeff.not.NA]
-
-### with glms, NA coeffs won't have counterparts in cov matrix
-### with e.g. coxph's that's not the case.  Make uniform.
-        if (!all(coeff.not.NA) && length(coeff.not.NA)==nrow(covb))
-          covb <- covb[coeff.not.NA, coeff.not.NA, drop=FALSE]
-        S  <- S[coeff.not.NA, coeff.not.NA, drop=FALSE]
 
         Sperp <- makeSperp(S, betas=coeffs)
 
