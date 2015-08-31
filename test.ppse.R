@@ -38,6 +38,14 @@ expect_equal(ppse(aglm), gpsc(aglm))
 }
           )
 
+test_that("ppse() recognizes simplify argument",
+          {
+            expect_true(inherits(ppse(aglm, simplify=FALSE), "list"))
+            expect_true(!inherits(ppse(aglm, simplify=TRUE), "list"))
+            expect_true(inherits(ppse(aglm$qr, fitted.model=aglm, simplify=FALSE), "list"))
+            expect_true(!inherits(ppse(aglm$qr, fitted.model=aglm, simplify=TRUE), "list"))
+          })
+
 test_that("glm.fit's non-update of weights at last stage",
 ### this documents the reason for `ppse.qr` not to just pull weights from the fitted model object
           {

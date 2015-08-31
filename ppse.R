@@ -22,7 +22,7 @@ ppse.glm <- function(object, covariance.extractor=vcov, data=NULL, ...)
     ppse.default(object, covariance.extractor=covariance.extractor, data=data, tt=form,...)
 }
 
-ppse.default <- function(object, covariance.extractor=vcov, data=model.frame(object), tt=terms(object), ...)
+ppse.default <- function(object, covariance.extractor=vcov, data=model.frame(object), tt=terms(object), simplify=TRUE, ...)
     {
         if (is.null(names(coef(object)))) stop("propensity coefficients have to have names")
 
@@ -71,14 +71,14 @@ ppse.default <- function(object, covariance.extractor=vcov, data=model.frame(obj
 
 ### with glms, NA coeffs won't have counterparts in cov matrix
 ### with e.g. coxph's that's not the case.  Make uniform.
-if (!all(coeff.not.NA) && length(coeff.not.NA)==nrow(covb))
-    covb <- covb[coeff.not.NA, coeff.not.NA, drop=FALSE]
-S  <- S[coeff.not.NA, coeff.not.NA, drop=FALSE]
+        if (!all(coeff.not.NA) && length(coeff.not.NA)==nrow(covb))
+          covb <- covb[coeff.not.NA, coeff.not.NA, drop=FALSE]
+        S  <- S[coeff.not.NA, coeff.not.NA, drop=FALSE]
 
-Sperp <- makeSperp(S, betas=coeffs)
+        Sperp <- makeSperp(S, betas=coeffs)
 
-## calculate the correction for the expected difference in propensity scores
-sqrt(2 * sum(Sperp * covb) )
+        ans <- list("cov.beta"= covb, "Sperp"=Sperp)
+        if (simplify) ppse(ans,...) else ans
 }
 ##' Covariance of projections of X onto X'beta, calculated from Cov(X) and beta
 ##'
@@ -116,7 +116,7 @@ getglmQweights <- function(eta, prior.weights=NULL, family=binomial())
     }
 ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
                     coeffs.from.fitted.model=FALSE, tol.coeff.alignment=Inf,
-                    return.extras=FALSE,...) 
+                    simplify=TRUE,...) 
 {
     stopifnot(inherits(fitted.model, "glm"))
     if (!identical(covariance.extractor,vcov)) stop('ppse.qr only supports vcov as covariance extractor')
@@ -204,22 +204,22 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
             rss/rdf # q cols have sums of squares = to 1, so division by that is implicit
         } else 1
     ## because the Q matrix is orthogonal, corresponding nominal Cov-hat is dispersion * Identity
-    ans <- sqrt(2 * dispersion *sum(diag(Sqperp)))
-    if (return.extras)
-        {
-    attr(ans, "dispersion") <- dispersion
-    attr(ans, "scaled.variances") <- (nobs-1)*(mean(w)^-2)*
-        cbind(Winv.dot.Q=diag(covqtilde), Winv.dot.Q.perp= diag(Sqperp))
-}
-    ans
+    ans <- list("cov.beta"=dispersion, "Sperp"=diag(Sqperp))
+    if (simplify) ppse(ans,...) else ans
 }
 
-ppse.array <- function(object, covariance.extractor=NULL, data=NULL,...)
+ppse.list <- function(object, covariance.extractor=NULL, data=NULL,...)
   {
-    stopifnot(inherits(object, "array"), length(dim(object))==3,
-              !is.null(dimnames(object)), "cov.beta" %in% dimnames(object)[[3]],
-              "Sperp" %in% dimnames(object)[[3]])
-covb <- object[,,"cov.beta", drop=TRUE]
-Sperp <- object[,,"Sperp", drop=TRUE]
-sqrt(2 * sum(covb * Sperp))
+    stopifnot("cov.beta" %in% names(object),
+              "Sperp" %in% names(object),
+              is.numeric(object[["cov.beta"]]),
+              is.numeric(object[["Sperp"]]),
+              length(object[["cov.beta"]])==1 ||
+              length(object[["cov.beta"]])==length(object[["Sperp"]]))
+
+    covb <- object[["cov.beta"]]
+    Sperp <- object[["Sperp"]]
+
+    ## calculate the correction for the expected difference in propensity scores
+    sqrt(2 * sum(covb * Sperp))
   }
