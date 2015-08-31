@@ -71,8 +71,8 @@ test_that("updating a converged glm makes no discernible change to its linear pr
               expect_true(isTRUE(all.equal(predict(aglm2), predict(aglm)))) # as have the eta's...
               expect_false(isTRUE(all.equal(aglm2$weights, aglm$weights))) #but fitting weights have not
               expect_false(isTRUE(all.equal(vcov(aglm2), vcov(aglm)))) #nor has the information matrix.
-              expect_false(aglm2$deviance==aglm$deviance) #Differences do also show up in the deviance...
-              expect_true((aglm2$deviance-aglm$deviance)^2 < .Machine$double.eps) # but only barely.
+              expect_true((aglm2$deviance-aglm$deviance)^2 < #Differences may show up in 
+                          .Machine$double.eps)               # deviances -- but just barely.
 
           })
 
@@ -84,17 +84,14 @@ test_that("Crude alignment between QR decomp-based calcs and coeffs, cov-hats as
               ## but with fuzzy goggles they do look the same
               expect_that(ppse(aglm, tol.coeff.alignment=1e-5), is_a("numeric"))
               ## On the other hand, nominal cov-hat's do line up to within numerical tolerance
-              all.equal(qr.R(stats:::qr.lm(aglm)) %*%
-                            vcov(aglm) %*% # this is basically `chol2inv(qr.R(aglm$qr))`, via summary.glm
-                                t(qr.R(stats:::qr.lm(aglm))),
-                        diag(stats:::qr.lm(aglm)$rank), # under the Q basis, C-hat is the identity
-                        check.attributes=FALSE)
+              expect_true(isTRUE(all.equal(qr.R(stats:::qr.lm(aglm)) %*%
+                                           vcov(aglm) %*% # this is basically `chol2inv(qr.R(aglm$qr))`, via summary.glm
+                                           t(qr.R(stats:::qr.lm(aglm))),
+                                           diag(stats:::qr.lm(aglm)$rank), # under the Q basis, C-hat is the identity
+                                           check.attributes=FALSE))
+                          )
           })
 
-test_that("Same eta by extracting from glm or by reconstructing from the QR contained within it",
-          {
-              
-          })
 
 test_that("Crude agreement between ppse.qr & ppse.glm",{
     expect_true(ppse(aglm)!=ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F))
