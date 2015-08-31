@@ -173,10 +173,13 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
 ###    if (ncol(data.matrix) !=length(object$pivot)) stop("length of QR's pivot doesn't match ncol(data.matrix).")
 ###    data.matrix <- data.matrix[,object$pivot]
     qmat <- qr.Q(object)[good,]
+    colnames(qmat) <- qnames <- paste0("Q.",colnames(qr.R(object)))
     ## NB: `qcoeffs <- qr.qty(object,z*w)` doesn't work, returns a object of length length(z),
     ## not object$rank.  Likewise for qr.qy(...)
     qcoeffs.from.QR <- crossprod(qmat, z*w)
     qcoeffs.from.fitted.model <- drop(qr.R(object)%*%coef(fitted.model)[object$pivot])
+    names(qcoeffs.from.fitted.model) <- qnames
+    
     if (is.finite(tol.coeff.alignment))
         {
             coeff.diffs <- qcoeffs.from.fitted.model - qcoeffs.from.QR
@@ -204,22 +207,18 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
             rss/rdf # q cols have sums of squares = to 1, so division by that is implicit
         } else 1
     ## because the Q matrix is orthogonal, corresponding nominal Cov-hat is dispersion * Identity
-    ans <- list("cov.beta"=dispersion, "Sperp"=diag(Sqperp))
+    ans <- list("cov.beta"=dispersion, "Sperp.diagonal"=diag(Sqperp))
     if (simplify) ppse(ans,...) else ans
 }
 
 ppse.list <- function(object, covariance.extractor=NULL, data=NULL,...)
   {
-    stopifnot("cov.beta" %in% names(object),
-              "Sperp" %in% names(object),
-              is.numeric(object[["cov.beta"]]),
-              is.numeric(object[["Sperp"]]),
-              length(object[["cov.beta"]])==1 ||
-              length(object[["cov.beta"]])==length(object[["Sperp"]]))
-
-    covb <- object[["cov.beta"]]
-    Sperp <- object[["Sperp"]]
+    stopifnot(all(!is.na(pmatch(c("cov.beta","Sperp"),names(object)))),
+              is.numeric(object$cov.beta),
+              is.numeric(object$Sperp),
+              length(object$cov.beta)==1 ||
+              length(object$cov.beta)==length(object$Sperp))
 
     ## calculate the correction for the expected difference in propensity scores
-    sqrt(2 * sum(covb * Sperp))
+    sqrt(2 * sum(object$cov.beta * object$Sperp))
   }
