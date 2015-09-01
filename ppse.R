@@ -119,9 +119,16 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
                     coeffs.from.fitted.model=FALSE, tol.coeff.alignment=Inf,
                     simplify=TRUE,...) 
 {
-    stopifnot(inherits(fitted.model, "glm"))
+    stopifnot(inherits(fitted.model, "glm"),
+              length(object$pivot)==length(coef(fitted.model)),
+              as.logical(object$rank))
     if (!identical(covariance.extractor,vcov)) stop('ppse.qr only supports vcov as covariance extractor')
+
+    glm.family.uses.estimated.dispersion <- !(fitted.model$family$family %in% c("poisson", "binomial"))
     tt <- terms(fitted.model)
+    fitted.model.coeffs <- coef(fitted.model)
+    fitted.model.coeffs.NA <- is.na(fitted.model.coeffs)
+    fitted.model.coeffs[fitted.model.coeffs.NA] <- 0
 ##    stopifnot(!is.null(fitted.model$weights))
     ## b/c I'm not sure how this interacts w/ factor expansion in next few lines
     if (is.null(data)) data <- model.frame(fitted.model)
@@ -175,20 +182,30 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
 ###    data.matrix <- data.matrix[,object$pivot]
     qmat <- qr.Q(object)[good,]
     colnames(qmat) <- qnames <- paste0("Q.",colnames(qr.R(object)))
+
+
     ## NB: `qcoeffs <- qr.qty(object,z*w)` doesn't work, returns a object of length length(z),
     ## not object$rank.  Likewise for qr.qy(...)
     qcoeffs.from.QR <- crossprod(qmat, z*w)
-    qcoeffs.from.fitted.model <- drop(qr.R(object)%*%coef(fitted.model)[object$pivot])
+
+    keep.these.Qcolumns <- seq_len(object$rank)
+    
+    
+    qcoeffs.from.fitted.model <- drop(qr.R(object)%*%fitted.model.coeffs[object$pivot])
     names(qcoeffs.from.fitted.model) <- qnames
     
     if (is.finite(tol.coeff.alignment))
         {
+            qcoeffs.from.QR[!keep.these.Qcolumns] <- 0
             coeff.diffs <- qcoeffs.from.fitted.model - qcoeffs.from.QR
             if (max(abs(coeff.diffs)) >= tol.coeff.alignment)
             stop(paste("QR/reported coefficients differ by up to", prettyNum(abs(coeff.diffs))))
         }
     qcoeffs <- if (coeffs.from.fitted.model) qcoeffs.from.fitted.model else qcoeffs.from.QR
 
+    qcoeffs <- qcoeffs[keep.these.Qcolumns]
+    qmat <- qmat[,keep.these.Qcolumns]
+    
     ##  qtilde is the reweighting of the Q-matrix that corresponds to a rotated X. (Q ~ rotated W*X)    
     qtilde <- w^(-1) * qmat
     covqtilde <- cov(qtilde)
@@ -199,9 +216,8 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
     nobs <- sum(good)
     stopifnot((rdf <- nobs - object$rank)>0) # i.e., fitted.model$df.residual
     
-    est.disp <- !(fitted.model$family$family %in% c("poisson", "binomial"))
     dispersion <-
-        if (est.disp)
+        if (glm.family.uses.estimated.dispersion)
         {              
             qfitted <- qmat %*% qcoeffs
             rss <- sum((z*w - qfitted)^2)

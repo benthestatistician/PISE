@@ -115,10 +115,10 @@ test_that("appropriately handles NA coefs",
               aglm.alt <- update(aglm, formula=update(formula(aglm), .~.+factor(ne)))
               expect_true(any(is.na(coef(aglm.alt))))
               expect_equal(ppse(aglm), ppse(aglm.alt))
-##              expect_equal(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F),
-##                           ppse(aglm.alt$qr, fitted.model=aglm, coeffs.from.fitted.model=F))
-##              expect_equal(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=T),
-##                           ppse(aglm.alt$qr, fitted.model=aglm, coeffs.from.fitted.model=T))
+              expect_equal(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F),
+                           ppse(aglm.alt$qr, fitted.model=aglm.alt, coeffs.from.fitted.model=F))
+              expect_equal(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=T),
+                           ppse(aglm.alt$qr, fitted.model=aglm.alt, coeffs.from.fitted.model=T))
            })
 
 test_that("appropriately handles strata in formula", {
