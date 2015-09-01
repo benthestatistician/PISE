@@ -109,6 +109,18 @@ test_that("Crude agreement between ppse.qr & ppse.glm",{
     expect_error(ppse(aglm$qr, covariance.extractor=sandwich, fitted.model=aglm), # Change this if/when further vcov support added
                  "covariance.extractor")
 })
+
+test_that("appropriately handles NA coefs",
+          {
+              aglm.alt <- update(aglm, formula=update(formula(aglm), .~.+factor(ne)))
+              expect_true(any(is.na(coef(aglm.alt))))
+              expect_equal(ppse(aglm), ppse(aglm.alt))
+##              expect_equal(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F),
+##                           ppse(aglm.alt$qr, fitted.model=aglm, coeffs.from.fitted.model=F))
+##              expect_equal(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=T),
+##                           ppse(aglm.alt$qr, fitted.model=aglm, coeffs.from.fitted.model=T))
+           })
+
 test_that("appropriately handles strata in formula", {
     expect_true(require("survival"))
     aglm.s <- update(aglm, formula=update(formula(aglm),
