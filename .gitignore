@@ -3,3 +3,9 @@
 
 # private data files likely to sit around in working copies
 satcoach.RData
+
+# other
+*.pdf
+*.tex
+*.aux
+*.log
