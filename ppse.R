@@ -58,24 +58,23 @@ ppse.default <- function(object, covariance.extractor=vcov, data=model.frame(obj
         
         terms.to.sweep.out <- survival:::untangle.specials(tt, "strata")$terms ## strata, if present
         
-        cols.to.keep <- setdiff(vnames, coeffnames[terms.to.sweep.out])
+        cols.to.keep <- !(vnames %in% coeffnames[terms.to.sweep.out])
         
         covb <- covb[cols.to.keep, cols.to.keep, drop=FALSE]
         coeffs <- coeffs[cols.to.keep]
         
         
-        S <- if (length(cols.to.keep)!=length(vnames))
+        S <- if (sum(cols.to.keep)!=length(vnames))
         {
           n <- nrow(data.matrix)
-          K <- length(vnames) - length(cols.to.keep)
+          K <- length(vnames) - sum(cols.to.keep)
           
             (covx[cols.to.keep, cols.to.keep] -
                 covx[cols.to.keep,!cols.to.keep, drop=FALSE] %*%
                     solve(covx[!cols.to.keep, !cols.to.keep, drop=FALSE],
                           covx[!cols.to.keep, cols.to.keep, drop=FALSE])
-             ) *((n-1)/(n-K))
+             ) * ((n-1)/(n-K))
         } else covx
-        
 
         Sperp <- makeSperp(S, betas=coeffs)
 
