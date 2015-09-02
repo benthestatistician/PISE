@@ -241,6 +241,22 @@ ppse.list <- function(object, covariance.extractor=NULL, data=NULL,...)
     sqrt(2 * sum(object$cov.beta * object$Sperp))
   }
 
+## this is tricky: for `glm`, R gets its QR decomposition from LINPACK,
+## presumably b/c it likes the LINPACK approach to singular matrices.
+## LINPACK does the minimal pivoting to remove the singularity, hewing closely
+## to the ordering in which the RHS variables were supplied; but it does no
+## additional pivoting.  (You can try to force LINPACK
+## to remove more of them by mucking with the tolerance, but because it doesn't select
+## the variable most deserving of elimination I find that the result can be terrible
+## as an approximation to the original problem solution.) 
+## LAPACK pivots so as to arrange an R matrix the
+## diagonal entries of which are strictly decreasing in magnitude, which is nice, but
+## it appears not to null out enough to avoid singularities.  
+## By starting with
+## ordinary R's LINPACK QR decomp we identify the columns that have to be remove, then
+## we update to LAPACK for a follow-up solve in order to identify the next best
+##  candidates for elimination.  
+
 redo_qr  <- function(object, LAPACK=TRUE, tol=1e-07) #, precentering=FALSE
 {
     stopifnot(inherits(object, "glm"),"qr" %in% names(object), is.qr(object$qr),
