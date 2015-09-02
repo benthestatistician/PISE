@@ -241,9 +241,10 @@ ppse.list <- function(object, covariance.extractor=NULL, data=NULL,...)
     sqrt(2 * sum(object$cov.beta * object$Sperp))
   }
 
-redo_qr  <- function(object, LAPACK=TRUE, tol=1e-07, precentering=FALSE)
+redo_qr  <- function(object, LAPACK=TRUE, tol=1e-07) #, precentering=FALSE
 {
-    stopifnot(inherits(object, "glm"),"qr" %in% names(object), is.qr(object$qr))
+    stopifnot(inherits(object, "glm"),"qr" %in% names(object), is.qr(object$qr),
+              as.logical(object$qr$rank), length(object$qr$pivot)>=object$qr$rank)
     force(LAPACK)
     force(tol)
     
@@ -258,15 +259,27 @@ redo_qr  <- function(object, LAPACK=TRUE, tol=1e-07, precentering=FALSE)
     good <- !is.na(w) & w>0
 
     data.matrix <- model.matrix(tt, data)
-    hasintercept <- any(attr(data.matrix, "assign")==0)
-    if (precentering)
-        {
-            data.matrix <- data.matrix[,attr(data.matrix, "assign")!=0]
-            data.matrix <- scale(data.matrix, center=T, scale=F)
-        }
-    Xw <- w*data.matrix
+    cols <- colnames(data.matrix)
+    while (any(duplicated(cols))) { cols[duplicated(cols)] <- paste0(cols[duplicated(cols)],"_")}
+    
+###    hasintercept <- any(attr(data.matrix, "assign")==0)
+###    if (precentering) 
+###        {
+###            data.matrix <- data.matrix[,attr(data.matrix, "assign")!=0]
+###            data.matrix <- scale(data.matrix, center=T, scale=F)
+###        }
+    piv <- seq_len(object$qr$rank)
+    whichcol <- object$qr$pivot[piv]
+    whichcol.cols <- cols[whichcol]
+    Xw <- w*data.matrix[,whichcol]
     ans <- qr(Xw, LAPACK=LAPACK, tol=tol)
-    if (hasintercept && precentering) ans$pivot <- ans$pivot + 1L
+###    if (hasintercept && precentering) ans$pivot <- ans$pivot + 1L
+
+    ## Now we need to align the pivot with the original data.matrix, as opposed
+    ## to the reduced matrix `data.matrix[,whichcol]`
+    piv <- seq_len(ans$rank)
+    
+    ans$'.pivot.to.original.X' <- match(whichcol.cols[ans$pivot[piv]], cols)
     ans
 }
     
