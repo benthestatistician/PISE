@@ -120,7 +120,8 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
                     simplify=TRUE,...) 
 {
     stopifnot(inherits(fitted.model, "glm"),
-              length(object$pivot)==length(coef(fitted.model)),
+              length(object$pivot)==length(coef(fitted.model)) ||
+                 (1+length(object$pivot))==length(coef(fitted.model)),
               as.logical(object$rank))
     if (!identical(covariance.extractor,vcov)) stop('ppse.qr only supports vcov as covariance extractor')
 
@@ -239,3 +240,31 @@ ppse.list <- function(object, covariance.extractor=NULL, data=NULL,...)
     ## calculate the correction for the expected difference in propensity scores
     sqrt(2 * sum(object$cov.beta * object$Sperp))
   }
+
+redo_qr  <- function(object, LAPACK=TRUE, tol=tol, precentering=FALSE)
+{
+    stopifnot(inherits(object, "glm"),"qr" %in% names(object), is.qr(object$qr))
+
+    tt <- terms(object)
+
+    weights <- getglmQweights(object$linear.predictors, 
+                              prior.weights=object$prior.weights, # after final iteration
+                              family=object$family)
+    data <- model.frame(object)
+    stopifnot(length(weights)==nrow(data))
+    w <- sqrt(weights) 
+    good <- !is.na(w) & w>0
+
+    data.matrix <- model.matrix(tt, data)
+    hasintercept <- any(attr(data.matrix, "assign")==0)
+    if (precentering)
+        {
+            data.matrix <- data.matrix[,attr(data.matrix, "assign")!=0]
+            data.matrix <- scale(data.matrix, center=T, scale=F)
+        }
+    Xw <- w*data.matrix
+    ans <- qr(Xw, LAPACK=LAPACK, tol=tol)
+    if (hasintercept && precentering) ans$pivot <- ans$pivot + 1L
+    ans
+}
+    
