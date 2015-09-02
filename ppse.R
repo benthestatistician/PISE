@@ -200,7 +200,7 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
             qcoeffs.from.QR[!keep.these.Qcolumns] <- 0
             coeff.diffs <- qcoeffs.from.fitted.model - qcoeffs.from.QR
             if (max(abs(coeff.diffs)) >= tol.coeff.alignment)
-            stop(paste("QR/reported coefficients differ by up to", prettyNum(abs(coeff.diffs))))
+            stop(paste("QR/reported coefficients differ by up to", prettyNum(max(abs(coeff.diffs)))))
         }
     qcoeffs <- if (coeffs.from.fitted.model) qcoeffs.from.fitted.model else qcoeffs.from.QR
 
@@ -241,10 +241,12 @@ ppse.list <- function(object, covariance.extractor=NULL, data=NULL,...)
     sqrt(2 * sum(object$cov.beta * object$Sperp))
   }
 
-redo_qr  <- function(object, LAPACK=TRUE, tol=tol, precentering=FALSE)
+redo_qr  <- function(object, LAPACK=TRUE, tol=1e-07, precentering=FALSE)
 {
     stopifnot(inherits(object, "glm"),"qr" %in% names(object), is.qr(object$qr))
-
+    force(LAPACK)
+    force(tol)
+    
     tt <- terms(object)
 
     weights <- getglmQweights(object$linear.predictors, 

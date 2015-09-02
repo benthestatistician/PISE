@@ -129,6 +129,22 @@ test_that("appropriately handles strata in formula", {
     expect_true(ppse(aglm.s) < ppse(aglm))
 } )
 
+test_that("redo_qr",
+          {
+              expect_true(abs(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F) -
+                                  ppse(redo_qr(aglm, LAPACK=F), fitted.model=aglm, coeffs.from.fitted.model=F))
+                          < 1e-5)
+              expect_true(abs(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F) -
+                                  ppse(redo_qr(aglm, LAPACK=T), fitted.model=aglm, coeffs.from.fitted.model=F))
+                          < 1e-5)
+              expect_true(abs(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=T) -
+                                  ppse(redo_qr(aglm, LAPACK=F), fitted.model=aglm, coeffs.from.fitted.model=F))
+                          < 1e-5)
+              expect_true(abs(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=T) -
+                                  ppse(redo_qr(aglm, LAPACK=T), fitted.model=aglm, coeffs.from.fitted.model=F))
+                          < 1e-5)
+
+          })
 ## (this test currently fails...)
 ##test_that("deals with fitted cox models too",
 ##          {
