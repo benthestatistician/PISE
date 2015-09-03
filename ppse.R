@@ -43,7 +43,7 @@ ppse.default <- function(object, covariance.extractor=vcov, data=model.frame(obj
         coeffs <- coeffs[vnames]
 
         
-        stopifnot(is.null(dimnames(covb <- covariance.extractor(object))) ||
+        stopifnot(!is.null(dimnames(covb <- covariance.extractor(object))),
                   setequal(dimnames(covb)[[1]], coeffnames[!coeff.NA]))
         
         if (is.null(dimnames(covb)))
@@ -125,7 +125,9 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
               as.logical(object$rank))
     if (!identical(covariance.extractor,vcov)) stop('ppse.qr only supports vcov as covariance extractor')
 
-    glm.family.uses.estimated.dispersion <- !(fitted.model$family$family %in% c("poisson", "binomial"))
+    glm.family.uses.estimated.dispersion <-
+        !(substr(fitted.model$family$family, 1, 17) %in%  # borrowed from sandwich:::bread.glm
+          c("poisson", "binomial", "Negative Binomial"))
     tt <- terms(fitted.model)
     fitted.model.coeffs <- coef(fitted.model)
     fitted.model.coeffs.NA <- is.na(fitted.model.coeffs)
@@ -223,6 +225,9 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
             qfitted <- qmat %*% qcoeffs
             rss <- sum((z*w - qfitted)^2)
             rss/rdf # q cols have sums of squares = to 1, so division by that is implicit
+            ## Instead follow: sandwich:::bread.glm?  They use
+            ## wres <- as.vector(residuals(x, "working")) * weights(x, "working")
+            ## sum(wres^2)/sum(weights(x, "working"))
         } else 1
     ## because the Q matrix is orthogonal, corresponding nominal Cov-hat is dispersion * Identity
     ans <- list("cov.beta"=dispersion, "Sperp.diagonal"=diag(Sqperp))

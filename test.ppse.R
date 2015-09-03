@@ -6,7 +6,7 @@ expect_false(is.null(aglm$qr))
 expect_that(ppse(aglm), is_a("numeric"))
 
 test_that("Gives same answer as original version", {
-gpsc <- function(propensity.glm) {
+gpsc <- function(propensity.glm, covariance.extractor=vcov) {
 
   stopifnot(inherits(propensity.glm, "glm"))
 
@@ -16,7 +16,7 @@ gpsc <- function(propensity.glm) {
   covx <- cov(data)
 
   # wrapping in a tryCatch as we observed some issues with bayesglm and sandwich.
-  covb <- tryCatch(sandwich(propensity.glm),
+  covb <- tryCatch(covariance.extractor(propensity.glm),
                  error = function(e) { vcov(propensity.glm) })
 
   covb <- covb[,!colnames(covb) == "(Intercept)", drop = FALSE]
