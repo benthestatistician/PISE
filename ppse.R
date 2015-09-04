@@ -191,12 +191,18 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
     ## not object$rank.  Likewise for qr.qy(...)
     qcoeffs.from.QR <- crossprod(qmat, z*w)
 
+    if (coeffs.from.fitted.model || is.finite(tol.coeff.alignment))
+      {
+        qcoeffs.from.fitted.model <- drop(qr.R(object)%*%fitted.model.coeffs[object$pivot])
+        names(qcoeffs.from.fitted.model) <- qnames
+      }
+    qcoeffs <- if (coeffs.from.fitted.model) qcoeffs.from.fitted.model else qcoeffs.from.QR
+
     keep.these.Qcolumns <- seq_len(object$rank)
-    
-    
-    qcoeffs.from.fitted.model <- drop(qr.R(object)%*%fitted.model.coeffs[object$pivot])
-    names(qcoeffs.from.fitted.model) <- qnames
-    
+    qcoeffs <- qcoeffs[keep.these.Qcolumns]
+    qmat <- qmat[,keep.these.Qcolumns]
+
+    ## this is here for testing purposes 
     if (is.finite(tol.coeff.alignment))
         {
             qcoeffs.from.QR[!keep.these.Qcolumns] <- 0
@@ -204,10 +210,7 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
             if (max(abs(coeff.diffs)) >= tol.coeff.alignment)
             stop(paste("QR/reported coefficients differ by up to", prettyNum(max(abs(coeff.diffs)))))
         }
-    qcoeffs <- if (coeffs.from.fitted.model) qcoeffs.from.fitted.model else qcoeffs.from.QR
 
-    qcoeffs <- qcoeffs[keep.these.Qcolumns]
-    qmat <- qmat[,keep.these.Qcolumns]
     
     ##  qtilde is the reweighting of the Q-matrix that corresponds to a rotated X. (Q ~ rotated W*X)    
     qtilde <- w^(-1) * qmat
@@ -268,6 +271,8 @@ redo_qr  <- function(object, LAPACK=TRUE, tol=1e-07) #, precentering=FALSE
               as.logical(object$qr$rank), length(object$qr$pivot)>=object$qr$rank)
     force(LAPACK)
     force(tol)
+
+    oldrank <- object$qr$rank
     
     tt <- terms(object)
 
@@ -283,24 +288,86 @@ redo_qr  <- function(object, LAPACK=TRUE, tol=1e-07) #, precentering=FALSE
     cols <- colnames(data.matrix)
     while (any(duplicated(cols))) { cols[duplicated(cols)] <- paste0(cols[duplicated(cols)],"_")}
     
-###    hasintercept <- any(attr(data.matrix, "assign")==0)
-###    if (precentering) 
-###        {
-###            data.matrix <- data.matrix[,attr(data.matrix, "assign")!=0]
-###            data.matrix <- scale(data.matrix, center=T, scale=F)
-###        }
     piv <- seq_len(object$qr$rank)
     whichcol <- object$qr$pivot[piv]
     whichcol.cols <- cols[whichcol]
-    Xw <- w*data.matrix[,whichcol]
+    Xw <- w*data.matrix
+    Xw[,!whichcol] <- 0
     ans <- qr(Xw, LAPACK=LAPACK, tol=tol)
-###    if (hasintercept && precentering) ans$pivot <- ans$pivot + 1L
 
-    ## Now we need to align the pivot with the original data.matrix, as opposed
-    ## to the reduced matrix `data.matrix[,whichcol]`
-    piv <- seq_len(ans$rank)
-    
-    ans$'.pivot.to.original.X' <- match(whichcol.cols[ans$pivot[piv]], cols)
+    ## If LAPACK=T, then rank is always returned as ncol(Xw). Override this.
+    ## Note that the LAPACK answer is the one w/ the convenient property that cols
+    ## we zeroed out beforehand will be pivoted to the very back, even in the presence of
+    ## additional singularities -- see test.qr_trim.R.
+    ans$rank <- min(ans$rank, oldrank)
     ans
 }
     
+drop1_ppse_stats <- function(theglm, data=NULL)
+  {
+    stopifnot(theglm$qr$rank>=2)
+    newqr <- redo_qr(theglm)
+    ans <- ppse(newqr, fitted.model=theglm, simplify=FALSE)
+    ans$ppse <- ppse(ans)
+
+    qmat <- qr.Q(newqr)
+    qmat <- qmat[,seq_len(newqr$rank)]
+    colnames(qmat) <- qnames <- paste0("Q.",colnames(qr.R(newqr)))
+
+    ## condition number calc adapted from kappa.qr
+    R.dropped <- R <- newqr$qr[1L:min(dim(newqr$qr)), seq_len(newqr$rank),drop=FALSE]
+    R[lower.tri(R)] <- 0
+    ans$kappa <- kappa.tri(R)
+
+## Which column to drop? The rightmost one in R -- except don't drop intercept 
+## column!  (If there are stratifying/exact matching vars then they should
+## be excluded also -- not dealing with that just now)
+    if (grepl("(Intercept)", names(ans[["Sperp.diagonal"]])[newqr$rank], fixed=F))
+      {
+        colshuffle <- newqr$rank - 0:1
+        if (newqr$rank>2) colshuffle <- c(1L:(newqr$rank-2), colshuffle)
+        qmat <- qmat[,colshuffle]
+        R.dropped <- R.dropped[,colshuffle]
+        R.dropped <- if (nrow(R.dropped)>=newqr$rank) R.dropped[colshuffle,]
+        else R.dropped[colshuffle[1L:nrow(R.dropped)],]
+      } 
+    R.dropped <- R.dropped[-newqr$rank,-newqr$rank]
+    R.dropped[lower.tri(R.dropped)] <- 0
+    ans$kappa.drop1 <- kappa.tri(R.dropped)
+
+
+
+    if (is.null(data)) data <- model.frame(theglm)
+    stopifnot(is.null(model.offset(data))) # assume away offsets (for now!)    
+    offset <- rep(0, nrow(data))
+    eta <- offset +
+        theglm$linear.predictors # lazy, for now. 
+
+## Now let's reconstruct the linear predictor, with and without that last Q-column
+
+    w <- sqrt(theglm$weights)
+    good <- !is.na(w) & w>0
+    eta <- eta[good]
+    linkinv <- theglm$family$linkinv
+    mu <- linkinv(eta)
+    y <- model.response(data, type="double")
+    y <- y[good] 
+    qmat <- qmat[good,]
+    mu.eta <- theglm$family$mu.eta
+    mu.etaval <- mu.eta(eta)
+    resids <- (y-mu)/mu.etaval
+    
+    z <- (eta -offset) + resids # "z" as in `glm.fit`
+    qcoeffs <- crossprod(qmat, z*w)
+
+    ##  qtilde is the reweighting of the Q-matrix that corresponds to a rotated X. (Q ~ rotated W*X)    
+    qtilde <- w^(-1) * qmat
+
+
+## qcols.to.keep <- seq_len(newqr$rank)
+##eta.from.q <- qtilde[,qcols.to.keep] %*% qcoeffs[qcols.to.keep]
+
+ans$delta.ps.sq.over.ppse.sq <- sum((qtilde[,newqr$rank] * qcoeffs[newqr$rank])^2)/
+  ((sum(good)-1) *sum(ans[["Sperp.diagonal"]]))
+ans
+  }
