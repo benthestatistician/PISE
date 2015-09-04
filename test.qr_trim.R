@@ -18,6 +18,23 @@ test_that("colname alignment w/in glms, before we start tampering",{
     expect_equal(names(coef(glm.sing))[glm.sing$qr$pivot], colnames(glm.sing$R))
 })
 
+test_that("redo_qr",
+          {
+              expect_true(abs(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F) -
+                                  ppse(redo_qr(aglm, LAPACK=F), fitted.model=aglm, coeffs.from.fitted.model=F))
+                          < 1e-5)
+              expect_true(abs(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F) -
+                                  ppse(redo_qr(aglm, LAPACK=T), fitted.model=aglm, coeffs.from.fitted.model=F))
+                          < 1e-5)
+              expect_true(abs(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=T) -
+                                  ppse(redo_qr(aglm, LAPACK=F), fitted.model=aglm, coeffs.from.fitted.model=F))
+                          < 1e-5)
+              expect_true(abs(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=T) -
+                                  ppse(redo_qr(aglm, LAPACK=T), fitted.model=aglm, coeffs.from.fitted.model=F))
+                          < 1e-5)
+
+          })
+
 test_that("redo_qr w/ LAPACK=F preserves column order", {
     redone.glm.nonsing <- redo_qr(glm.nonsing, LAPACK=F)
     expect_false(isTRUE(all.equal(qr.R(redone.glm.nonsing), qr.R(glm.nonsing$qr), check.attributes=F)))
