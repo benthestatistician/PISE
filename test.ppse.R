@@ -55,9 +55,9 @@ test_that("glm.fit's non-update of weights at last stage",
           })
 
 test_that("`getglmQweights()` mimics `glm.fit()`'s creation of quadratic weights", {
-    aglm0 <- update(aglm, control=list(maxit=(aglm$iter-1)))
+    aglm0 <- suppressWarnings(update(aglm, control=list(maxit=(aglm$iter-1))))
     expect_false(aglm0$converged)
-    aglm1 <- update(aglm0, etastart=aglm0$linear.predictors, control=list(maxit=1))
+    aglm1 <- suppressWarnings(update(aglm0, etastart=aglm0$linear.predictors, control=list(maxit=1)))
     expect_true(aglm1$converged)
     expect_true(isTRUE(all.equal(getglmQweights(aglm0$linear.predictor,family=aglm0$family),
                                  aglm1$weights, check.attributes=FALSE))
