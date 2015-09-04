@@ -324,13 +324,15 @@ drop1_ppse_stats <- function(theglm, data=NULL)
 ## be excluded also -- not dealing with that just now)
     if (grepl("(Intercept)", names(ans[["Sperp.diagonal"]])[newqr$rank], fixed=F))
       {
+        ans$skipped.intercept <- TRUE
         colshuffle <- newqr$rank - 0:1
         if (newqr$rank>2) colshuffle <- c(1L:(newqr$rank-2), colshuffle)
         qmat <- qmat[,colshuffle]
         R.dropped <- R.dropped[,colshuffle]
         R.dropped <- if (nrow(R.dropped)>=newqr$rank) R.dropped[colshuffle,]
         else R.dropped[colshuffle[1L:nrow(R.dropped)],]
-      } 
+      } else  ans$skipped.intercept <- FALSE
+
     R.dropped <- R.dropped[-newqr$rank,-newqr$rank]
     R.dropped[lower.tri(R.dropped)] <- 0
     ans$kappa.drop1 <- kappa.tri(R.dropped)
