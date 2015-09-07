@@ -305,7 +305,8 @@ redo_qr  <- function(object, LAPACK=TRUE, tol=1e-07) #, precentering=FALSE
     
 drop1_ppse_stats <- function(theglm, data=NULL)
   {
-    stopifnot(theglm$qr$rank>=2)
+      stopifnot(theglm$qr$rank>=2)
+      kappatri <- if (getRversion() <='2.15.1') kappa.tri else .kappa_tri
     newqr <- redo_qr(theglm)
     ans <- ppse(newqr, fitted.model=theglm, simplify=FALSE)
     ans$ppse <- ppse(ans)
@@ -317,7 +318,7 @@ drop1_ppse_stats <- function(theglm, data=NULL)
     ## condition number calc adapted from kappa.qr
     R.dropped <- R <- newqr$qr[1L:min(dim(newqr$qr)), seq_len(newqr$rank),drop=FALSE]
     R[lower.tri(R)] <- 0
-    ans$kappa <- kappa.tri(R)
+    ans$kappa <- kappatri(R)
 
 ## Which column to drop? The rightmost one in R -- except don't drop intercept 
 ## column!  (If there are stratifying/exact matching vars then they should
@@ -335,7 +336,7 @@ drop1_ppse_stats <- function(theglm, data=NULL)
 
     R.dropped <- R.dropped[-newqr$rank,-newqr$rank]
     R.dropped[lower.tri(R.dropped)] <- 0
-    ans$kappa.drop1 <- kappa.tri(R.dropped)
+    ans$kappa.drop1 <- kappatri(R.dropped)
 
 
 
