@@ -56,7 +56,7 @@ ppse.default <- function(object, covariance.extractor=vcov, data=model.frame(obj
         covx <- covx[vnames, vnames]
 
         
-        terms.to.sweep.out <- survival:::untangle.specials(tt, "strata")$terms ## strata, if present
+        terms.to.sweep.out <- attr(data.matrix, "assign") %in% survival:::untangle.specials(tt, "strata")$terms ## strata, if present
         
         cols.to.keep <- !(vnames %in% coeffnames[terms.to.sweep.out])
         
