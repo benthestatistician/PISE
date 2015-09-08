@@ -275,6 +275,7 @@ redo_qr  <- function(object, LAPACK=TRUE, tol=1e-07) #, precentering=FALSE
     oldrank <- object$qr$rank
     
     tt <- terms(object)
+    terms.to.sweep.out <- survival:::untangle.specials(tt, "strata")$terms ## strata, if present
 
     weights <- getglmQweights(object$linear.predictors, 
                               prior.weights=object$prior.weights, # after final iteration
@@ -285,15 +286,24 @@ redo_qr  <- function(object, LAPACK=TRUE, tol=1e-07) #, precentering=FALSE
     good <- !is.na(w) & w>0
 
     data.matrix <- model.matrix(tt, data)
-    cols <- colnames(data.matrix)
-    while (any(duplicated(cols))) { cols[duplicated(cols)] <- paste0(cols[duplicated(cols)],"_")}
+    cols.to.sweep.out <- attr(data.matrix, "assign") %in% c(0, terms.to.sweep.out)
+    cols.to.sweep.out <- colnames(data.matrix)[cols.to.sweep.out]
+    cols.to.keep <- setdiff(colnames(data.matrix), cols.to.sweep.out)
+    
+    cols <- colnames(qr.R(object$qr))
+    stopifnot(all(!duplicated(cols)), setequal(cols, colnames(data.matrix)))
     
     piv <- seq_len(object$qr$rank)
     whichcol <- object$qr$pivot[piv]
-    whichcol.cols <- cols[whichcol]
+    cols.to.zero.out <- setdiff(colnames(data.matrix), cols[whichcol])
+
     Xw <- w*data.matrix
-    Xw[,!whichcol] <- 0
-    ans <- qr(Xw, LAPACK=LAPACK, tol=tol)
+    ## Now we need to solve for/sweep out the intercept & strata terms
+    Xw.red <- lm.fit(Xw[,cols.to.sweep.out, drop=FALSE], Xw[,cols.to.keep])$residuals
+    colnames(Xw.red) <- cols.to.keep
+    ## ...or do we find the qr first, then use qr.solve?
+    Xw.red[, cols.to.zero.out] <- 0
+    ans <- qr(Xw.red, LAPACK=LAPACK, tol=tol)
 
     ## If LAPACK=T, then rank is always returned as ncol(Xw). Override this.
     ## Note that the LAPACK answer is the one w/ the convenient property that cols
