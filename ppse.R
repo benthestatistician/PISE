@@ -285,6 +285,7 @@ redo_qr  <- function(object, LAPACK=TRUE, tol=1e-07) #, precentering=FALSE
     w <- sqrt(weights) 
     good <- !is.na(w) & w>0
     data.matrix <- model.matrix(tt, data)
+
     cols.to.sweep.out <- attr(data.matrix, "assign") %in% c(0, terms.to.sweep.out)
     cols.to.sweep.out <- colnames(data.matrix)[cols.to.sweep.out]
     cols.to.keep <- setdiff(colnames(data.matrix), cols.to.sweep.out)
@@ -293,8 +294,8 @@ redo_qr  <- function(object, LAPACK=TRUE, tol=1e-07) #, precentering=FALSE
     stopifnot(all(cols.to.keep %in% ( cols.R <- colnames(qr.R(object$qr)))),
               all(!duplicated(cols.R)))
     data.matrix <- data.matrix[good,]
-    
-    piv <- seq_len(object$qr$rank)
+
+    piv <- seq_len(oldrank)
     whichcol <- object$qr$pivot[piv]
     cols.to.zero.out <- cols.R[-whichcol]
 
@@ -306,11 +307,14 @@ redo_qr  <- function(object, LAPACK=TRUE, tol=1e-07) #, precentering=FALSE
     Xw.red[, cols.to.zero.out] <- 0
     ans <- qr(Xw.red, LAPACK=LAPACK, tol=tol)
 
+     
+    oldrank.adjusted <- oldrank - sum(match(cols.to.sweep.out, cols.R, nomatch=Inf) <= oldrank)
+
     ## If LAPACK=T, then rank is always returned as ncol(Xw). Override this.
     ## Note that the LAPACK answer is the one w/ the convenient property that cols
     ## we zeroed out beforehand will be pivoted to the very back, even in the presence of
     ## additional singularities -- see test.qr_trim.R.
-    ans$rank <- min(ans$rank, oldrank)
+    ans$rank <- min(ans$rank, oldrank.adjusted)
     ans
 }
     

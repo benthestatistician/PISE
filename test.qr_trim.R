@@ -13,6 +13,10 @@ glm.sing <- suppressWarnings(glm(tdat, family=binomial))
 tdat2 <- data.frame(y=rbinom(2,1,.5), x1=1:0, x2=0:1, x3=1)
 glm2.sing <- suppressWarnings(glm(tdat2, family=binomial))
 
+data(nuclearplants, package="optmatch")
+aglm <- glm(pr~.-cost, data=nuclearplants, family=binomial)
+expect_false(is.null(aglm$qr))
+
 test_that("colname alignment w/in glms, before we start tampering",{
     expect_equal(names(coef(glm.nonsing)), colnames(glm.nonsing$R))
     expect_equal(names(coef(glm.sing))[glm.sing$qr$pivot], colnames(glm.sing$R))
@@ -65,7 +69,7 @@ test_that("redo_qr preserves or permutes column order according as LAPACK=F or T
 
     redone.glm.nonsing <- redo_qr(glm.nonsing, LAPACK=F)
     expect_false(isTRUE(all.equal(qr.R(redone.glm.nonsing), qr.R(glm.nonsing$qr), check.attributes=F)))
-    expect_equal(colnames(qr.R(redone.glm.nonsing)), colnames(qr.R(glm.nonsing$qr)))
+    expect_equal(c("(Intercept)", colnames(qr.R(redone.glm.nonsing))), colnames(qr.R(glm.nonsing$qr)))
 
     ## seemed to be getting inconsistent results w/ the below, so skipping
 ###    redone.glm.nonsing <- redo_qr(glm.nonsing, LAPACK=T)
@@ -75,6 +79,7 @@ test_that("redo_qr preserves or permutes column order according as LAPACK=F or T
 
 test_that("redo_qr",
           {
+              
               expect_true(abs(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F) -
                                   ppse(redo_qr(aglm, LAPACK=F), fitted.model=aglm, coeffs.from.fitted.model=F))
                           < 1e-5)
