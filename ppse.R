@@ -56,9 +56,11 @@ ppse.default <- function(object, covariance.extractor=vcov, data=model.frame(obj
         covx <- covx[vnames, vnames]
 
         
-        terms.to.sweep.out <- attr(data.matrix, "assign") %in% survival:::untangle.specials(tt, "strata")$terms ## strata, if present
-        
-        cols.to.keep <- !(vnames %in% coeffnames[terms.to.sweep.out])
+        terms.to.sweep.out <- survival:::untangle.specials(tt, "strata")$terms ## strata, if present
+        cols.to.sweep.out <- attr(data.matrix, "assign") %in% c(0, terms.to.sweep.out)
+    cols.to.sweep.out <- colnames(data.matrix)[cols.to.sweep.out]
+
+        cols.to.keep <- !(vnames %in% cols.to.sweep.out)
         
         covb <- covb[cols.to.keep, cols.to.keep, drop=FALSE]
         coeffs <- coeffs[cols.to.keep]
@@ -120,8 +122,7 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
                     simplify=TRUE,...) 
 {
     stopifnot(inherits(fitted.model, "glm"),
-              length(object$pivot)==length(coef(fitted.model)) ||
-                 (1+length(object$pivot))==length(coef(fitted.model)),
+              length(object$pivot)<=length(coef(fitted.model)),
               as.logical(object$rank))
     if (!identical(covariance.extractor,vcov)) stop('ppse.qr only supports vcov as covariance extractor')
 
@@ -137,8 +138,7 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
     if (is.null(data)) data <- model.frame(fitted.model)
     stopifnot(is.null(model.offset(data))) # assume away offsets (for now!)    
     offset <- rep(0, nrow(data))
-    eta <- offset +
-        fitted.model$linear.predictors # lazy, for now. 
+    eta <- fitted.model$linear.predictors 
 
     ## To better reproduce internals of glm, I tried:
     ## (1) using the weights based on penultimate glm fit,
@@ -163,9 +163,9 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
     good <- !is.na(w) & w>0
 
     data.matrix <- model.matrix(tt, data)
-    resids <- fitted.model$residuals
-##    data.matrix <- data.matrix[good,]
-    resids <- resids[good]
+##    resids <- fitted.model$residuals
+    data.matrix <- data.matrix[good,]
+##    resids <- resids[good]
     eta <- eta[good]
     w <- w[good]
     ## NB: successful `getglmQweights` confirms that `linkinv` is there and is a function
@@ -274,7 +274,7 @@ redo_qr  <- function(object, LAPACK=TRUE, tol=1e-07) #, precentering=FALSE
 
     oldrank <- object$qr$rank
     
-    tt <- terms(object)
+    tt <- terms(object, specials="strata")
     terms.to.sweep.out <- survival:::untangle.specials(tt, "strata")$terms ## strata, if present
 
     weights <- getglmQweights(object$linear.predictors, 
@@ -284,18 +284,19 @@ redo_qr  <- function(object, LAPACK=TRUE, tol=1e-07) #, precentering=FALSE
     stopifnot(length(weights)==nrow(data))
     w <- sqrt(weights) 
     good <- !is.na(w) & w>0
-
     data.matrix <- model.matrix(tt, data)
     cols.to.sweep.out <- attr(data.matrix, "assign") %in% c(0, terms.to.sweep.out)
     cols.to.sweep.out <- colnames(data.matrix)[cols.to.sweep.out]
     cols.to.keep <- setdiff(colnames(data.matrix), cols.to.sweep.out)
     
-    cols <- colnames(qr.R(object$qr))
-    stopifnot(all(!duplicated(cols)), setequal(cols, colnames(data.matrix)))
+##    resids <- fitted.model$residuals    
+    stopifnot(all(cols.to.keep %in% ( cols.R <- colnames(qr.R(object$qr)))),
+              all(!duplicated(cols.R)))
+    data.matrix <- data.matrix[good,]
     
     piv <- seq_len(object$qr$rank)
     whichcol <- object$qr$pivot[piv]
-    cols.to.zero.out <- setdiff(colnames(data.matrix), cols[whichcol])
+    cols.to.zero.out <- cols.R[-whichcol]
 
     Xw <- w*data.matrix
     ## Now we need to solve for/sweep out the intercept & strata terms
