@@ -172,10 +172,15 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
     linkinv <- fitted.model$family$linkinv
     mu <- linkinv(eta)
     y <- model.response(data, type="double")
+    twocol.response <- !is.null(dim(y))
     y <- y[good]
     mu.eta <- fitted.model$family$mu.eta
     mu.etaval <- mu.eta(eta)
-    resids <- (y-mu)/mu.etaval
+    resids <- if (twocol.response)
+      {
+        fitted.model$residuals[good]
+    }
+    else (y-mu)/mu.etaval # Roll our own if it's easy enough
     
     z <- (eta -offset) + resids # "z" as in `glm.fit`
     
