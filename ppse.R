@@ -313,7 +313,7 @@ redo_qr  <- function(object, LAPACK=TRUE, tol=1e-07) #, precentering=FALSE
     ans <- qr(Xw.red, LAPACK=LAPACK, tol=tol)
 
      
-    oldrank.adjusted <- oldrank - sum(match(cols.to.sweep.out, cols.R, nomatch=Inf) <= oldrank)
+    oldrank.adjusted <- oldrank - sum(match(cols.to.sweep.out, cols.R, nomatch=(oldrank+1)) <= oldrank)
 
     ## If LAPACK=T, then rank is always returned as ncol(Xw). Override this.
     ## Note that the LAPACK answer is the one w/ the convenient property that cols
