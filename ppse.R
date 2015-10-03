@@ -3,15 +3,15 @@
 ##' .. content for \details{} ..
 ##' @title SE of propensity-paired differences on a fitted propensity score
 ##' @param object fitted propensity score model, of or inheriting from class \code{glm}
-##' @param covariance.extractor function to extract covarance of fitted model coefficients
+##' @param covariance.estimator which of \code{vcov}, \code{sandwich} to use to estimate model coefficient covariances?
 ##' @param data a data frame
 ##' @param tt a terms object
 ##' @return scalar, interpretable as standard error
 ##' @author Mark M. Fredrickson, Ben B. Hansen
-ppse <- function(object, covariance.extractor, data,...)
+ppse <- function(object, covariance.estimator, data,...)
     UseMethod("ppse")
 
-ppse.glm <- function(object, covariance.extractor=vcov, data=NULL, ...) 
+ppse.glm <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=NULL, ...) 
 {
     if (is.null(data))
         {
@@ -19,10 +19,10 @@ ppse.glm <- function(object, covariance.extractor=vcov, data=NULL, ...)
             form <- terms(form, specials="strata")
             data <- model.frame(object)
         }  
-    ppse.default(object, covariance.extractor=covariance.extractor, data=data, tt=form,...)
+    ppse.default(object, covariance.estimator=covariance.estimator, data=data, tt=form,...)
 }
 
-ppse.default <- function(object, covariance.extractor=vcov, data=model.frame(object), tt=terms(object), simplify=TRUE, ...)
+ppse.default <- function(object, covariance.estimator="vcov", data=model.frame(object), tt=terms(object), simplify=TRUE, ...)
     {
         if (is.null(names(coef(object)))) stop("propensity coefficients have to have names")
 
@@ -31,9 +31,12 @@ ppse.default <- function(object, covariance.extractor=vcov, data=model.frame(obj
         stopifnot(!is.null(colnames(data.matrix)),
                   setequal(colnames(data.matrix), names(coef(object))),
                   isTRUE(all.equal(colnames(data.matrix), names(coef(object)))),
-                  !is.null(attr(data.matrix, "assign"))
+                  !is.null(attr(data.matrix, "assign")),
+                  covariance.estimator %in% c("vcov", "sandwich")
                   )
-
+        if (covariance.estimator=="sandwich") stopifnot(require("sandwich"))
+        covariance.extractor <- eval(parse(text=covariance.estimator))
+        
         coeffs <- coef(object)
         coeffnames <- names(coeffs)
         coeff.NA <- !is.finite(coef(object))
@@ -117,14 +120,15 @@ getglmQweights <- function(eta, prior.weights=NULL, family=binomial())
         good <- prior.weights >0 & mu.eta.val !=0
         ifelse(good,prior.weights*mu.eta.val^2/variance(mu),0)
     }
-ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
+ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=NULL, fitted.model,
                     coeffs.from.fitted.model=FALSE, tol.coeff.alignment=Inf,
                     simplify=TRUE,...) 
 {
     stopifnot(inherits(fitted.model, "glm"),
               length(object$pivot)<=length(coef(fitted.model)),
-              as.logical(object$rank))
-    if (!identical(covariance.extractor,vcov)) stop('ppse.qr only supports vcov as covariance extractor')
+              as.logical(object$rank),
+              covariance.estimator %in% c("vcov", "sandwich"))
+    
 
     glm.family.uses.estimated.dispersion <-
         !(substr(fitted.model$family$family, 1, 17) %in%  # borrowed from sandwich:::bread.glm
@@ -230,19 +234,24 @@ ppse.qr <- function(object, covariance.extractor=vcov, data=NULL, fitted.model,
     dispersion <-
         if (glm.family.uses.estimated.dispersion)
         {              
-            qfitted <- qmat %*% qcoeffs
-            rss <- sum((z*w - qfitted)^2)
-            rss/rdf # q cols have sums of squares = to 1, so division by that is implicit
-            ## Instead follow: sandwich:::bread.glm?  They use
-            ## wres <- as.vector(residuals(x, "working")) * weights(x, "working")
-            ## sum(wres^2)/sum(weights(x, "working"))
+            ## Following summary.glm
+            df.r <- fitted.model$df.residual
+            if (df.r>0)
+                sum((resids^2* weights)[weights>0])/df.r else NaN
         } else 1
-    ## because the Q matrix is orthogonal, corresponding nominal Cov-hat is dispersion * Identity
-    ans <- list("cov.beta"=dispersion, "Sperp.diagonal"=diag(Sqperp))
+    
+    ans <- if (covariance.estimator=="vcov")
+               { ## because the Q matrix is orthogonal, corresponding
+                 ## nominal Cov-hat is dispersion * Identity
+                   list("cov.beta"=dispersion, "Sperp.diagonal"=diag(Sqperp))
+               } else { # in this case covariance.estimator=="sandwich"
+                meatmatrix.unscaled <- crossprod(qmat * (resids * w)) # unscaled bread being the identity
+                list("cov.beta"=meatmatrix.unscaled, "Sperp"=Sqperp)
+           }
     if (simplify) ppse(ans,...) else ans
 }
 
-ppse.list <- function(object, covariance.extractor=NULL, data=NULL,...)
+ppse.list <- function(object, covariance.estimator=NULL, data=NULL,...)
   {
     stopifnot(all(!is.na(pmatch(c("cov.beta","Sperp"),names(object)))),
               is.numeric(object$cov.beta),

@@ -106,10 +106,24 @@ test_that("Crude agreement between ppse.qr & ppse.glm",{
     expect_true(ppse(aglm)!=ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=T))
     expect_true(abs(ppse(aglm) - ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F))<1e-5)
     expect_true(abs(ppse(aglm) - ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=T))<1e-5)
-    expect_error(ppse(aglm$qr, covariance.extractor=sandwich, fitted.model=aglm), # Change this if/when further vcov support added
-                 "covariance.extractor")
+    expect_true(abs(ppse(aglm, covariance.estimator="sandwich") -
+                        ppse(aglm$qr, covariance.estimator="sandwich", fitted.model=aglm)) <1e-5)
 })
 
+test_that("Numerical stabilization from ppse.qr",{
+    ## Josh E example in which ppse.glm doesn't work.
+    set.seed(201510)
+    n <- 100
+    d <- data.frame(y=sample(0:1, n, TRUE),
+                    x1=rnorm(n),
+                    x2=rnorm(n))
+    d$x3 <- d$x1+d$x2+rnorm(n,sd=.0000001)
+    mod1 <- glm(y~., data=d, family=binomial)
+    ppse1.glm <- ppse(mod1, "sandwich", simplify=FALSE)
+    expect_true(sum(ppse1.glm$cov.beta * ppse1.glm$Sperp)<0)
+    ppse1.qr <- ppse(mod1$qr, "sandwich", fitted.model=mod1, simplify=FALSE)
+    expect_true(sum(ppse1.qr$cov.beta * ppse1.qr$Sperp)>0)
+})
 test_that("appropriately handles NA coefs",
           {
               aglm.alt <- update(aglm, formula=update(formula(aglm), .~.+factor(ne)))
