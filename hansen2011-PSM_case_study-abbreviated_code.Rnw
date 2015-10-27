@@ -22,8 +22,7 @@ available in a similar format.
 %% that can sometimes accompany matching-based analysis.
 
 <<>>=
-load("satcoach.RData")
-###library(optmatch)
+load("~/Documents/data/satcoach/satcoach.RData")
 library(optmatch)
 library(RItools)
 library(xtable)
