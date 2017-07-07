@@ -6,7 +6,7 @@
 ##' @param covariance.estimator which of \code{vcov}, \code{sandwich} to use to estimate model coefficient covariances?
 ##' @param data a data frame
 ##' @param tt a terms object
-##' @return scalar, interpretable as standard error
+##' @return scalar, in units of \code{object}'s linear predictor; interpretable as standard error
 ##' @author Mark M. Fredrickson, Ben B. Hansen
 ppse <- function(object, covariance.estimator, data,...)
     UseMethod("ppse")
