@@ -21,8 +21,21 @@ ppse.glm <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data
         }  
     ppse.default(object, covariance.estimator=covariance.estimator, data=data, tt=form,...)
 }
-
-ppse.default <- function(object, covariance.estimator="vcov", data=model.frame(object), tt=terms(object), simplify=TRUE, ...)
+##'
+##' .. content for \details{} ..
+##' @title SE of propensity-paired differences on a fitted propensity score: default method
+##' @param object as in \code{ppse}
+##' @param covariance.estimator as in \code{ppse}
+##' @param data as in \code{ppse}
+##' @param tt as in \code{ppse}
+##' @param simplify as in \code{ppse}
+##' @param terms.to.sweep.out terms in calling formula that should be swept out
+##' @param ... 
+##' @return 
+##' @author Ben B Hansen
+ppse.default <- function(object, covariance.estimator="vcov",
+                         data=model.frame(object), tt=terms(object), simplify=TRUE,
+                         terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,...)
     {
         if (is.null(names(coef(object)))) stop("propensity coefficients have to have names")
 
@@ -59,7 +72,6 @@ ppse.default <- function(object, covariance.estimator="vcov", data=model.frame(o
         covx <- covx[vnames, vnames]
 
         
-        terms.to.sweep.out <- survival:::untangle.specials(tt, "strata")$terms ## strata, if present
         cols.to.sweep.out <- attr(data.matrix, "assign") %in% c(0, terms.to.sweep.out)
     cols.to.sweep.out <- colnames(data.matrix)[cols.to.sweep.out]
 

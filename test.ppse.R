@@ -141,6 +141,7 @@ test_that("appropriately handles strata in formula", {
                                         #.~.-ne+survival:::strata(ne))) # ppse doesn't recognize now;
                                .~.-ne+strata(ne))) #thus the `require("survival")` above.  Oughta fix that...
     expect_true(ppse(aglm.s) < ppse(aglm))
+    expect_equal(ppse(aglm.s, terms.to.sweep.out=NULL), ppse(aglm))
 } )
 
 
