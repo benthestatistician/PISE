@@ -166,15 +166,18 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
     fitted.model.coeffs[fitted.model.coeffs.NA] <- 0
     if (is.null(data)) data <- model.frame(fitted.model)
     Xcols_to_terms <- attr(model.matrix(tt, data), "assign")
-    Xcols_to_sweep_out <- Xcols_to_terms  %in% c(0, terms.to.sweep.out)
+    Xcols_to_sweep_out <- Xcols_to_terms  %in% terms.to.sweep.out
+    ## note we're not sweeping out intercept - gave funny results when we did.
+    ## see [issue3 7ce3c76]
+    Qcols_to_keep <- seq_len(object$rank)
+    if (any(Xcols_to_sweep_out))
+        {
     Xcols_to_sweep_out <- names(fitted.model.coeffs)[Xcols_to_sweep_out]
-    tmp <- setdiff(seq_along(Xcols_to_terms),
-                   match(Xcols_to_sweep_out, colnames(qr.R(object))))
-    Qcols_to_keep <- if (length(tmp)) {
-                         seq.int(min(tmp)+1L, object$rank,1)
-                         } else integer(0)
-    
-
+    Qcols_to_sweep_out <- match(Xcols_to_sweep_out, colnames(qr.R(object)))
+    Qcols_to_sweep_out <-
+        Qcols_to_sweep_out[Qcols_to_sweep_out==(1L+seq_along(Qcols_to_sweep_out))]
+    Qcols_to_keep <- setdiff(Qcols_to_keep, Qcols_to_sweep_out)
+}
     stopifnot(is.null(model.offset(data))) # assume away offsets (for now!)    
     offset <- rep(0, nrow(data))
     eta <- fitted.model$linear.predictors 
