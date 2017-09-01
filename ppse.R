@@ -232,21 +232,27 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
 
     ## NB: `qcoeffs <- qr.qty(object,z*w)` doesn't work, returns a object of length length(z),
     ## not object$rank.  Likewise for qr.qy(...)
-    qcoeffs.from.QR <- crossprod(qmat, z*w)
 
     if (coeffs.from.fitted.model || is.finite(tol.coeff.alignment))
       {
         qcoeffs.from.fitted.model <- drop(qr.R(object)%*%fitted.model.coeffs[object$pivot])
         names(qcoeffs.from.fitted.model) <- qnames
-      }
-    qcoeffs <- if (coeffs.from.fitted.model) qcoeffs.from.fitted.model else qcoeffs.from.QR
+        qcoeffs.from.QR <- NULL
+        qcoeffs <- qcoeffs.from.fitted.model
+      } else qcoeffs.from.QR <- crossprod(qmat, z*w)
+    if (!coeffs.from.fitted.model) {
+        if (is.null(qcoeffs.from.QR))
+                qcoeffs.from.QR <- crossprod(qmat, z*w)
+        qcoeffs <- qcoeffs.from.QR
+                   }
 
     qcoeffs <- qcoeffs[Qcols_to_keep]
     qmat <- qmat[,Qcols_to_keep]
 
     ## this is here for testing purposes 
     if (is.finite(tol.coeff.alignment))
-        {
+    {
+        if (is.null(qcoeffs.from.QR)) qcoeffs.from.QR <- crossprod(qmat, z*w)
             qcoeffs.from.QR[!Qcols_to_keep] <- 0
             coeff.diffs <- qcoeffs.from.fitted.model - qcoeffs.from.QR
             if (max(abs(coeff.diffs)) >= tol.coeff.alignment)

@@ -153,6 +153,23 @@ test_that("appropriately handles strata in formula", {
 } )
 
 
+test_that("accepts arm::bayesglm fits", {
+    expect_true(require("arm"))
+    bglm <- bayesglm(pr~.-cost, data=nuclearplants, family=binomial)
+    expect_false(is.null(bglm$qr))
+    expect_that(ppse(bglm), is_a("numeric"))
+    expect_true(inherits(ppse(bglm, simplify=FALSE), "list"))
+    expect_error(ppse(bglm$qr, fitted.model=bglm)) ## have yet to teach it how to rebuild coefs from QR
+    expect_true(inherits(ppse(bglm$qr, fitted.model=bglm, simplify=FALSE,
+                              coeffs.from.fitted.model=TRUE), ## with this it ought to go through
+                         "list"))
+    expect_true(inherits(ppse(bglm$qr, covariance.estimator="sandwich",
+                              fitted.model=bglm, simplify=FALSE,
+                              coeffs.from.fitted.model=TRUE), 
+                         "list"))
+})
+
+
 ## (this test currently fails...)
 ##test_that("deals with fitted cox models too",
 ##          {
