@@ -167,16 +167,14 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
     if (is.null(data)) data <- model.frame(fitted.model)
     data.matrix <- model.matrix(tt, data)
     Xcols_to_terms <- attr(data.matrix, "assign")
-    Xcols_to_sweep_out <- Xcols_to_terms  %in% terms.to.sweep.out
-    ## note we're not sweeping out intercept - gave funny results when we did.
-    ## see [issue3 7ce3c76]
+    Xcols_to_sweep_out <- Xcols_to_terms  %in% c(0,terms.to.sweep.out)
     Qcols_to_keep <- seq_len(object$rank)
     if (any(Xcols_to_sweep_out))
         {
     Xcols_to_sweep_out <- names(fitted.model.coeffs)[Xcols_to_sweep_out]
     Qcols_to_sweep_out <- match(Xcols_to_sweep_out, colnames(qr.R(object)))
     Qcols_to_sweep_out <-
-        Qcols_to_sweep_out[Qcols_to_sweep_out==(1L+seq_along(Qcols_to_sweep_out))]
+        Qcols_to_sweep_out[Qcols_to_sweep_out==seq_along(Qcols_to_sweep_out)]
     Qcols_to_keep <- setdiff(Qcols_to_keep, Qcols_to_sweep_out)
 }
     stopifnot(is.null(model.offset(data))) # assume away offsets (for now!)    
