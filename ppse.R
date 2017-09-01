@@ -295,6 +295,7 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
                    esteqns <- qmat * (resids * w)
                    if (!is.null(cluster)) {
                        esteqns <- aggregate(esteqns, by = list(cluster), FUN = sum)[,-1]
+                       esteqns <- as.matrix(esteqns)
                        }
                    meatmatrix.unscaled <- crossprod(esteqns)
                    ## Per KISS principle, no d.f. adjustments. For now. 
