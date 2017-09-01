@@ -165,7 +165,8 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
     fitted.model.coeffs.NA <- is.na(fitted.model.coeffs)
     fitted.model.coeffs[fitted.model.coeffs.NA] <- 0
     if (is.null(data)) data <- model.frame(fitted.model)
-    Xcols_to_terms <- attr(model.matrix(tt, data), "assign")
+    data.matrix <- model.matrix(tt, data)
+    Xcols_to_terms <- attr(data.matrix, "assign")
     Xcols_to_sweep_out <- Xcols_to_terms  %in% terms.to.sweep.out
     ## note we're not sweeping out intercept - gave funny results when we did.
     ## see [issue3 7ce3c76]
@@ -204,7 +205,7 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
     w <- sqrt(weights) 
     good <- !is.na(w) & w>0
 
-##    data.matrix <- data.matrix[good,]
+    data.matrix <- data.matrix[good,]
     eta <- eta[good]
     w <- w[good]
     ## NB: successful `getglmQweights` confirms that `linkinv` is there and is a function
@@ -256,7 +257,13 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
 
     
     ##  qtilde is the reweighting of the Q-matrix that corresponds to a rotated X. (Q ~ rotated W*X)    
-    qtilde <- w^(-1) * qmat
+    ## qtilde <- w^(-1) * qmat
+    ## I decided against above approach when I found that in easy examples
+    ## (cf "aglm" in tests) it was creating an (Intercept) column w/ nonzero variance.
+    ## the below requires a little more work but seemed more stable. 
+    qtilde <- t(backsolve(qr.R(object), t(data.matrix), k=object$rank, transpose=T))
+    qtilde <- qtilde[,Qcols_to_keep]
+    
     covqtilde <- cov(qtilde)
 
     Sqperp <-  makeSperp(covqtilde, qcoeffs)
