@@ -34,7 +34,7 @@ ppse.glm <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data
 ##' @return 
 ##' @author Mark M. Fredrickson, Ben B Hansen
 ppse.default <- function(object, covariance.estimator="vcov",
-                         data=model.frame(object), tt=terms(object), simplify=TRUE,
+                         data=model.frame(object), tt=terms(formula(object), specials="strata"), simplify=TRUE,
                          terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,...)
     {
         if (is.null(names(coef(object)))) stop("propensity coefficients have to have names")
@@ -133,7 +133,7 @@ getglmQweights <- function(eta, prior.weights=NULL, family=binomial())
         ifelse(good,prior.weights*mu.eta.val^2/variance(mu),0)
     }
 ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=NULL, fitted.model,
-                    tt=terms(fitted.model), simplify=TRUE,
+                    tt=terms(formula(fitted.model), specials="strata"), simplify=TRUE,
                     coeffs.from.fitted.model=FALSE, tol.coeff.alignment=Inf,
                     terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,...) 
 {
