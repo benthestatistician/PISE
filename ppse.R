@@ -32,7 +32,7 @@ ppse.glm <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data
 ##' @param terms.to.sweep.out terms in calling formula that should be swept out
 ##' @param ... 
 ##' @return 
-##' @author Ben B Hansen
+##' @author Mark M. Fredrickson, Ben B Hansen
 ppse.default <- function(object, covariance.estimator="vcov",
                          data=model.frame(object), tt=terms(object), simplify=TRUE,
                          terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,...)
@@ -73,7 +73,7 @@ ppse.default <- function(object, covariance.estimator="vcov",
 
         
         cols.to.sweep.out <- attr(data.matrix, "assign") %in% c(0, terms.to.sweep.out)
-    cols.to.sweep.out <- colnames(data.matrix)[cols.to.sweep.out]
+	cols.to.sweep.out <- colnames(data.matrix)[cols.to.sweep.out]
 
         cols.to.keep <- !(vnames %in% cols.to.sweep.out)
         
@@ -133,25 +133,48 @@ getglmQweights <- function(eta, prior.weights=NULL, family=binomial())
         ifelse(good,prior.weights*mu.eta.val^2/variance(mu),0)
     }
 ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=NULL, fitted.model,
+                    tt=terms(fitted.model), simplify=TRUE,
                     coeffs.from.fitted.model=FALSE, tol.coeff.alignment=Inf,
-                    simplify=TRUE,...) 
+                    terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,...) 
 {
     stopifnot(inherits(fitted.model, "glm"),
               length(object$pivot)<=length(coef(fitted.model)),
               as.logical(object$rank),
-              covariance.estimator %in% c("vcov", "sandwich"))
-    
+              covariance.estimator %in% c("vcov", "sandwich"),
+              is.null(terms.to.sweep.out) | 
+              is.numeric(terms.to.sweep.out) & all(as.integer(terms.to.sweep.out)==terms.to.sweep.out))
+    terms.to.sweep.out <- unique(terms.to.sweep.out)
+    nterms <-  length(attr(tt, "term.labels"))
+    if (any(terms.to.sweep.out > nterms)) stop("terms.to.sweep.out values too big")
+    if (!is.null(terms.to.sweep.out) && length(terms.to.sweep.out) &&
+        length(terms.to.sweep.out) < max(terms.to.sweep.out))
+    {
+        first_non_sweep <- min(setdiff(1L:nterms, terms.to.sweep.out))
+        dontsweep <- (terms.to.sweep.out >= first_non_sweep)
+        terms.to.sweep.out <- terms.to.sweep.out[!dontsweep]
+        warning(paste0(sum(dontsweep),
+	" strata() directive(s) ignored. To fix, put at beginning of model formula."))
+        }
+
+
 
     glm.family.uses.estimated.dispersion <-
         !(substr(fitted.model$family$family, 1, 17) %in%  # borrowed from sandwich:::bread.glm
           c("poisson", "binomial", "Negative Binomial"))
-    tt <- terms(fitted.model)
     fitted.model.coeffs <- coef(fitted.model)
     fitted.model.coeffs.NA <- is.na(fitted.model.coeffs)
     fitted.model.coeffs[fitted.model.coeffs.NA] <- 0
-##    stopifnot(!is.null(fitted.model$weights))
-    ## b/c I'm not sure how this interacts w/ factor expansion in next few lines
     if (is.null(data)) data <- model.frame(fitted.model)
+    Xcols_to_terms <- attr(model.matrix(tt, data), "assign")
+    Xcols_to_sweep_out <- Xcols_to_terms  %in% c(0, terms.to.sweep.out)
+    Xcols_to_sweep_out <- names(fitted.model.coeffs)[Xcols_to_sweep_out]
+    tmp <- setdiff(seq_along(Xcols_to_terms),
+                   match(Xcols_to_sweep_out, colnames(qr.R(object))))
+    Qcols_to_keep <- if (length(tmp)) {
+                         seq.int(min(tmp)+1L, object$rank,1)
+                         } else integer(0)
+    
+
     stopifnot(is.null(model.offset(data))) # assume away offsets (for now!)    
     offset <- rep(0, nrow(data))
     eta <- fitted.model$linear.predictors 
@@ -178,10 +201,7 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
     w <- sqrt(weights) 
     good <- !is.na(w) & w>0
 
-    data.matrix <- model.matrix(tt, data)
-##    resids <- fitted.model$residuals
-    data.matrix <- data.matrix[good,]
-##    resids <- resids[good]
+##    data.matrix <- data.matrix[good,]
     eta <- eta[good]
     w <- w[good]
     ## NB: successful `getglmQweights` confirms that `linkinv` is there and is a function
@@ -219,14 +239,13 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
       }
     qcoeffs <- if (coeffs.from.fitted.model) qcoeffs.from.fitted.model else qcoeffs.from.QR
 
-    keep.these.Qcolumns <- seq_len(object$rank)
-    qcoeffs <- qcoeffs[keep.these.Qcolumns]
-    qmat <- qmat[,keep.these.Qcolumns]
+    qcoeffs <- qcoeffs[Qcols_to_keep]
+    qmat <- qmat[,Qcols_to_keep]
 
     ## this is here for testing purposes 
     if (is.finite(tol.coeff.alignment))
         {
-            qcoeffs.from.QR[!keep.these.Qcolumns] <- 0
+            qcoeffs.from.QR[!Qcols_to_keep] <- 0
             coeff.diffs <- qcoeffs.from.fitted.model - qcoeffs.from.QR
             if (max(abs(coeff.diffs)) >= tol.coeff.alignment)
             stop(paste("QR/reported coefficients differ by up to", prettyNum(max(abs(coeff.diffs)))))
