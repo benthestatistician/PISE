@@ -35,7 +35,8 @@ ppse.glm <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data
 ##' @author Mark M. Fredrickson, Ben B Hansen
 ppse.default <- function(object, covariance.estimator="vcov",
                          data=model.frame(object), tt=terms(formula(object), specials="strata"), simplify=TRUE,
-                         terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,...)
+                         terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,
+                         cluster=NULL, ...)
     {
         if (is.null(names(coef(object)))) stop("propensity coefficients have to have names")
 
@@ -45,8 +46,11 @@ ppse.default <- function(object, covariance.estimator="vcov",
                   setequal(colnames(data.matrix), names(coef(object))),
                   isTRUE(all.equal(colnames(data.matrix), names(coef(object)))),
                   !is.null(attr(data.matrix, "assign")),
-                  covariance.estimator %in% c("vcov", "sandwich")
+                  covariance.estimator %in% c("vcov", "sandwich"),
+                  covariance.estimator=="sandwich" | is.null(cluster),
+                  !is.null(cluster) || length(cluster)!=nrow(data)
                   )
+        if (!is.null(cluster)) stop("cluster arg not currently supported")
         if (covariance.estimator=="sandwich") stopifnot(require("sandwich"))
         covariance.extractor <- eval(parse(text=covariance.estimator))
         
@@ -135,14 +139,17 @@ getglmQweights <- function(eta, prior.weights=NULL, family=binomial())
 ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=NULL, fitted.model,
                     tt=terms(formula(fitted.model), specials="strata"), simplify=TRUE,
                     coeffs.from.fitted.model=FALSE, tol.coeff.alignment=Inf,
-                    terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,...) 
+                    terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,
+                    cluster=NULL, ...) 
 {
     stopifnot(inherits(fitted.model, "glm"),
               length(object$pivot)<=length(coef(fitted.model)),
               as.logical(object$rank),
               covariance.estimator %in% c("vcov", "sandwich"),
+              covariance.estimator=="sandwich" | is.null(cluster), 
               is.null(terms.to.sweep.out) | 
-              is.numeric(terms.to.sweep.out) & all(as.integer(terms.to.sweep.out)==terms.to.sweep.out))
+              is.numeric(terms.to.sweep.out) &
+              all(as.integer(terms.to.sweep.out)==terms.to.sweep.out))
     terms.to.sweep.out <- unique(terms.to.sweep.out)
     nterms <-  length(attr(tt, "term.labels"))
     if (any(terms.to.sweep.out > nterms)) stop("terms.to.sweep.out values too big")
@@ -206,6 +213,7 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
     data.matrix <- data.matrix[good,]
     eta <- eta[good]
     w <- w[good]
+    if (!is.null(cluster)) cluster <- factor(cluster[good])
     ## NB: successful `getglmQweights` confirms that `linkinv` is there and is a function
     linkinv <- fitted.model$family$linkinv
     mu <- linkinv(eta)
@@ -284,8 +292,14 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
                  ## nominal Cov-hat is dispersion * Identity
                    list("cov.beta"=dispersion, "Sperp.diagonal"=diag(Sqperp))
                } else { # in this case covariance.estimator=="sandwich"
-                meatmatrix.unscaled <- crossprod(qmat * (resids * w)) # unscaled bread being the identity
-                list("cov.beta"=meatmatrix.unscaled, "Sperp"=Sqperp)
+                   esteqns <- qmat * (resids * w)
+                   if (!is.null(cluster)) {
+                       esteqns <- aggregate(esteqns, by = list(cluster), FUN = sum)[,-1]
+                       }
+                   meatmatrix.unscaled <- crossprod(esteqns)
+                   ## Per KISS principle, no d.f. adjustments. For now. 
+                   ## Unscaled bread being the identity, 
+                   list("cov.beta"=meatmatrix.unscaled, "Sperp"=Sqperp)
            }
     if (simplify) ppse(ans,...) else ans
 }
