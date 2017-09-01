@@ -142,6 +142,14 @@ test_that("appropriately handles strata in formula", {
                                .~.-ne+strata(ne))) #thus the `require("survival")` above.  Oughta fix that...
     expect_true(ppse(aglm.s) < ppse(aglm))
     expect_equal(ppse(aglm.s, terms.to.sweep.out=NULL), ppse(aglm))
+    expect_warning(ppse(aglm.s$qr, fitted.model=aglm.s), "ignored")
+    expect_equal(ppse(aglm.s$qr, fitted.model=aglm.s),
+                 ppse(aglm$qr, fitted.model=aglm) )
+    aglm.s2 <- update(aglm, formula=update(formula(aglm),
+                               .~strata(ne)+.-ne)) 
+    expect_equal(ppse(aglm.s2$qr, fitted.model=aglm.s2, terms.to.sweep.out=NULL),
+                 ppse(aglm$qr, fitted.model=aglm) )
+    expect_true(ppse(aglm.s2$qr, fitted.model=aglm.s2) < ppse(aglm$qr, fitted.model=aglm))
 } )
 
 
