@@ -153,16 +153,16 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
     terms.to.sweep.out <- unique(terms.to.sweep.out)
     nterms <-  length(attr(tt, "term.labels"))
     if (any(terms.to.sweep.out > nterms)) stop("terms.to.sweep.out values too big")
-    if (!is.null(terms.to.sweep.out) && length(terms.to.sweep.out) &&
-        length(terms.to.sweep.out) < max(terms.to.sweep.out))
+    if (!is.null(terms.to.sweep.out) && length(terms.to.sweep.out))
     {
         first_non_sweep <- min(setdiff(1L:nterms, terms.to.sweep.out))
         dontsweep <- (terms.to.sweep.out >= first_non_sweep)
-        terms.to.sweep.out <- terms.to.sweep.out[!dontsweep]
-        warning(paste0(sum(dontsweep),
+        if (first_non_sweep < max(terms.to.sweep.out))
+        warning(paste0(sum(dontsweep), 
 	" strata() directive(s) ignored. To fix, put at beginning of model formula."))
-        }
 
+        terms.to.sweep.out <- terms.to.sweep.out[!dontsweep]
+        }
 
 
     glm.family.uses.estimated.dispersion <-
@@ -240,21 +240,27 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
 
     ## NB: `qcoeffs <- qr.qty(object,z*w)` doesn't work, returns a object of length length(z),
     ## not object$rank.  Likewise for qr.qy(...)
-    qcoeffs.from.QR <- crossprod(qmat, z*w)
 
     if (coeffs.from.fitted.model || is.finite(tol.coeff.alignment))
       {
         qcoeffs.from.fitted.model <- drop(qr.R(object)%*%fitted.model.coeffs[object$pivot])
         names(qcoeffs.from.fitted.model) <- qnames
-      }
-    qcoeffs <- if (coeffs.from.fitted.model) qcoeffs.from.fitted.model else qcoeffs.from.QR
+        qcoeffs.from.QR <- NULL
+        qcoeffs <- qcoeffs.from.fitted.model
+      } else qcoeffs.from.QR <- crossprod(qmat, z*w)
+    if (!coeffs.from.fitted.model) {
+        if (is.null(qcoeffs.from.QR))
+                qcoeffs.from.QR <- crossprod(qmat, z*w)
+        qcoeffs <- qcoeffs.from.QR
+                   }
 
     qcoeffs <- qcoeffs[Qcols_to_keep]
     qmat <- qmat[,Qcols_to_keep]
 
     ## this is here for testing purposes 
     if (is.finite(tol.coeff.alignment))
-        {
+    {
+        if (is.null(qcoeffs.from.QR)) qcoeffs.from.QR <- crossprod(qmat, z*w)
             qcoeffs.from.QR[!Qcols_to_keep] <- 0
             coeff.diffs <- qcoeffs.from.fitted.model - qcoeffs.from.QR
             if (max(abs(coeff.diffs)) >= tol.coeff.alignment)
