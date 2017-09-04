@@ -176,30 +176,38 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
     Qcols_to_sweep_out <-
         Qcols_to_sweep_out[Qcols_to_sweep_out==seq_along(Qcols_to_sweep_out)]
     Qcols_to_keep <- setdiff(Qcols_to_keep, Qcols_to_sweep_out)
-}
+        }
+
+    ## Now we start a bunch of calculations that re-figure 
+    ## internal components of the glm fit: z, eta, weights. 
     stopifnot(is.null(model.offset(data))) # assume away offsets (for now!)    
     offset <- rep(0, nrow(data))
     eta <- fitted.model$linear.predictors 
 
-    ## To better reproduce internals of glm, I tried:
+    
+    ## refigure weights, since glm.fit doesn't update them after last iteration
+    weights <- getglmQweights(eta, 
+                              prior.weights=fitted.model$prior.weights, 
+                              family=fitted.model$family)
+    stopifnot(length(weights)==nrow(data))
+    ## NB: To address discrepancies between coeffs reported w/ model fit
+    ## and coeffs constructed from the returned QR decomposition, I tried:
     ## (1) using the weights based on penultimate glm fit,
     ## not the updated weights as figured by my `getglmQweights`.
 ###    weights <- fitted.model$weights
     ## (2) insisting on convergence,
 ###    stopifnot(fitted.model$converged)
     ## Rationale for requiring convergence: Since we don't also have access to
-    ## penultimate eta's, we're relying on the convergence being far enough along that their differences
-    ## from the final etas are numerically negligible.  I get the impression that the `glm.fit` convergence
-    ## criteria are such as to ensure this.
-    ## None of this made much difference, with the aglm example used in optmatch, I got differences
-    ## in coefficients of order 2e-6 either way. Chalking the discrepancy up (uneasily) to differences
-    ## between numerical calcs used within `C_Cdqrls` and the QR-based method I'm using. 
-    
-    weights <- getglmQweights(eta, # refigure weights, since glm.fit doesn't update them
-                              prior.weights=fitted.model$prior.weights, # after final iteration
-                              family=fitted.model$family)
+    ## penultimate eta's, we're relying on the convergence being far enough along
+    ## that their differences  from the final etas are numerically negligible.
+    ## I get the impression that the `glm.fit` convergence criteria are such as to
+    ## ensure this.
+    ## Neither did what I was hoping for: with the aglm example used in optmatch,
+    ## I got differences  in coefficients of order 2e-6 either way. Chalking the
+    ## discrepancy up (uneasily) to differences between numerical calcs used within
+    ## `C_Cdqrls` and the QR-based method I'm using. 
 
-    stopifnot(length(weights)==nrow(data))
+
     w <- sqrt(weights) 
     good <- !is.na(w) & w>0
 
@@ -221,11 +229,8 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
     else (y-mu)/mu.etaval # Roll our own if it's easy enough
     
     z <- (eta -offset) + resids # "z" as in `glm.fit`
-    
+    ## End reconstruction of internals of glm-fitting
 
-## Next 2 lines seem to be idle...   
-###    if (ncol(data.matrix) !=length(object$pivot)) stop("length of QR's pivot doesn't match ncol(data.matrix).")
-###    data.matrix <- data.matrix[,object$pivot]
     qmat <- qr.Q(object)[good,]
     colnames(qmat) <- qnames <- paste0("Q.",colnames(qr.R(object)))
 
@@ -260,12 +265,18 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
         }
 
     
-    ##  qtilde is the reweighting of the Q-matrix that corresponds to a rotated X. (Q ~ rotated W*X)    
+    ##  qtilde is the reweighting of rows of the Q-matrix that corresponds to a rotated X.
+    ##  I.e., if diag(w)X = QR, write Qtilde for  X %*% R^(-1)
+    ## First I was calculating this as diag(w^(-1))%*%Q , i.e.
     ## qtilde <- w^(-1) * qmat
-    ## I decided against above approach when I found that in easy examples
+    ## but I decided against this when I saw that in easy examples
     ## (cf "aglm" in tests) it was creating an (Intercept) column w/ nonzero variance.
-    ## the below requires a little more work but seemed more stable. 
-    qtilde <- t(backsolve(qr.R(object), t(data.matrix), k=object$rank, transpose=T))
+    ## The below instead calculates  X %*% R^(-1) directly.
+    ## This requires a little more computing but seemed to avoid the problem w/ the
+    ## (Intercept) column.
+    qtilde <- t(backsolve(qr.R(object),t(data.matrix),
+                          k=object$rank, transpose=T)
+                )
     qtilde <- qtilde[,Qcols_to_keep]
     
     covqtilde <- cov(qtilde)
@@ -277,7 +288,9 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
     stopifnot((rdf <- nobs - object$rank)>0) # i.e., fitted.model$df.residual
     
     dispersion <-
-        if (glm.family.uses.estimated.dispersion)
+        if (glm.family.uses.estimated.dispersion &&
+            covariance.estimator=="vcov" #Won't use dispersion in sandwich calc
+            )
         {              
             ## Following summary.glm
             df.r <- fitted.model$df.residual

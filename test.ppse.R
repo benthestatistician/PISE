@@ -15,14 +15,10 @@ gpsc <- function(propensity.glm, covariance.extractor=vcov) {
 
   covx <- cov(data)
 
-  # wrapping in a tryCatch as we observed some issues with bayesglm and sandwich.
-  covb <- tryCatch(covariance.extractor(propensity.glm),
-                 error = function(e) { vcov(propensity.glm) })
+  covb <- covariance.extractor(propensity.glm)
 
   covb <- covb[,!colnames(covb) == "(Intercept)", drop = FALSE]
   covb <- covb[!rownames(covb) == "(Intercept)",, drop = FALSE]
-
-  # could we ever get a covb with different dim than covx? is this worth checking?
 
   # calculate the correction for the expected difference in propensity scores
   ps <- predict(propensity.glm)
@@ -31,7 +27,7 @@ gpsc <- function(propensity.glm, covariance.extractor=vcov) {
 
   srb <- sd.x * rho.beta
  
-  sqrt(2 * sum(covx * covb) - 2 * (t(srb) %*% covb %*% srb)[1,1]) # indexing to turn a 1x1 matrix into a scalar
+  sqrt(2 * sum(covx * covb) - 2 * (t(srb) %*% covb %*% srb)[1,1]) 
 }
 ## here's the regression test
 expect_equal(ppse(aglm), gpsc(aglm))
