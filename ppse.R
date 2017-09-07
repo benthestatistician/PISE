@@ -5,8 +5,7 @@
 ##' @param object fitted propensity score model, of or inheriting from class \code{glm}
 ##' @param covariance.estimator which of \code{vcov}, \code{sandwich} to use to estimate model coefficient covariances?
 ##' @param data a data frame
-##' @param tt a terms object
-##' @return scalar, in units of \code{object}'s linear predictor; interpretable as standard error
+##' @return scalar, in units of \code{object}'s linear predictor, if simplify=T; otherwise a list
 ##' @author Mark M. Fredrickson, Ben B. Hansen
 ppse <- function(object, covariance.estimator, data,...)
     UseMethod("ppse")
@@ -19,11 +18,11 @@ ppse.glm <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data
             form <- terms(form, specials="strata")
             data <- model.frame(object)
         }  
-    ppse.default(object, covariance.estimator=covariance.estimator, data=data, tt=form,...)
+    ppse_via_qr(object, covariance.estimator=covariance.estimator, data=data, tt=form,...)
 }
 ##'
 ##' .. content for \details{} ..
-##' @title SE of propensity-paired differences on a fitted propensity score: default method
+##' @title SE of propensity-paired differences on a fitted propensity score: version -1
 ##' @param object as in \code{ppse}
 ##' @param covariance.estimator as in \code{ppse}
 ##' @param data as in \code{ppse}
@@ -33,7 +32,7 @@ ppse.glm <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data
 ##' @param ... 
 ##' @return 
 ##' @author Mark M. Fredrickson, Ben B Hansen
-ppse.default <- function(object, covariance.estimator="vcov",
+ppse_notstabilized <- function(object, covariance.estimator="vcov",
                          data=model.frame(object), tt=terms(formula(object), specials="strata"), simplify=TRUE,
                          terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,...)
     {
@@ -132,14 +131,17 @@ getglmQweights <- function(eta, prior.weights=NULL, family=binomial())
         good <- prior.weights >0 & mu.eta.val !=0
         ifelse(good,prior.weights*mu.eta.val^2/variance(mu),0)
     }
-ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=NULL, fitted.model,
+ppse_via_qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1],
+                        QR=object$qr, data=NULL, 
                     tt=terms(formula(fitted.model), specials="strata"), simplify=TRUE,
                     coeffs.from.fitted.model=FALSE, tol.coeff.alignment=Inf,
                     terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,...) 
 {
-    stopifnot(inherits(fitted.model, "glm"),
-              length(object$pivot)<=length(coef(fitted.model)),
-              as.logical(object$rank),
+    
+    stopifnot(inherits(object, "glm"),
+              !is.null(QR), 
+              length(QR$pivot)<=length(coef(object)),
+              as.logical(QR$rank),
               covariance.estimator %in% c("vcov", "sandwich"),
               is.null(terms.to.sweep.out) | 
               is.numeric(terms.to.sweep.out) & all(as.integer(terms.to.sweep.out)==terms.to.sweep.out))
@@ -159,20 +161,20 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
 
 
     glm.family.uses.estimated.dispersion <-
-        !(substr(fitted.model$family$family, 1, 17) %in%  # borrowed from sandwich:::bread.glm
+        !(substr(object$family$family, 1, 17) %in%  # borrowed from sandwich:::bread.glm
           c("poisson", "binomial", "Negative Binomial"))
-    fitted.model.coeffs <- coef(fitted.model)
+    fitted.model.coeffs <- coef(object)
     fitted.model.coeffs.NA <- is.na(fitted.model.coeffs)
     fitted.model.coeffs[fitted.model.coeffs.NA] <- 0
-    if (is.null(data)) data <- model.frame(fitted.model)
+    if (is.null(data)) data <- model.frame(object)
     data.matrix <- model.matrix(tt, data)
     Xcols_to_terms <- attr(data.matrix, "assign")
     Xcols_to_sweep_out <- Xcols_to_terms  %in% c(0,terms.to.sweep.out)
-    Qcols_to_keep <- seq_len(object$rank)
+    Qcols_to_keep <- seq_len(QR$rank)
     if (any(Xcols_to_sweep_out))
         {
     Xcols_to_sweep_out <- names(fitted.model.coeffs)[Xcols_to_sweep_out]
-    Qcols_to_sweep_out <- match(Xcols_to_sweep_out, colnames(qr.R(object)))
+    Qcols_to_sweep_out <- match(Xcols_to_sweep_out, colnames(qr.R(QR)))
     Qcols_to_sweep_out <-
         Qcols_to_sweep_out[Qcols_to_sweep_out==seq_along(Qcols_to_sweep_out)]
     Qcols_to_keep <- setdiff(Qcols_to_keep, Qcols_to_sweep_out)
@@ -182,21 +184,21 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
     ## internal components of the glm fit: z, eta, weights. 
     stopifnot(is.null(model.offset(data))) # assume away offsets (for now!)    
     offset <- rep(0, nrow(data))
-    eta <- fitted.model$linear.predictors 
+    eta <- object$linear.predictors 
 
     
     ## refigure weights, since glm.fit doesn't update them after last iteration
     weights <- getglmQweights(eta, 
-                              prior.weights=fitted.model$prior.weights, 
-                              family=fitted.model$family)
+                              prior.weights=object$prior.weights, 
+                              family=object$family)
     stopifnot(length(weights)==nrow(data))
     ## NB: To address discrepancies between coeffs reported w/ model fit
     ## and coeffs constructed from the returned QR decomposition, I tried:
     ## (1) using the weights based on penultimate glm fit,
     ## not the updated weights as figured by my `getglmQweights`.
-###    weights <- fitted.model$weights
+###    weights <- object$weights
     ## (2) insisting on convergence,
-###    stopifnot(fitted.model$converged)
+###    stopifnot(object$converged)
     ## Rationale for requiring convergence: Since we don't also have access to
     ## penultimate eta's, we're relying on the convergence being far enough along
     ## that their differences  from the final etas are numerically negligible.
@@ -215,32 +217,32 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
     eta <- eta[good]
     w <- w[good]
     ## NB: successful `getglmQweights` confirms that `linkinv` is there and is a function
-    linkinv <- fitted.model$family$linkinv
+    linkinv <- object$family$linkinv
     mu <- linkinv(eta)
     y <- model.response(data, type="double")
     twocol.response <- !is.null(dim(y))
     y <- y[good]
-    mu.eta <- fitted.model$family$mu.eta
+    mu.eta <- object$family$mu.eta
     mu.etaval <- mu.eta(eta)
     resids <- if (twocol.response)
       {
-        fitted.model$residuals[good]
+        object$residuals[good]
     }
     else (y-mu)/mu.etaval # Roll our own if it's easy enough
     
     z <- (eta -offset) + resids # "z" as in `glm.fit`
     ## End reconstruction of internals of glm-fitting
 
-    qmat <- qr.Q(object)[good,]
-    colnames(qmat) <- qnames <- paste0("Q.",colnames(qr.R(object)))
+    qmat <- qr.Q(QR)[good,]
+    colnames(qmat) <- qnames <- paste0("Q.",colnames(qr.R(QR)))
 
 
-    ## NB: `qcoeffs <- qr.qty(object,z*w)` doesn't work, returns a object of length length(z),
-    ## not object$rank.  Likewise for qr.qy(...)
+    ## NB: `qcoeffs <- qr.qty(QR,z*w)` doesn't work, returns object of length length(z),
+    ## not QR$rank.  Likewise for qr.qy(...)
 
     if (coeffs.from.fitted.model || is.finite(tol.coeff.alignment))
       {
-        qcoeffs.from.fitted.model <- drop(qr.R(object)%*%fitted.model.coeffs[object$pivot])
+        qcoeffs.from.fitted.model <- drop(qr.R(QR)%*%fitted.model.coeffs[QR$pivot])
         names(qcoeffs.from.fitted.model) <- qnames
         qcoeffs.from.QR <- NULL
         qcoeffs <- qcoeffs.from.fitted.model
@@ -274,8 +276,8 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
     ## The below instead calculates  X %*% R^(-1) directly.
     ## This requires a little more computing but seemed to avoid the problem w/ the
     ## (Intercept) column.
-    qtilde <- t(backsolve(qr.R(object),t(data.matrix),
-                          k=object$rank, transpose=T)
+    qtilde <- t(backsolve(qr.R(QR),t(data.matrix),
+                          k=QR$rank, transpose=T)
                 )
     qtilde <- qtilde[,Qcols_to_keep]
     
@@ -285,7 +287,7 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
 
     ## On to estimating (co)variance of the qcoeffs...
     nobs <- sum(good)
-    stopifnot((rdf <- nobs - object$rank)>0) # i.e., fitted.model$df.residual
+    stopifnot((rdf <- nobs - QR$rank)>0) # i.e., fitted.model$df.residual
     
     dispersion <-
         if (glm.family.uses.estimated.dispersion &&
@@ -293,7 +295,7 @@ ppse.qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=
             )
         {              
             ## Following summary.glm
-            df.r <- fitted.model$df.residual
+            df.r <- object$df.residual
             if (df.r>0)
                 sum((resids^2* weights)[weights>0])/df.r else NaN
         } else 1
@@ -362,7 +364,7 @@ redo_qr  <- function(object, LAPACK=TRUE, tol=1e-07) #, precentering=FALSE
     cols.to.sweep.out <- colnames(data.matrix)[cols.to.sweep.out]
     cols.to.keep <- setdiff(colnames(data.matrix), cols.to.sweep.out)
     
-##    resids <- fitted.model$residuals    
+##    resids <- object$residuals    
     stopifnot(all(cols.to.keep %in% ( cols.R <- colnames(qr.R(object$qr)))),
               all(!duplicated(cols.R)))
     data.matrix <- data.matrix[good,]
@@ -395,7 +397,7 @@ drop1_ppse_stats <- function(theglm, data=NULL)
       stopifnot(theglm$qr$rank>=2)
       kappatri <- if (getRversion() <='2.15.1') kappa.tri else .kappa_tri
     newqr <- redo_qr(theglm)
-    ans <- ppse(newqr, fitted.model=theglm, simplify=FALSE)
+    ans <- ppse_via_QR(theglm, QR=newqr, simplify=FALSE)
     ans$ppse <- ppse(ans)
 
     qmat <- qr.Q(newqr)

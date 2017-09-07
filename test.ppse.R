@@ -29,17 +29,16 @@ gpsc <- function(propensity.glm, covariance.extractor=vcov) {
  
   sqrt(2 * sum(covx * covb) - 2 * (t(srb) %*% covb %*% srb)[1,1]) 
 }
-## here's the regression test
-expect_equal(ppse(aglm), gpsc(aglm))
-}
-          )
-
+## here are the regression tests
+expect_equal(ppse_notstabilized(aglm), gpsc(aglm))
+expect_true( abs(ppse(aglm) - gpsc(aglm)) < 1e-5 )
+} )
 test_that("ppse() recognizes simplify argument",
           {
+            expect_true(inherits(ppse_notstabilized(aglm, simplify=FALSE), "list"))
+            expect_true(!inherits(ppse_notstabilized(aglm, simplify=TRUE), "list"))
             expect_true(inherits(ppse(aglm, simplify=FALSE), "list"))
             expect_true(!inherits(ppse(aglm, simplify=TRUE), "list"))
-            expect_true(inherits(ppse(aglm$qr, fitted.model=aglm, simplify=FALSE), "list"))
-            expect_true(!inherits(ppse(aglm$qr, fitted.model=aglm, simplify=TRUE), "list"))
           })
 
 test_that("glm.fit's non-update of weights at last stage",
@@ -83,7 +82,7 @@ test_that("updating a converged glm makes no discernible change to its linear pr
 test_that("Crude alignment between QR decomp-based calcs and coeffs, cov-hats associated with fitted glms",
           {
               ## the `C_Cdqrls`-based coefficent estimates don't align precisely w/ QR-based reconstruction
-              expect_error(ppse(aglm$qr, fitted.model=aglm,
+              expect_error(ppse(aglm,
                                 tol.coeff.alignment=1e-7), "reported coefficients differ by up to")
               ## but with fuzzy goggles they do look the same
               expect_that(ppse(aglm, tol.coeff.alignment=1e-5), is_a("numeric"))
@@ -97,13 +96,13 @@ test_that("Crude alignment between QR decomp-based calcs and coeffs, cov-hats as
           })
 
 
-test_that("Crude agreement between ppse.qr & ppse.glm",{
-    expect_true(ppse(aglm)!=ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F))
-    expect_true(ppse(aglm)!=ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=T))
-    expect_true(abs(ppse(aglm) - ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F))<1e-5)
-    expect_true(abs(ppse(aglm) - ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=T))<1e-5)
-    expect_true(abs(ppse(aglm, covariance.estimator="sandwich") -
-                        ppse(aglm$qr, covariance.estimator="sandwich", fitted.model=aglm)) <1e-5)
+test_that("Crude agreement between ppse__notstabilized & ppse_via_qr",{
+    expect_true(ppse_notstabilized(aglm)!=ppse(aglm, coeffs.from.fitted.model=F))
+    expect_true(ppse_notstabilized(aglm)!=ppse(aglm, coeffs.from.fitted.model=T))
+    expect_true(abs(ppse_notstabilized(aglm) - ppse(aglm, coeffs.from.fitted.model=F))<1e-5)
+    expect_true(abs(ppse_notstabilized(aglm) - ppse(aglm, coeffs.from.fitted.model=T))<1e-5)
+    expect_true(abs(ppse_notstabilized(aglm, covariance.estimator="sandwich") -
+                        ppse(aglm, covariance.estimator="sandwich")) <1e-5)
 })
 
 test_that("Numerical stabilization from ppse.qr",{
@@ -115,66 +114,61 @@ test_that("Numerical stabilization from ppse.qr",{
                     x2=rnorm(n))
     d$x3 <- d$x1+d$x2+rnorm(n,sd=.0000001)
     mod1 <- glm(y~., data=d, family=binomial)
-    ppse1.glm <- ppse(mod1, "sandwich", simplify=FALSE)
-    expect_true(sum(ppse1.glm$cov.beta * ppse1.glm$Sperp)<0)
-    ppse1.qr <- ppse(mod1$qr, "sandwich", fitted.model=mod1, simplify=FALSE)
-    expect_true(sum(ppse1.qr$cov.beta * ppse1.qr$Sperp)>0)
+    ppse1_nostab <- ppse_notstabilized(mod1, "sandwich", simplify=FALSE)
+    expect_true(sum(ppse1_nostab$cov.beta * ppse1_nostab$Sperp)<0)
+    ppse1_qr <- ppse(mod1, "sandwich", simplify=FALSE)
+    expect_true(sum(ppse1_qr$cov.beta * ppse1_qr$Sperp)>0)
 })
 test_that("appropriately handles NA coefs",
           {
               aglm.alt <- update(aglm, formula=update(formula(aglm), .~.+factor(ne)))
               expect_true(any(is.na(coef(aglm.alt))))
-              expect_equal(ppse(aglm), ppse(aglm.alt))
-              expect_equal(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F),
-                           ppse(aglm.alt$qr, fitted.model=aglm.alt, coeffs.from.fitted.model=F))
-              expect_equal(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=T),
-                           ppse(aglm.alt$qr, fitted.model=aglm.alt, coeffs.from.fitted.model=T))
+              expect_equal(ppse_notstabilized(aglm), ppse_notstabilized(aglm.alt))
+              expect_equal(ppse(aglm, coeffs.from.fitted.model=F),
+                           ppse(aglm.alt, coeffs.from.fitted.model=F))
+              expect_equal(ppse(aglm, coeffs.from.fitted.model=T),
+                           ppse(aglm.alt, coeffs.from.fitted.model=T))
            })
 
-test_that("appropriately handles strata in formula", {
+test_that("ppse_notstabilized appropriately handles strata in formula", {
     expect_true(require("survival"))
     aglm.s <- update(aglm, formula=update(formula(aglm),
                                         #.~.-ne+survival:::strata(ne))) # ppse doesn't recognize now;
                                .~.-ne+strata(ne))) #thus the `require("survival")` above.  Oughta fix that...
-    expect_true(ppse(aglm.s) < ppse(aglm))
-    expect_equal(ppse(aglm.s, terms.to.sweep.out=NULL), ppse(aglm))
-    expect_warning(ppse(aglm.s$qr, fitted.model=aglm.s), "ignored")
-    expect_equal(ppse(aglm.s$qr, fitted.model=aglm.s),
-                 ppse(aglm$qr, fitted.model=aglm) )
-    aglm.s2 <- update(aglm, formula=update(formula(aglm),
-                               .~strata(ne)+.-ne)) 
-    expect_equal(ppse(aglm.s2$qr, fitted.model=aglm.s2, terms.to.sweep.out=NULL),
-                 ppse(aglm$qr, fitted.model=aglm) )
-    expect_true(ppse(aglm.s2$qr, fitted.model=aglm.s2) < ppse(aglm$qr, fitted.model=aglm))
+    expect_true(ppse_notstabilized(aglm.s) < ppse_notstabilized(aglm))
+    expect_equal(ppse_notstabilized(aglm.s, terms.to.sweep.out=NULL),
+                 ppse_notstabilized(aglm))
 } )
 
+test_that("ppse() handles strata() terms *if* placed next to Intercept", {
+    expect_true(require("survival"))
+    aglm.s <- update(aglm, formula=update(formula(aglm),
+                               .~.-ne+strata(ne))) 
+    expect_warning(ppse(aglm.s), "ignored")
+    expect_equal(ppse(aglm.s), ppse(aglm) )
+    aglm.s2 <- update(aglm, formula=update(formula(aglm),
+                               .~strata(ne)+.-ne)) 
+    expect_equal(ppse(aglm.s2, terms.to.sweep.out=NULL),
+                 ppse(aglm) )
+    expect_true(ppse(aglm.s2) < ppse(aglm))
+} )
 
 test_that("accepts arm::bayesglm fits", {
     expect_true(require("arm"))
     bglm <- bayesglm(pr~.-cost, data=nuclearplants, family=binomial)
     expect_false(is.null(bglm$qr))
-    expect_that(ppse(bglm), is_a("numeric"))
-    expect_true(inherits(ppse(bglm, simplify=FALSE), "list"))
-    expect_error(ppse(bglm$qr, fitted.model=bglm)) ## have yet to teach it how to rebuild coefs from QR
-    expect_true(inherits(ppse(bglm$qr, fitted.model=bglm, simplify=FALSE,
+    expect_that(ppse_notstabilized(bglm), is_a("numeric"))
+    expect_true(inherits(ppse_notstabilized(bglm, simplify=FALSE), "list"))
+    expect_error(ppse(bglm)) ## have yet to teach it how to rebuild coefs from QR
+    expect_true(inherits(ppse(bglm, simplify=FALSE,
                               coeffs.from.fitted.model=TRUE), ## with this it ought to go through
                          "list"))
-    expect_true(inherits(ppse(bglm$qr, covariance.estimator="sandwich",
-                              fitted.model=bglm, simplify=FALSE,
+    expect_true(inherits(ppse(bglm, covariance.estimator="sandwich",
+                              simplify=FALSE,
                               coeffs.from.fitted.model=TRUE), 
                          "list"))
 })
 
 
-## (this test currently fails...)
-##test_that("deals with fitted cox models too",
-##          {
-##test1 <- list(time=c(4,3,1,1,2,2,3), 
-##              status=c(1,1,1,0,1,1,0), 
-##              x=c(0,2,1,1,1,0,0), 
-##              sex=c(0,0,0,0,1,1,1)) 
-##aph <- coxph(Surv(time, status) ~ x + strata(sex), test1)
-##expect_that(ppse(aph), is_a("numeric"))
-##} )
 
 
