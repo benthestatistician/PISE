@@ -4,22 +4,31 @@
 ##' @title SE of propensity-paired differences on a fitted propensity score
 ##' @param object fitted propensity score model, of or inheriting from class \code{glm}
 ##' @param covariance.estimator which of \code{vcov}, \code{sandwich} to use to estimate model coefficient covariances?
+##' @param simplify return a scalar (\code{simplify==TRUE}, the default) or a list of quantities combine to make that scalar?
 ##' @param data a data frame
 ##' @return scalar, in units of \code{object}'s linear predictor, if simplify=T; otherwise a list
 ##' @author Mark M. Fredrickson, Ben B. Hansen
-ppse <- function(object, covariance.estimator, data,...)
+ppse <- function(object, covariance.estimator, data, simplify, ...)
     UseMethod("ppse")
 
-ppse.glm <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=NULL, ...) 
+ppse.glm <- function(object, covariance.estimator=c("vcov", "sandwich")[1],
+                     data=NULL, simplify=TRUE, coeffs.from.fitted.model=FALSE, ...) 
 {
-    if (is.null(data))
-        {
-            form <- formula(object)
-            form <- terms(form, specials="strata")
-            data <- model.frame(object)
-        }  
-    ppse_via_qr(object, covariance.estimator=covariance.estimator, data=data, tt=form,...)
+    ppse_via_qr(object, covariance.estimator=covariance.estimator,
+                data=data, simplify=simplify,
+                coeffs.from.fitted.model=coeffs.from.fitted.model,...)
 }
+
+ppse.bayesglm <- function(object, covariance.estimator=c("vcov", "sandwich")[1],
+                          data=NULL, simplify=TRUE, coeffs.from.fitted.model=TRUE, ...) 
+{
+    ppse_via_qr(object, covariance.estimator=covariance.estimator,
+                data=data, simplify=simplify,
+                coeffs.from.fitted.model=coeffs.from.fitted.model,...)
+}
+
+
+
 ##'
 ##' .. content for \details{} ..
 ##' @title SE of propensity-paired differences on a fitted propensity score: version -1
@@ -33,7 +42,8 @@ ppse.glm <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data
 ##' @return 
 ##' @author Mark M. Fredrickson, Ben B Hansen
 ppse_notstabilized <- function(object, covariance.estimator="vcov",
-                         data=model.frame(object), tt=terms(formula(object), specials="strata"), simplify=TRUE,
+                         data=model.frame(object), simplify=TRUE,
+                         tt=terms(formula(object), specials="strata"),
                          terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,...)
     {
         if (is.null(names(coef(object)))) stop("propensity coefficients have to have names")
@@ -131,11 +141,13 @@ getglmQweights <- function(eta, prior.weights=NULL, family=binomial())
         good <- prior.weights >0 & mu.eta.val !=0
         ifelse(good,prior.weights*mu.eta.val^2/variance(mu),0)
     }
-ppse_via_qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1],
-                        QR=object$qr, data=NULL, 
-                    tt=terms(formula(object), specials="strata"), simplify=TRUE,
-                    coeffs.from.fitted.model=FALSE, tol.coeff.alignment=Inf,
-                    terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,...) 
+ppse_via_qr <-
+    function(object, covariance.estimator=c("vcov", "sandwich")[1],
+             data=NULL, simplify=TRUE,
+             coeffs.from.fitted.model=FALSE, QR=object$qr, 
+             tt=terms(formula(object),specials="strata"),
+             terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,
+             tol.coeff.alignment=Inf, ...) 
 {
     
     stopifnot(inherits(object, "glm"),
@@ -253,9 +265,6 @@ ppse_via_qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1],
         qcoeffs <- qcoeffs.from.QR
                    }
 
-    qcoeffs <- qcoeffs[Qcols_to_keep]
-    qmat <- qmat[,Qcols_to_keep]
-
     ## this is here for testing purposes 
     if (is.finite(tol.coeff.alignment))
     {
@@ -266,6 +275,8 @@ ppse_via_qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1],
             stop(paste("QR/reported coefficients differ by up to", prettyNum(max(abs(coeff.diffs)))))
         }
 
+    qcoeffs <- qcoeffs[Qcols_to_keep]
+    qmat <- qmat[,Qcols_to_keep]
     
     ##  qtilde is the reweighting of rows of the Q-matrix that corresponds to a rotated X.
     ##  I.e., if diag(w)X = QR, write Qtilde for  X %*% R^(-1)
