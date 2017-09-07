@@ -133,7 +133,7 @@ getglmQweights <- function(eta, prior.weights=NULL, family=binomial())
     }
 ppse_via_qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1],
                         QR=object$qr, data=NULL, 
-                    tt=terms(formula(fitted.model), specials="strata"), simplify=TRUE,
+                    tt=terms(formula(object), specials="strata"), simplify=TRUE,
                     coeffs.from.fitted.model=FALSE, tol.coeff.alignment=Inf,
                     terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,...) 
 {
