@@ -94,7 +94,7 @@ ppse_notstabilized <- function(object, covariance.estimator="vcov",
 
         Sperp <- makeSperp(S, betas=coeffs)
 
-        ans <- list("cov.beta"= covb, "Sperp"=Sperp)
+        ans <- list("cov.betahat"= covb, "betahat"=coeffs, "cov.X"=S)
         if (simplify) ppse(ans,...) else ans
 }
 ##' Covariance of projections of X onto X'beta, calculated from Cov(X) and beta
@@ -283,8 +283,6 @@ ppse_via_qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1],
     
     covqtilde <- cov(qtilde)
 
-    Sqperp <-  makeSperp(covqtilde, qcoeffs)
-
     ## On to estimating (co)variance of the qcoeffs...
     nobs <- sum(good)
     stopifnot((rdf <- nobs - QR$rank)>0) # i.e., fitted.model$df.residual
@@ -303,24 +301,49 @@ ppse_via_qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1],
     ans <- if (covariance.estimator=="vcov")
                { ## because the Q matrix is orthogonal, corresponding
                  ## nominal Cov-hat is dispersion * Identity
-                   list("cov.beta"=dispersion, "Sperp.diagonal"=diag(Sqperp))
+                   list("cov.betahat"=dispersion, "betahat"=qcoeffs, "cov.X"=covqtilde)
                } else { # in this case covariance.estimator=="sandwich"
                 meatmatrix.unscaled <- crossprod(qmat * (resids * w)) # unscaled bread being the identity
-                list("cov.beta"=meatmatrix.unscaled, "Sperp"=Sqperp)
+                list("cov.betahat"=meatmatrix.unscaled, "betahat"=qcoeffs, "cov.X"=covqtilde)
            }
     if (simplify) ppse(ans,...) else ans
 }
-
+##' Convert separated ppse calculations into a scalar ppse
+##'
+##' Calculating the ppse involves estimation of a matrix
+##' matrix of regression coefficients and calculation of
+##' corresponding data covariance, both done with respect to
+##' the same coordinates. In the process, estimates of those
+##' regression coefficients are also obtained, in the same
+##' coordinate system. This function converts a list with these
+##' components into a ppse. 
+##' and of a 
+##' @title 
+##' @param object 
+##' @param covariance.estimator 
+##' @param data 
+##' @param ... 
+##' @return 
+##' @author Ben B Hansen
 ppse.list <- function(object, covariance.estimator=NULL, data=NULL,...)
   {
-    stopifnot(all(!is.na(pmatch(c("cov.beta","Sperp"),names(object)))),
-              is.numeric(object$cov.beta),
-              is.numeric(object$Sperp),
-              length(object$cov.beta)==1 ||
-              length(object$cov.beta)==length(object$Sperp))
+    stopifnot(all(!is.na(pmatch(c("cov.betahat","betahat", "cov.X"),names(object)))),
+              is.numeric(object$cov.betahat),
+              is.numeric(object$betahat),
+              is.numeric(object$cov.X),
+              is.matrix(object$cov.X),
+              length(object$betahat)==nrow(object$cov.X),
+              length(object$cov.betahat)==1 ||
+              length(object$cov.betahat)==length(object$cov.X))
+
+    cov_beta <- if (length(object$cov.betahat)==1) { # this really means dispersion * Identity
+                    object$cov.betahat * diag(nrow(object$cov.X))
+                } else object$cov.betahat
+    
+    Sperp <-  makeSperp(object$cov.X, object$betahat)
 
     ## calculate the correction for the expected difference in propensity scores
-    sqrt(2 * sum(object$cov.beta * object$Sperp))
+    sqrt(2 * sum(cov_beta * Sperp))
   }
 
 ## this is tricky: for `glm`, R gets its QR decomposition from LINPACK,

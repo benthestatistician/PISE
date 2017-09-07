@@ -115,9 +115,12 @@ test_that("Numerical stabilization from ppse.qr",{
     d$x3 <- d$x1+d$x2+rnorm(n,sd=.0000001)
     mod1 <- glm(y~., data=d, family=binomial)
     ppse1_nostab <- ppse_notstabilized(mod1, "sandwich", simplify=FALSE)
-    expect_true(sum(ppse1_nostab$cov.beta * ppse1_nostab$Sperp)<0)
+    expect_true(sum(ppse1_nostab$cov.beta *
+                    makeSperp(ppse1_nostab$cov.X, ppse1_nostab$betahat))<0)
     ppse1_qr <- ppse(mod1, "sandwich", simplify=FALSE)
-    expect_true(sum(ppse1_qr$cov.beta * ppse1_qr$Sperp)>0)
+    expect_true(sum(ppse1_qr$cov.beta *
+                    makeSperp(ppse1_qr$cov.X, ppse1_qr$betahat)
+                    )>0)
 })
 test_that("appropriately handles NA coefs",
           {
