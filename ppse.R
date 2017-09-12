@@ -332,7 +332,7 @@ ppse_via_qr <-
                         crossprod(esteqns)
                    ## Per KISS principle, no d.f. adjustments. For now. 
                    list("cov.betahat"=meatmatrix.unscaled,
-                        "betahat"=qcoeffs, "cov.X"=covqtilde) 
+                        "betahat"=qcoeffs, "cov.X"=covxtilde) 
            }
     if (simplify) ppse(ans,...) else ans
 }

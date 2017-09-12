@@ -80,28 +80,28 @@ test_that("redo_qr preserves or permutes column order according as LAPACK=F or T
 test_that("redo_qr",
           {
               
-              expect_true(abs(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F) -
-                                  ppse(redo_qr(aglm, LAPACK=F), fitted.model=aglm, coeffs.from.fitted.model=F))
+              expect_true(abs(ppse(aglm, QR=aglm$qr, coeffs.from.fitted.model=F) -
+                                  ppse(aglm, QR=redo_qr(aglm, LAPACK=F), coeffs.from.fitted.model=F))
                           < 1e-5)
-              expect_true(abs(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F) -
-                                  ppse(redo_qr(aglm, LAPACK=T), fitted.model=aglm, coeffs.from.fitted.model=F))
+              expect_true(abs(ppse(aglm, QR=aglm$qr, coeffs.from.fitted.model=F) -
+                                  ppse(aglm, QR=redo_qr(aglm, LAPACK=T), coeffs.from.fitted.model=F))
                           < 1e-5)
-              expect_true(abs(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=T) -
-                                  ppse(redo_qr(aglm, LAPACK=F), fitted.model=aglm, coeffs.from.fitted.model=F))
+              expect_true(abs(ppse(aglm, QR=aglm$qr, coeffs.from.fitted.model=T) -
+                                  ppse(aglm, QR=redo_qr(aglm, LAPACK=F), coeffs.from.fitted.model=F))
                           < 1e-5)
-              expect_true(abs(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=T) -
-                                  ppse(redo_qr(aglm, LAPACK=T), fitted.model=aglm, coeffs.from.fitted.model=F))
+              expect_true(abs(ppse(aglm, QR=aglm$qr, coeffs.from.fitted.model=T) -
+                                  ppse(aglm, QR=redo_qr(aglm, LAPACK=T), coeffs.from.fitted.model=F))
                           < 1e-5)
               aglm.alt <- update(aglm, formula=update(formula(aglm), .~.+factor(ne)))
               expect_true(any(is.na(coef(aglm.alt))))
               expect_equal(ppse(aglm), ppse(aglm.alt))
-              expect_equal(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F),
-                           ppse(aglm.alt$qr, fitted.model=aglm.alt, coeffs.from.fitted.model=F))
-              expect_true(abs(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F)-
-                           ppse(redo_qr(aglm.alt, LAPACK=F), fitted.model=aglm.alt,
+              expect_equal(ppse(aglm, QR=aglm$qr, coeffs.from.fitted.model=F),
+                           ppse(aglm.alt, QR=aglm.alt$qr, coeffs.from.fitted.model=F))
+              expect_true(abs(ppse(aglm, QR=aglm$qr, coeffs.from.fitted.model=F)-
+                           ppse(aglm.alt, QR=redo_qr(aglm.alt, LAPACK=F),
                                 coeffs.from.fitted.model=F)) < 1e-5)
-              expect_true(abs(ppse(aglm$qr, fitted.model=aglm, coeffs.from.fitted.model=F)-
-                           ppse(redo_qr(aglm.alt, LAPACK=T), fitted.model=aglm.alt,
+              expect_true(abs(ppse(aglm, QR=aglm$qr, coeffs.from.fitted.model=F)-
+                           ppse(aglm.alt, QR=redo_qr(aglm.alt, LAPACK=T), 
                                 coeffs.from.fitted.model=F)) < 1e-5)              
           })
 
