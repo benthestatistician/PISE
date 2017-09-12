@@ -4,22 +4,31 @@
 ##' @title SE of propensity-paired differences on a fitted propensity score
 ##' @param object fitted propensity score model, of or inheriting from class \code{glm}
 ##' @param covariance.estimator which of \code{vcov}, \code{sandwich} to use to estimate model coefficient covariances?
+##' @param simplify return a scalar (\code{simplify==TRUE}, the default) or a list of quantities combine to make that scalar?
 ##' @param data a data frame
 ##' @return scalar, in units of \code{object}'s linear predictor, if simplify=T; otherwise a list
 ##' @author Mark M. Fredrickson, Ben B. Hansen
-ppse <- function(object, covariance.estimator, data,...)
+ppse <- function(object, covariance.estimator, data, simplify, ...)
     UseMethod("ppse")
 
-ppse.glm <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data=NULL, ...) 
+ppse.glm <- function(object, covariance.estimator=c("vcov", "sandwich")[1],
+                     data=NULL, simplify=TRUE, coeffs.from.fitted.model=FALSE, ...) 
 {
-    if (is.null(data))
-        {
-            form <- formula(object)
-            form <- terms(form, specials="strata")
-            data <- model.frame(object)
-        }  
-    ppse_via_qr(object, covariance.estimator=covariance.estimator, data=data, tt=form,...)
+    ppse_via_qr(object, covariance.estimator=covariance.estimator,
+                data=data, simplify=simplify,
+                coeffs.from.fitted.model=coeffs.from.fitted.model,...)
 }
+
+ppse.bayesglm <- function(object, covariance.estimator=c("vcov", "sandwich")[1],
+                          data=NULL, simplify=TRUE, coeffs.from.fitted.model=TRUE, ...) 
+{
+    ppse_via_qr(object, covariance.estimator=covariance.estimator,
+                data=data, simplify=simplify,
+                coeffs.from.fitted.model=coeffs.from.fitted.model,...)
+}
+
+
+
 ##'
 ##' .. content for \details{} ..
 ##' @title SE of propensity-paired differences on a fitted propensity score: version -1
@@ -33,9 +42,10 @@ ppse.glm <- function(object, covariance.estimator=c("vcov", "sandwich")[1], data
 ##' @return 
 ##' @author Mark M. Fredrickson, Ben B Hansen
 ppse_notstabilized <- function(object, covariance.estimator="vcov",
-                         data=model.frame(object), tt=terms(formula(object), specials="strata"), simplify=TRUE,
+                         data=model.frame(object), simplify=TRUE,
+                         tt=terms(formula(object), specials="strata"),
                          terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,
-                         cluster=NULL, ...)
+                         cluster=NULL,...)
     {
         if (is.null(names(coef(object)))) stop("propensity coefficients have to have names")
 
@@ -135,12 +145,14 @@ getglmQweights <- function(eta, prior.weights=NULL, family=binomial())
         good <- prior.weights >0 & mu.eta.val !=0
         ifelse(good,prior.weights*mu.eta.val^2/variance(mu),0)
     }
-ppse_via_qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1],
-                        QR=object$qr, data=NULL, 
-                    tt=terms(formula(fitted.model), specials="strata"), simplify=TRUE,
-                    coeffs.from.fitted.model=FALSE, tol.coeff.alignment=Inf,
-                    terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,
-                    cluster=NULL, ...) 
+ppse_via_qr <-
+    function(object, covariance.estimator=c("vcov", "sandwich")[1],
+             data=NULL, simplify=TRUE,
+             coeffs.from.fitted.model=FALSE, QR=object$qr, 
+             tt=terms(formula(object),specials="strata"),
+             terms.to.sweep.out=survival:::untangle.specials(tt, "strata")$terms,
+             tol.coeff.alignment=Inf,
+             cluster=NULL, ...) 
 {
     
     stopifnot(inherits(object, "glm"),
@@ -261,9 +273,6 @@ ppse_via_qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1],
         qcoeffs <- qcoeffs.from.QR
                    }
 
-    qcoeffs <- qcoeffs[Qcols_to_keep]
-    qmat <- qmat[,Qcols_to_keep]
-
     ## this is here for testing purposes 
     if (is.finite(tol.coeff.alignment))
     {
@@ -274,22 +283,24 @@ ppse_via_qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1],
             stop(paste("QR/reported coefficients differ by up to", prettyNum(max(abs(coeff.diffs)))))
         }
 
+    qcoeffs <- qcoeffs[Qcols_to_keep]
+    qmat <- qmat[,Qcols_to_keep]
     
-    ##  qtilde is the reweighting of rows of the Q-matrix that corresponds to a rotated X.
-    ##  I.e., if diag(w)X = QR, write Qtilde for  X %*% R^(-1)
+    ##  xtilde is the rotation of X that expresses it in the same coordinates 
+    ##  as the Q matrix.  I.e., if diag(w)X = QR, Xtilde = X %*% R^(-1)
     ## First I was calculating this as diag(w^(-1))%*%Q , i.e.
-    ## qtilde <- w^(-1) * qmat
+    ## xtilde <- w^(-1) * qmat
     ## but I decided against this when I saw that in easy examples
     ## (cf "aglm" in tests) it was creating an (Intercept) column w/ nonzero variance.
     ## The below instead calculates  X %*% R^(-1) directly.
     ## This requires a little more computing but seemed to avoid the problem w/ the
     ## (Intercept) column.
-    qtilde <- t(backsolve(qr.R(QR),t(data.matrix),
+    xtilde <- t(backsolve(qr.R(QR),t(data.matrix),
                           k=QR$rank, transpose=T)
                 )
-    qtilde <- qtilde[,Qcols_to_keep]
+    xtilde <- xtilde[,Qcols_to_keep]
     
-    covqtilde <- cov(qtilde)
+    covxtilde <- cov(xtilde)
 
     ## On to estimating (co)variance of the qcoeffs...
     nobs <- sum(good)
@@ -309,16 +320,17 @@ ppse_via_qr <- function(object, covariance.estimator=c("vcov", "sandwich")[1],
     ans <- if (covariance.estimator=="vcov")
                { ## because the Q matrix is orthogonal, corresponding
                  ## nominal Cov-hat is dispersion * Identity
-                   list("cov.betahat"=dispersion, "betahat"=qcoeffs, "cov.X"=covqtilde)
+                   list("cov.betahat"=dispersion, "betahat"=qcoeffs, "cov.X"=covxtilde)
                } else { # in this case covariance.estimator=="sandwich"
-                   esteqns <- qmat * (resids * w)
+                   esteqns <- # this calc should be the same as 
+                      qmat * (resids * w) #  xtilde * weights * resids
                    if (!is.null(cluster)) {
                        esteqns <- aggregate(esteqns, by = list(cluster), FUN = sum)[,-1]
                        esteqns <- as.matrix(esteqns)
                    }
-                   meatmatrix.unscaled <- crossprod(esteqns)
+                   meatmatrix.unscaled <- # (unscaled bread being the identity)
+                        crossprod(esteqns)
                    ## Per KISS principle, no d.f. adjustments. For now. 
-                   ## Unscaled bread being the identity matrix, 
                    list("cov.betahat"=meatmatrix.unscaled,
                         "betahat"=qcoeffs, "cov.X"=covqtilde) 
            }
@@ -491,14 +503,17 @@ drop1_ppse_stats <- function(theglm, data=NULL)
     z <- (eta -offset) + resids # "z" as in `glm.fit`
     qcoeffs <- crossprod(qmat, z*w)
 
-    ##  qtilde is the reweighting of the Q-matrix that corresponds to a rotated X. (Q ~ rotated W*X)    
-    qtilde <- w^(-1) * qmat
+    ##  xtilde is the rotation of X that expresses it in the same coordinates as the Q matrix.
+    ##  I.e., if diag(w)X = QR, write Xtilde for  X %*% R^(-1)
+    xtilde <- t(backsolve(qr.R(QR),t(data.matrix),
+                          k=QR$rank, transpose=T)
+                )
 
 
 ## qcols.to.keep <- seq_len(newqr$rank)
-##eta.from.q <- qtilde[,qcols.to.keep] %*% qcoeffs[qcols.to.keep]
+##eta.from.q <- xtilde[,qcols.to.keep] %*% qcoeffs[qcols.to.keep]
 
-ans$delta.ps.sq.over.ppse.sq <- sum((qtilde[,newqr$rank] * qcoeffs[newqr$rank])^2)/
+ans$delta.ps.sq.over.ppse.sq <- sum((xtilde[,newqr$rank] * qcoeffs[newqr$rank])^2)/
   ((sum(good)-1) *sum(ans[["Sperp.diagonal"]]))
 ans
   }

@@ -162,10 +162,12 @@ test_that("accepts arm::bayesglm fits", {
     expect_false(is.null(bglm$qr))
     expect_that(ppse_notstabilized(bglm), is_a("numeric"))
     expect_true(inherits(ppse_notstabilized(bglm, simplify=FALSE), "list"))
-    expect_error(ppse(bglm)) ## have yet to teach it how to rebuild coefs from QR
+    expect_error(ppse(bglm, # have yet to teach it how to rebuild coefs 
+                      coeffs.from.fitted.model=FALSE)) # from QR
     expect_true(inherits(ppse(bglm, simplify=FALSE,
                               coeffs.from.fitted.model=TRUE), ## with this it ought to go through
                          "list"))
+    expect_equal(ppse(bglm), ppse(bglm, coeffs.from.fitted.model=TRUE))
     expect_true(inherits(ppse(bglm, covariance.estimator="sandwich",
                               simplify=FALSE,
                               coeffs.from.fitted.model=TRUE), 
