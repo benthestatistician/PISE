@@ -314,7 +314,9 @@ ppse_via_qr <-
                  ## nominal Cov-hat is dispersion * Identity
                    list("cov.betahat"=dispersion, "betahat"=qcoeffs, "cov.X"=covxtilde)
                } else { # in this case covariance.estimator=="sandwich"
-                meatmatrix.unscaled <- crossprod(qmat * (resids * w)) # unscaled bread being the identity
+                   meatmatrix.unscaled <- # (unscaled bread being the identity)
+                       crossprod(qmat * (resids * w) # <--  should be the same as 
+                                 )                   #  xtilde * weights * resids
                 list("cov.betahat"=meatmatrix.unscaled, "betahat"=qcoeffs, "cov.X"=covxtilde)
            }
     if (simplify) ppse(ans,...) else ans
