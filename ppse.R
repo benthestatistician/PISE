@@ -278,21 +278,21 @@ ppse_via_qr <-
     qcoeffs <- qcoeffs[Qcols_to_keep]
     qmat <- qmat[,Qcols_to_keep]
     
-    ##  qtilde is the reweighting of rows of the Q-matrix that corresponds to a rotated X.
-    ##  I.e., if diag(w)X = QR, write Qtilde for  X %*% R^(-1)
+    ##  xtilde is the rotation of X that expresses it in the same coordinates 
+    ##  as the Q matrix.  I.e., if diag(w)X = QR, Xtilde = X %*% R^(-1)
     ## First I was calculating this as diag(w^(-1))%*%Q , i.e.
-    ## qtilde <- w^(-1) * qmat
+    ## xtilde <- w^(-1) * qmat
     ## but I decided against this when I saw that in easy examples
     ## (cf "aglm" in tests) it was creating an (Intercept) column w/ nonzero variance.
     ## The below instead calculates  X %*% R^(-1) directly.
     ## This requires a little more computing but seemed to avoid the problem w/ the
     ## (Intercept) column.
-    qtilde <- t(backsolve(qr.R(QR),t(data.matrix),
+    xtilde <- t(backsolve(qr.R(QR),t(data.matrix),
                           k=QR$rank, transpose=T)
                 )
-    qtilde <- qtilde[,Qcols_to_keep]
+    xtilde <- xtilde[,Qcols_to_keep]
     
-    covqtilde <- cov(qtilde)
+    covxtilde <- cov(xtilde)
 
     ## On to estimating (co)variance of the qcoeffs...
     nobs <- sum(good)
@@ -312,10 +312,10 @@ ppse_via_qr <-
     ans <- if (covariance.estimator=="vcov")
                { ## because the Q matrix is orthogonal, corresponding
                  ## nominal Cov-hat is dispersion * Identity
-                   list("cov.betahat"=dispersion, "betahat"=qcoeffs, "cov.X"=covqtilde)
+                   list("cov.betahat"=dispersion, "betahat"=qcoeffs, "cov.X"=covxtilde)
                } else { # in this case covariance.estimator=="sandwich"
                 meatmatrix.unscaled <- crossprod(qmat * (resids * w)) # unscaled bread being the identity
-                list("cov.betahat"=meatmatrix.unscaled, "betahat"=qcoeffs, "cov.X"=covqtilde)
+                list("cov.betahat"=meatmatrix.unscaled, "betahat"=qcoeffs, "cov.X"=covxtilde)
            }
     if (simplify) ppse(ans,...) else ans
 }
@@ -486,14 +486,17 @@ drop1_ppse_stats <- function(theglm, data=NULL)
     z <- (eta -offset) + resids # "z" as in `glm.fit`
     qcoeffs <- crossprod(qmat, z*w)
 
-    ##  qtilde is the reweighting of the Q-matrix that corresponds to a rotated X. (Q ~ rotated W*X)    
-    qtilde <- w^(-1) * qmat
+    ##  xtilde is the rotation of X that expresses it in the same coordinates as the Q matrix.
+    ##  I.e., if diag(w)X = QR, write Xtilde for  X %*% R^(-1)
+    xtilde <- t(backsolve(qr.R(QR),t(data.matrix),
+                          k=QR$rank, transpose=T)
+                )
 
 
 ## qcols.to.keep <- seq_len(newqr$rank)
-##eta.from.q <- qtilde[,qcols.to.keep] %*% qcoeffs[qcols.to.keep]
+##eta.from.q <- xtilde[,qcols.to.keep] %*% qcoeffs[qcols.to.keep]
 
-ans$delta.ps.sq.over.ppse.sq <- sum((qtilde[,newqr$rank] * qcoeffs[newqr$rank])^2)/
+ans$delta.ps.sq.over.ppse.sq <- sum((xtilde[,newqr$rank] * qcoeffs[newqr$rank])^2)/
   ((sum(good)-1) *sum(ans[["Sperp.diagonal"]]))
 ans
   }
