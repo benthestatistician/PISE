@@ -1,4 +1,4 @@
-source("ppse.R")
+source("../../R/ppse.R")
 stopifnot(require("testthat"))
 data(nuclearplants, package="optmatch")
 aglm <- glm(pr~.-cost, data=nuclearplants, family=binomial)
