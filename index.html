@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Propensity score calipers and the overlap condition</title>
+  <meta charset="utf-8">
+  <meta name="description" content="Propensity score calipers and the overlap condition">
+  <meta name="author" content="Ben Hansen (bbh@umich.edu)">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>Propensity score calipers and the overlap condition</h1>
+    <h2></h2>
+    <p>Ben Hansen (bbh@umich.edu)<br/>Assoc. Prof. of Statistics, UMich</p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h1>Outline</h1>
+  </hgroup>
+  <article data-timings="">
+    <ol>
+<li><span class = 'red'>Problem: determining the region of  overlap</span></li>
+<li>Propensity score caliper matching</li>
+<li>PPSE calipers</li>
+<li>Applications &amp; discussion<br></li>
+</ol>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h2>Overlap &amp; bias in comparisons w/ 1 covariate</h2>
+  </hgroup>
+  <article data-timings="">
+    
+<div style='float:left;width:48%;' class='centered'>
+  <ul class = "build incremental">
+<li>The quasi-experimental setup: \(X\), \(Y\); \(Z \in \{0,1\}\), \(Y_c\).</li>
+<li><embed height="400px" width="400px" src="./images/pretest-comp-group-design.jpg"></li>
+</ul>
+
+</div>
+<div style='float:right;width:48%;'>
+  <ul class = "build incremental">
+<li><p>Overlap? </p>
+
+<ul>
+<li>Observations well outside region of overlap should be excluded.</li>
+<li>Wasteful to exclude members of \(\{ i: Z_i=1\}\) because  their \(x\) is just outside \(\mathrm{range}(\{x_j: Z_j=0\})\).</li>
+<li> May distort research question, too.</li>
+<li>Close/far distinctions presuppose a model.</li>
+</ul></li>
+<li><p>Balance - i.e., is \(\bar{x}_t \approx \bar{x}_c\)?</p>
+
+<ul>
+<li>The question presupposes overlap.  (OW mean comparisons can be misleading.)</li>
+<li>A topic for another day...</li>
+</ul></li>
+</ul>
+
+</div>
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>Statistical assumptions for general $X$es</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul class = "build incremental">
+<li>Now, multiple $X$es: \(\mathbf{X}\), not \(X\).</li>
+<li>Strong ignorability conditions:
+
+<ul>
+<li>No unmeasured confounding: \(Y_c \perp Z | \mathbf{X}\).</li>
+<li>Overlap: \(\mathrm{Pr}(Z=1  | \mathbf{X}) < 1\).<br></li>
+</ul></li>
+<li>No unmeasured confounding says, there are natural experiments in each &quot;cell&quot; of \(\mathbf{X}\).</li>
+<li>Problem: if multiple ${X}$es, many observations will be all alone in their cells.</li>
+<li>Rosenbaum &amp; Rubin&#39;s (1983) solution is match on \(\widehat{\mathrm{Pr}}(Z=1| \mathbf{X}=\mathbf{x})\), the PS.</li>
+<li>Remaining problem: In a cell \(\mathbf{x}_0\) s.t. \(\mathrm{Pr}(Z=1| \mathbf{X}=\mathbf{x}_0)=1\), there&#39;s no data to estimate \(\mathrm{Pr}(Y_c \in \cdot |  \mathbf{X}=\mathbf{x}_0)\), even as \(n \uparrow \infty\).  (Whether or not you match or otherwise use PSes.)</li>
+<li>The second problem leads people to reduce analytic sample to region of common support on \(\widehat{\mathrm{PS}}\) (the method of &quot;strict overlap&quot;).</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>Example 1: violence &amp; public infrastructure in Medell&iacute;n</h2>
+  </hgroup>
+  <article data-timings="">
+    
+<div style='float:left;width:48%;' class='centered'>
+  <ul>
+<li>Medellin, Colombia (population 2 million)</li>
+<li>As of early 2000s, 60\% poverty rate, 20\% unemployment, homicide 185 per 100K</li>
+<li>High residential segregation, w/ concentrated poverty in surrounding hills.</li>
+<li>2004-2006: gondolas connect some but not all to city center.</li>
+<li>Cerda et al (2012, <em>Am J. Epideomiol.</em>) study effects on neighborhood violence, propensity matching treatment neighborhoods to control.</li>
+</ul>
+
+</div>
+<div style='float:right;width:48%;'>
+  <p><embed height="625px" width="500px" src="./images/medellin-conc-pov.jpg"> </p>
+
+</div>
+  </article>
+  <!-- Presenter Notes -->
+  <aside class="note" id="">
+    <section>
+      <ul>
+<li>In contrast, Detroit&#39;s  2007 murder rate was 47/100K, and East St. Louis&#39;s was 102 per 100K.</li>
+</ul>
+
+    </section>
+  </aside>
+</slide>
+
+<slide class="" id="slide-5" style="background:;">
+  <hgroup>
+    <h2>Propensity scores in the Medellin study</h2>
+  </hgroup>
+  <article data-timings="">
+    
+<div style='float:left;width:58%;' class='centered'>
+  <ul class = "build incremental">
+<li>Small matching problem: \(n_t=25\), \(n_c=23\) (neighborhoods).</li>
+<li>$\bar{x}_t$s and $\bar{x}_c$s not too far apart, but PS matching brought them closer.</li>
+<li>Figure shows PS we matched on - the \(X\hat{\beta}\) from a logistic regression (Cerda et al 2012, <em>Am J Epi</em>).</li>
+<li>Region of strict overlap contains only 6/25 $t$s and 4/23 $c$s!</li>
+<li>Yet Cerda et al full-matched all 48 neighborhoods.</li>
+<li>(Spoiler: given the PS model we were using, best answer is intermediate to these.)</li>
+</ul>
+
+</div>
+<div style='float:right;width:38%;'>
+  <p><embed height="625px" width="400px" src="./images/boxplot-Medellin-logit.jpg"></p>
+
+</div>
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-6" style="background:;">
+  <hgroup>
+    <h1>Outline</h1>
+  </hgroup>
+  <article data-timings="">
+    <ol>
+<li>Problem: determining the region of  overlap</li>
+<li><span class = 'red'>Propensity score caliper matching</span></li>
+<li>PPSE calipers</li>
+<li>Applications &amp; discussion<br></li>
+</ol>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-7" style="background:;">
+  <hgroup>
+    <h2>Matching within PS calipers (R.&amp; R.)</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul class = "build incremental">
+<li>For matching, useful to specify a tolerance or <em>caliper</em>. </li>
+<li>Absent unmeasured confounding, matches with small PS differences mimic paired random assignment. </li>
+<li>In effect, caliper adjudicates &quot;closeness&quot; to region of common support. </li>
+</ul>
+
+<div style='float:left;width:58%;' class='centered'>
+  <ul class = "build incremental">
+<li>R. &amp; R. (1985, <em>Amer. Statist.</em>), Rubin &amp; Thomas (2000, <em>JASA</em>) recommend \(s_p(\widehat{\mathrm{PS}})/4\).</li>
+<li>(Not \(\widehat{\mathrm{PS}}\) the estimated probability, \(\widehat{\mathrm{PS}}\) the estimated index function.
+I.e., logits of estimated probabilities.)</li>
+<li>The other widely used method (e.g. Austin &amp; Lee 2009, Lunt 2013), besides requiring strict overlap.</li>
+</ul>
+
+</div>
+<div style='float:right;width:38%;'>
+  <p><embed height="400px" width="200px" src="./images/boxplot-Medellin-logit.jpg"></p>
+
+</div>
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-8" style="background:;">
+  <hgroup>
+    <h2>Room for improvement (in caliper = \(.25s_p\))</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul class = "build incremental">
+<li>In the Medellin study, \(.25s_p(\widehat{\mathrm{PS}})\) caliper still excludes 14/25 treatment neighborhoods.</li>
+<li>At the same time, in that study it&#39;s tenable (\(p=.10\)) that all PSes are the same!</li>
+</ul>
+
+<div style='float:left;width:48%;' class='centered'>
+  <ul class = "build incremental">
+<li><embed height="400px" width="400px" src="./images/boxplots-Medellin-logit.jpg"></li>
+</ul>
+
+</div>
+<div style='float:right;width:48%;'>
+  <ul class = "build incremental">
+<li>Moral: in small studies, \(.25s_p(\widehat{\mathrm{PS}})\) may be too strict. </li>
+<li>In large studies, PS may be estimable w/ much more precision than \(.25s_p(\widehat{\mathrm{PS}})\).  At same time, more potential controls. </li>
+<li>Moral: in large studies, \(.25s_p(\widehat{\mathrm{PS}})\) may be too loose.</li>
+</ul>
+
+</div>
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-9" style="background:;">
+  <hgroup>
+    <h1>Outline</h1>
+  </hgroup>
+  <article data-timings="">
+    <ol>
+<li>Problem: determining the region of  overlap</span></li>
+<li>Propensity score caliper matching</li>
+<li><span class = 'red'>PPSE calipers</span></li>
+<li>Applications &amp; discussion<br></li>
+</ol>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-10" style="background:;">
+  <hgroup>
+    <h2>Calipers as insurance that PS differences tend to 0</h2>
+  </hgroup>
+  <article data-timings="">
+    
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-11" style="background:;">
+  <hgroup>
+    <h2>Sampling variability of paired PS differences</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul class = "build incremental">
+<li>Intuition: Even if we had matched <strong>perfectly</strong> on the PS, there would still be matched differences in \(\widehat{\mathrm{PS}}\).  Let&#39;s estimate the size of these differences &amp; use result to define caliper.<br>
+
+<ul>
+<li>caliper \(\downarrow 0\) as \(n\uparrow \infty\). So, \(\hat\beta {\rightarrow} \beta \Rightarrow\) paired PS differences \(\downarrow 0\).</li>
+<li>excludes treatment subjects whose PSes are distinguishably different from all controls&#39;.<br></li>
+</ul></li>
+<li>To limit model sensitivity, work on index scale.</li>
+<li>If \(\mathbf{d} = \mathbf{x}_1 - \mathbf{x}_2\), \(\mathbf{d}(\hat{\beta} - \beta)\) is the error of estimation of paired PS difference \(\mathbf{d}\beta\).</li>
+<li>Considering all ${n \choose 2} $ possible pairs \(r\), the expected MS estimation error of paired PS differences can be expressed as a Frobenius inner product:<br>
+\[ \mathbf{E}_\beta \sum_r (\mathbf{d}_r (\hat{\beta} - \beta))^2/{n \choose 2} = 2\langle S^{(x)}, \mathbf{E}_\beta \{(\hat\beta - \beta) (\hat{\beta} -\beta)' \}\rangle_F . \]</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-12" style="background:;">
+  <hgroup>
+    <h2>Sampling variability of paired PS diffs (ii)</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul class = "build incremental">
+<li>But <strong>all possible</strong> pairs include many that are quite different on the PS.  We wanted to characterize \(\mathbf{E} (\mathbf{d}_r(\hat{\beta} - \beta))^2\) among pairs \(r\) s.t. \(\mathbf{d}_r\beta \approx 0\).<br></li>
+<li><p>Since there may be few or no such pairs, instead &quot;residualize&quot; all pairs for the true PS, leaving remaining differences in place.  For \(i=1,\ldots, p\), define \(d_{(i)}^\perp =\) residual of \(d_{(i)}\) regression on \(\mathbf{d}\beta\); \(\mathbf{d}^\perp = (d^\perp_1\,d^\perp_2\, \ldots\, d^\perp_p)\).  By construction, \(\mathbf{d}_r^\perp \beta =0\) for all \(r\).  </p></li>
+<li><p>Rather than the mean-square of PS-difference estimation errors, \({n \choose 2}^{-1} \mathbf{E} \sum_r (\mathbf{d}_r(\hat{\beta} - \beta))^2\), consider the mean-square PS-difference estimation error, net of differences in the true PS: 
+\[
+{n \choose 2}^{-1}\mathbf{E}_\beta \sum_r (\mathbf{d}_r^\perp (\hat{\beta} - \beta))^2 =
+2 \langle S^\perp, C_\hat\beta \rangle_F,
+\]
+where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathbf{x}^{\perp \mathbf{x}\beta})\), \(x^{\perp \mathbf{x}\beta} = e(x |\mathbf{1}, \mathbf{x}\beta)\). </p></li>
+<li><p>Plugging in \(\hat{S}^\perp = \frac{1}{n-1}e(\mathbf{x} | 1, \mathbf{x}\hat{\beta})'e(\mathbf{x} | 1, \mathbf{x}\hat{\beta}) )\) and a \(\hat{C}_\hat\beta\)  extracted from the regression fit gives the &quot;propensity-paired standard error&quot; (PPSE).</p></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-13" style="background:;">
+  <hgroup>
+    <h1>Outline</h1>
+  </hgroup>
+  <article data-timings="">
+    <ol>
+<li>Problem: determining the region of  overlap</li>
+<li>Propensity score caliper matching</li>
+<li>PPSE calipers</li>
+<li><span class = 'red'>Applications &amp; discussion</span></li>
+</ol>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-14" style="background:;">
+  <hgroup>
+    <h2>Example 2: Real or cosmetic reform in police practices?</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Vagrancy arrests in the 60s and 70s</p>
+
+<ul class = "build incremental">
+<li>Before 1960, arrests for vagrancy were relatively common in U.S.; by 1980, relatively rare.</li>
+<li>Increasingly forbidden by laws, court rulings, administrative decisions.</li>
+<li>Did pretextual arrests decline, a civil rights victory, or were they simply shifted to other categories (displacement)?</li>
+<li>Using administrative records assembled by R. Goluboff, D. Thacher and I identified 121 local agencies experiencing sharp, sudden declines in Vagrancy.</li>
+<li>and we matched them to otherwise similar agencies on the basis of an index score. </li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-15" style="background:;">
+  <hgroup>
+    <h2>Example 3: Vascular closure devices vs manual closure following percutaneous coronary intervention</h2>
+  </hgroup>
+  <article data-timings="">
+    
+<div style='float:left;width:48%;' class='centered'>
+  <ul class = "build incremental">
+<li>Once this stent has been threaded up into your heart, the hole in your femoral artery needs to be closed. </li>
+<li>VCDs are more comfortable than manual closure -- are they as safe?</li>
+<li>Gurm et al (2013, <em>Ann Intern Med</em>) used data from a 32-hospital collaborative in Michgan to conduct a propensity-matched study. </li>
+<li>Large matching problem: $n_t=31$K; $n_c=54$K.<br></li>
+</ul>
+
+</div>
+<div style='float:right;width:48%;'>
+  <p><embed height="400px" width="400px" src="./images/Stent-PCI.jpg"></p>
+
+</div>
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-16" style="background:;">
+  <hgroup>
+    <h2>Applications</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul class = "build incremental">
+<li>For the Medellin example, two PPSEs works out to 1.8 logits (\(1.6s_p\)). </li>
+<li>This caliper excludes only 2/25 treatment neighborhoods.<br></li>
+<li>Recall that the alternatives excluded at least 12!</li>
+<li>In the vagrancy study, one PPSE = 1.5 logits (\(4.8s_p\))</li>
+<li>In the VCD example two PPSEs= 0.1 logits (\(.3s_p\)). </li>
+<li>Larger sample \(\Rightarrow\) smaller PPSE. </li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-17" style="background:;">
+  <hgroup>
+    <h2>Multiple PS calipers</h2>
+  </hgroup>
+  <article data-timings="">
+    
+<div style='float:left;width:48%;' class='centered'>
+  <p><embed height="450px" width="450px" src="./images/boxplot-vagrancy-1ststage.jpg"></p>
+
+</div>
+<div style='float:right;width:48%;'>
+  <p><embed height="450px" width="450px" src="./images/boxplot-vagrancy-2ndstage.jpg"></p>
+
+</div>
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-18" style="background:;">
+  <hgroup>
+    <h3>Discussion</h3>
+  </hgroup>
+  <article data-timings="">
+    <ul class = "build incremental">
+<li>Matches between 1 and 3 PPSEs might be considered &quot;marginal&quot; (Austin &amp; Lee, 2009).<br></li>
+<li>With a saturated PS model, observed information may be poorly conditioned.  The method of PPSE estimation described here requires some elaboration.</li>
+<li>Likeness of observations (&quot;like to like&quot;) is interpreted in terms of PS variables.  If too strict or too loose, then adjust PS variables.<br></li>
+</ul>
+
+<h3>Recommendations:</h3>
+
+<ul class = "build incremental">
+<li>I like calipers of 2.5 PPSEs</li>
+<li>I&#39;m using sandwich estimates of $\mathrm{Cov} (\hat\beta) $, w/ some special sauce to limit numerical instability.</li>
+<li>Our <code>optmatch</code> R package (Fredrickson et al, 2016) does optimal pair and full matching (Gu &amp; Rosenbaum, 1993; Hansen &amp; Klopfer, 2006; Stuart &amp; Green, 2008), readily accommodating PS calipers.</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Outline'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Overlap &amp; bias in comparisons w/ 1 covariate'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Statistical assumptions for general $X$es'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Example 1: violence &amp; public infrastructure in Medell&iacute;n'>
+         4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='Propensity scores in the Medellin study'>
+         5
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=6 title='Outline'>
+         6
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=7 title='Matching within PS calipers (R.&amp; R.)'>
+         7
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=8 title='Room for improvement (in caliper = \(.25s_p\))'>
+         8
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=9 title='Outline'>
+         9
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=10 title='Calipers as insurance that PS differences tend to 0'>
+         10
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=11 title='Sampling variability of paired PS differences'>
+         11
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=12 title='Sampling variability of paired PS diffs (ii)'>
+         12
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=13 title='Outline'>
+         13
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=14 title='Example 2: Real or cosmetic reform in police practices?'>
+         14
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=15 title='Example 3: Vascular closure devices vs manual closure following percutaneous coronary intervention'>
+         15
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=16 title='Applications'>
+         16
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=17 title='Multiple PS calipers'>
+         17
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=18 title='Discussion'>
+         18
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- MathJax: Fall back to local if CDN offline but local image fonts are not supported (saves >100MB) -->
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: true
+      }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <!-- <script src="https://c328740.ssl.cf1.rackcdn.com/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script> -->
+  <script>window.MathJax || document.write('<script type="text/x-mathjax-config">MathJax.Hub.Config({"HTML-CSS":{imageFont:null}});<\/script><script src="libraries/widgets/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')
+</script>
+<!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>
