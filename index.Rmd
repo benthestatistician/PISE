@@ -1,8 +1,8 @@
 ---
 title       : Propensity score calipers and the overlap condition
-author      : Ben Hansen (bbh@umich.edu)
+author      : Ben Hansen (bbh@umich.edu), UMich Statistics 
 date        : IMA Precision Medicine workshop, September 2017
-job         : Assoc. Prof. of Statistics, UMich
+job         : benthestatistician.github.io/PISE (slides); github.com/benthestatistician/PISE (code/manuscript)
 framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
 highlighter : highlight.js  # {highlight.js, prettify, highlight}
 hitheme     : tomorrow      #
