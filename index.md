@@ -1,8 +1,8 @@
 ---
 title       : Propensity score calipers and the overlap condition
-author      : Ben Hansen (bbh@umich.edu), UMich Statistics 
+author      : Ben Hansen, UMich Statistics (bbh@umich.edu).  Project site - 
 date        : IMA Precision Medicine workshop, September 2017
-job         : benthestatistician.github.io/PISE (slides); github.com/benthestatistician/PISE (code/manuscript)
+job         : github.com/benthestatistician/PISE (code/manuscript), benthestatistician.github.io/PISE (slides)
 framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
 highlighter : highlight.js  # {highlight.js, prettify, highlight}
 hitheme     : tomorrow      #
@@ -87,7 +87,6 @@ mode        : selfcontained # {standalone, draft}
 >- Figure shows PS we matched on - the $X\hat{\beta}$ from a logistic regression (Cerda et al 2012, _Am J Epi_).
 >- Region of strict overlap contains only 6/25 $t$s and 4/23 $c$s!
 >- Yet Cerda et al full-matched all 48 neighborhoods.
->- (Spoiler: given the PS model we were using, best answer is intermediate to these.)
 
 *** =right
 
@@ -160,6 +159,14 @@ mode        : selfcontained # {standalone, draft}
 
 ## Calipers as insurance that PS differences tend to 0
 
+>- Pairings (denoted "$i \sim j$") should satisfy $\sup_{i \sim j} |(\vec{x}_i - \vec{x}_j)\beta| \downarrow 0$ as $n \uparrow \infty$.
+>- Can this be accomplished with a requirement of form $|(\vec{x}_i - \vec{x}_j)\hat\beta| \leq w_n$, since $|(\vec{x}_i - \vec{x}_j)\beta| \leq |(\vec{x}_i - \vec{x}_j)(\hat\beta - \hat\beta)| + |(\vec{x}_i - \vec{x}_j)\hat\beta|$?
+>- ($w_n = s_p/4$ won't do.  We need $w_n \stackrel{P}{\rightarrow} 0$.  In itself, even this won't be quite enough.)
+>- Scanning pairs $i,j\leq n$, $|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \leq |\vec{x}_i - \vec{x}_j|_2|\hat\beta - \beta|_2$.
+>- Expect $\sup_{i,j}|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \approx (\sup_{i,j}|\vec{x}_i - \vec{x}_j|_2)|\hat\beta - \beta|_2$.
+>- Even w/ $|x_{ij}|$ bounded, uniformly in $i,j$, and $n$, this is $O(p^{1/2})O_P([p/n]^{1/2}) = O_P(p/n^{1/2})$.  We'll need to assume $p/n^{1/2} \downarrow 0$. 
+>- In that case, a $w_n$ that's $O_P(p/n^{1/2})$ will do the trick.
+>- E.g., a $w_n$ measuring average size of $|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)|$.
 
 ---
 
@@ -206,8 +213,8 @@ Vagrancy arrests in the 60s and 70s
 >- Before 1960, arrests for vagrancy were relatively common in U.S.; by 1980, relatively rare.
 >- Increasingly forbidden by laws, court rulings, administrative decisions.
 >- Did pretextual arrests decline, a civil rights victory, or were they simply shifted to other categories (displacement)?
->- Using administrative records assembled by R. Goluboff, D. Thacher and I identified 121 local agencies experiencing sharp, sudden declines in Vagrancy.
->- and we matched them to otherwise similar agencies on the basis of an index score. 
+>- Using administrative records assembled by R. Goluboff, D. Thacher and I identified 121 (local agency, year) instances, of $n=5600$ at-risk agency-years, that experienced a sharp, anomalaous decline in vagrancy arrests.
+>- ... and we matched them to otherwise similar agencies in terms of year, region of U.S., population, prior use of vagrancy arrests and a propensity score. 
 
 
 
@@ -234,16 +241,19 @@ Vagrancy arrests in the 60s and 70s
 ## Applications
 
 
->- For the Medellin example, two PPSEs works out to 1.8 logits ($1.6s_p$). 
->- This caliper excludes only 2/25 treatment neighborhoods.   
->- Recall that the alternatives excluded at least 12!
->- In the vagrancy study, one PPSE = 1.5 logits ($4.8s_p$)
->- In the VCD example two PPSEs= 0.1 logits ($.3s_p$). 
+>- For the Medellin example, 2.5 PPSEs works out to 4 logits ($3.9s_p$). 
+>- No neighborhoods excluded. Recall that the alternatives excluded at least 12!
+>- In the vagrancy study, 2.5 PPSEs = 3.8 logits ($.5s_p$). 
+>- In the VCD example 2.5 PPSEs= 0.15 logits ($.3s_p$). 
 >- Larger sample $\Rightarrow$ smaller PPSE. 
+
+*** =pnotes
+
+- In vagrancy study, PPSE criterion excluded 2/121 Txes, wheres .2$s_p$ would have excluded 9.
 
 --- &twocol
 
-## Multiple PS calipers 
+## Multiple PS calipers in the vagrancy study (Ex 2)
 
 
 *** =left
@@ -260,9 +270,12 @@ Vagrancy arrests in the 60s and 70s
 
 ### Discussion
 
->- Matches between 1 and 3 PPSEs might be considered "marginal" (Austin & Lee, 2009).  
->- With a saturated PS model, observed information may be poorly conditioned.  The method of PPSE estimation described here requires some elaboration.
+>- Getting consistency out of PPSE caliper requires $p^2/n \downarrow 0$.  If $p/n \downarrow 0$, still interpretable as an SE of sorts. 
+>- No need to restrict yourself to a single index score.
+>- With a saturated PS model, observed information may be poorly conditioned.  The method of PPSE estimation as described here requires some elaboration (see code on github).
 >- Likeness of observations ("like to like") is interpreted in terms of PS variables.  If too strict or too loose, then adjust PS variables.  
+
+<!-- Matches between 1 and 3 PPSEs might be considered "marginal" (Austin & Lee, 2009).-->
 
 ### Recommendations: 
 
