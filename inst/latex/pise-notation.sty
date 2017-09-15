@@ -1,0 +1,80 @@
+
+
+% pise-notation.sty 
+\ifcat a@
+% The macros part
+\usepackage{xifthen}
+
+% Macros adapted from subgroup-analysis project w/ MMF
+\newcommand{\EE}{\operatorname{E}}
+\newcommand{\PP}{\operatorname{P}}
+\newcommand{\E}[1]{\ifthenelse{\isin{(}{#1}}%
+{\EE \left[#1\right]}%
+{\EE \left(#1\right)}}
+\renewcommand{\Pr}[1]{\ifthenelse{\isin{(}{#1}}%
+{\PP \left[#1\right]}%
+{\PP \left(#1\right)}}
+\newcommand{\var}{\text{Var}}
+\newcommand{\cov}{\text{Cov}}
+\newcommand{\Var}[1]{\ifthenelse{\isin{(}{#1}}%
+{\var \left[#1\right]}%
+{\var \left(#1\right)}}
+\newcommand{\Cov}[2][]%
+{\ifthenelse{\isempty{#1}}%
+{\ifthenelse{\isin{(}{#1}}%
+{\cov \left[#2\right]}%
+{\cov \left(#2\right) }}
+{\ifthenelse{\isin{(}{#1} \OR \isin{(}{#2}}%
+{\cov \left[#1, #2\right]}%
+{\cov \left( #1, #2\right) }}
+}
+
+
+% Macros originating here
+
+\newcommand{\pen}[1]{\ensuremath{\alpha(#1)}}
+\newcommand{\fip}[2]%{#1 \mathbin{:} #2}
+{\langle #1, #2\rangle_{F}}
+\newcommand{\hadaprod}[2]{\left(#1 \circ #2 \right)}
+\newcommand{\betatrue}[1][]{\ensuremath{\beta_{n #1}}}
+\newcommand{\betastarx}{\ensuremath{\beta^*_{i}}}
+\newcommand{\etastarx}{\ensuremath{\eta^*_{i}}}
+\expandafter\endinput\fi
+
+% The below should generate a cheat-sheet via `pdflatex pise-notation.sty`
+% (per David Carlisle's answer to 
+% https://tex.stackexchange.com/questions/342995/maitaining-a-sty-file-with-its-own-tex-documentation 
+% )
+
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{pise-notation}
+\newcommand{\Noti}[1]{{\tt\string#1} $\mapsto$ \ensuremath{#1}}
+\newcommand{\Notiopt}[2]{{\tt\string#1\string[#2\string]} $\mapsto$ \ensuremath{#1[#2]}}
+\newcommand{\Notii}[2]{ {\tt\string#1\string{#2\string}} $\mapsto$ \ensuremath{#1{#2}}}
+\newcommand{\Notiii}[3]{
+  {\tt\string#1\string{#2\string}\string{#3\string}} $\mapsto$ \ensuremath{#1{#2}{#3}}}
+
+\begin{document}
+\section*{Macro usage examples}
+
+\subsection*{Notation originating in subgroups project w/  MMF}
+
+\Notii{\E}{aB + c} ; \Notii{\E}{(aB + c)} ; \Noti{\EE}  \\
+
+\noindent%
+\Notii{\Pr}{aB + c >0 } ; \Notii{\Pr}{(aB + c) > 0} ; \Noti{\PP}  \\
+
+\noindent%
+\Notii{\Var}{aB + c} ; \Notii{\Var}{(aB + c)} ; \Noti{\var} 
+
+\subsection*{Notation originating in this project}
+
+\Notii{\pen}{b}
+
+\Noti{\betatrue} , 
+\Notiopt{\betatrue}{k}; \Noti{\etastarx} \\
+\Notiii{\fip}{S}{C} (Frobenius inner product of matrices $S$ and $C$)\\
+\Notiii{\hadaprod}{a}{b} (Hadamard/entrywise matrix product of matrices $a$ and $b$, i.e. $(a_{ij}b_{ij}: i,j)$.
+
+\end{document}

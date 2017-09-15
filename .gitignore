@@ -6,7 +6,6 @@ satcoach.RData
 
 # other
 *.pdf
-*.tex
 *.aux
 *.log
 *~

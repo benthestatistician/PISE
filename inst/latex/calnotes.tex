@@ -1,0 +1,658 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\usepackage{amsthm}
+\usepackage{natbib}
+% \usepackage{enumitem}
+% \setlist[enumerate]{label*=\alph*),\ref=\alph*}
+
+
+\usepackage{pise-notation}
+\newcounter{saveenumi} 
+\newcommand{\seti}{\setcounter{saveenumi}{\value{enumi}}}
+\newcommand{\conti}{\setcounter{enumi}{\value{saveenumi}}}
+
+\newtheorem{prop}{Proposition}
+\newtheorem{lemma}{Lemma}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\author{Ben B. Hansen\thanks{This work benefited from helpful comments of Jake Bowers, Joshua Errickson, Mark M. Fredrickson, and Xuming He, none of whom bear responsibility for potential errors or omissions.}}
+\title{Diminishing calipers for propensity and other index scores}
+\begin{document}
+
+%http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0081045
+\maketitle
+
+\section{Introduction} \label{sec:introduction}
+Since \citet{rubin:thom:1996}, methodologists of propensity score
+matching and subclassification have recommended liberal inclusion of
+covariates in propensity score models. How does propensity score
+estimation error affect the quality of matching if the number of
+covariates, $p$, is assumed to increase in tandem with the sample size,
+$n$? 
+
+In parametric binary regression, subject to regularity conditions one
+has $|\hat\beta - \betatrue|_2 = O_{P}(\sqrt{p/n})$, provided that
+$p(\log p)/n \downarrow 0$ \citep{he2000parameters}. The index made from
+these estimates takes the form $\vec{x}_i \hat\beta$, and matches or
+candidate matches between study subjects $i$ and $j$ are assessed in
+terms of $(\vec{x}_i -\vec{x}_j)\hat\beta$, a stand-in for
+$(\vec{x}_i - \vec{x}_j)\betatrue$. Let us make the favorable assumption
+that as $n$ and $p$ increase, observing the convention that 
+design matrix columns $x_{i}$ each have s.d. 1, entries in $\mathbf{x}$ are
+uniformly bounded. Scanning across samples as
+a whole, one expects $|\vec{x}_i - \vec{x}_j|_2^2$ of order $p$, both on
+average and in the worst case. Accordingly the errors of estimates of
+difference on the index score are not of order $\sqrt{p/n}$, as are the
+index coefficients themselves, but larger:
+
+\begin{equation*}
+|(\vec{x}_i -\vec{x}_j)(\hat\beta - \betatrue)| \leq |\vec{x}_i -\vec{x}_j|_2 |\hat\beta - \betatrue|_2 = O(p^{1/2})O_P[\sqrt{p/n}] = O_P(p/\sqrt{n}) . 
+\end{equation*}
+
+Even among pairs $(i,j)$ that are perfectly matched on the index score,
+$(\vec{x}_i - \vec{x}_j)\betatrue = 0$, there are still $p-1$ nonzero
+components in the sum that is $|\vec{x}_i - \vec{x}_j|_2^2$, and
+differences on the estimated index,
+$|(\vec{x}_i - \vec{x}_j)\hat\beta|_2$, are of order
+$(p-1)^{1/2} \cdot (p/n)^{1/2}$, i.e.~again $p/\sqrt{n}$.
+
+In consequence, if $p^2/n$ diverges then it is not possible to
+articulate a maximum permissible difference of estimated
+index scores, $|(\vec{x}_i - \vec{x}_j)\hat\beta|$, so as to force
+the maximum of matched differences on the actual index,
+$\sup_{i \sim j}|(\vec{x}_i - \vec{x}_j)\betatrue|$, to tend to zero. This
+is so even if the index score itself is consistently estimated.
+In other words, the widely used method of matching on estimated
+propensity scores does not induce matching on true propensity scores
+when the number of covariates is only marginally smaller than the sample
+size --- no matter how large the sample, even if the propensity
+specification is correct and well-estimated. Such matching requires, at
+a minimum, $p^2/n \downarrow 0$, a more stringent ratio of
+parameters to data points than that required for consistency of the
+index model.
+
+Suppose the modeling of the index function to spend degrees of freedom in this
+relatively more frugal way. If the matching method is to enforce an
+upper limit on the estimated differences in the index score, with the purpose of ensuring
+close matches on the actual index, then it is futile to require
+these differences to be of any smaller order than $p/\sqrt{n}$.  But
+this tolerance must also decrease with increasing $n$; to tolerate differences of an order any larger than
+$p/\sqrt{n}$ is to invite nonzero matched differences in $\vec{x}\betatrue$ even
+in the large sample limit, rendering inapplicable conceptual analyses
+of the matched comparisons that presume the pairing to have removed
+differences in the index value. 
+
+Unfortunately, the common practice of matching to within
+a quarter or a fifth of $s_{p}$, the pooled standard deviation on an
+estimated propensity score, fails this test, since this $s_{p}$ does not diminish with increasing $n$;
+if that is all that is done to ensure that paired subjects' propensity
+score values are close, then the pairing cannot be said to enjoy
+propensity score matching's purported benefits
+\citep{rosenbaum:rubi:1983}, whatever the ratio of $p$ to $\sqrt{n}$.
+What is needed is a criterion that scales downward in sync with the
+precision of modeling, not in the manner of a sample standard
+deviation but rather in the manner we expect of standard errors.
+
+It so happens that if we tighten the rate requirement for index score
+modeling very slightly, from $p^2/n \downarrow 0$ to
+$p^2 (\log p)/n \downarrow 0$, these models are brought into a regime in
+which ordinary estimates $\hat{C}_\beta$ of $\Cov{\hat\beta}$ can be consistent
+as such. This paper puts these calculations to a novel use, as estimates
+of sampling variability associating with estimated score differences
+within pairs that, in a somewhat idealized sense, are exactly matched
+on the true index score. Similar to the quarter of a propensity s.d.
+rule, these index score standard errors involve estimates of the
+dispersion of $x$'s within the sample used to estimate the index score;
+but rather than focusing on the dispersion of the index itself, this
+calculation removes 
+dispersion in the direction of the index as it tallies dispersion in
+each of the manifest covariates.  Specifically,  this intermediate calculation is of 
+the sample covariance of
+$(x_1^{\perp  \mathbf{x}\hat\beta}, \ldots, x_p^{\perp\hat\beta})$,
+where $x_i^{\perp\hat\beta}$ is the residual of covariate $x_i$'s simple
+regression on $\mathbf{x}\hat\beta$; twice the resulting 
+$S_x^{\perp}$ estimates $2S_x^{\perp
+\mathbf{x}\betatrue}$, the covariance of 
+$\vec{x}_{i}^{\perp\mathbf{x}\betatrue} - \vec{x}_{j}^{\perp\mathbf{x}\betatrue}$
+across all possible pairs $(i,j)$, where
+$\vec{x}^{\perp\mathbf{x}\betatrue}$ is the component of $\vec{x}$
+orthogonal to the index. 
+The paired index standard error is then the square root of
+$2 \langle S_{x}^\perp, C_{\hat{\beta}} \rangle_F$, where $\langle [a_{ij}:i,j],
+[b_{ij}: i,j] \rangle_{F} = \sum_{i,j} a_{ij}b_{ij}$ is the Frobenius inner product.
+
+Since $\|S_{x}^{\perp}\|_{F} = O_{P}(p^{1/2})$ while $\|C_{\hat\beta}\|_{F} = O_{P}((p/n)^{1/2})$, this quantity is of order
+$O_{P}(p/\sqrt{n})$ ---  precisely as is needed to force $\sup_{i \sim j}
+|(\vec{x}_{i} - \vec{x}_{j})\hat\beta|$ toward 0 at the
+rate of $\sup_{i \sim j}
+|(\vec{x}_{i} - \vec{x}_{j})(\hat\beta - \betatrue)|$'s convergence to 0. Indeed, we shall see that,
+subject to conditions canvassed above, and enumerated in full detail
+below, matching within propensity score
+calipers set to a fixed multiple of the propensity score standard
+error --- or subclassifying so that the subclasses' diameters, measured in ratios
+of estimated propensity scores to their corresponding standard errors,
+fall below a limit independent of $n$ --- gives consistency of common
+paired or subclassified effect estimates, under the combination of
+strong ignorability \citep{rosenbaum:rubi:1983} plus modest additional conditions on the
+matching or subclassification scheme.
+
+\section{The range of index score models considered} \label{sec:range-prop-score}
+``Propensity score'' is ambiguous, having originally been defined \citep{rosenbaum:rubi:1983} as \textit{either} the  conditional probability of assignment to treatment as opposed to control given measured covariates $X$, $\mathbf{x} \mapsto \Pr{Z=1: \mathbf{X} = \mathbf{x}} $, \textit{or} as a montonic transformation of that function.  We'll say the propensity score is linear in $\mathbf{x}$ if there is a $\beta \in \Re^{p}$ such that for any 
+%set of treatment conditions $\mathcal{A}$, there is a $g_{\mathcal{A}}: \Re \rightarrow [0,1]$  
+% such that $\Pr{Z \in \mathcal{A}: \mathbf{X}=\mathbf{x}} = g_{\mathcal{A}}^{-1}(\mathbf{x}\beta)$. 
+$z$,  $\Pr{Z = z| \mathbf{X}=\mathbf{x}} = g_{z}(\mathbf{x}\beta)$, some invertible $g_{z}:  \Re \rightarrow (0,1)$. 
+With binary treatments, this is no different from requiring that there be a $g$ making $g^{-1}\left( \Pr{Z=1: \mathbf{X}=\mathbf{x}} \right) $ linear in $\mathbf{x}$; with a treatment variable taking 3 or more values, it requires the probability of taking any of them to be expressible in terms a single linear index.  \marginpar{Mention subtleties of extension to multiple index models?\ldots}%I have in mind the argument of pmd-bib.tex/A&I'06, re how closely you can match on more than 1 index.  If I do bring some of that material in to this paper, makes sense to mention the subtleties here. 
+ In what follows, PS will denote the linear predictor of a linear propensity score.
+
+A PS, and more generally an index score (IS), is \textit{estimable} if we have $\Re^{p}$-valued estimating functions $\psi (z, \vec{x}; \beta)$, the expected values of which have a unique root  $\betatrue$ (  $\E{ \sum_{i=1}^{n}\psi(Z_{i}, \vec{x}_{i}; \betatrue) } =0 $). 
+The PS coefficent estimates  $\hat{\beta}$ are assumed to satisfy $\sum_{j=1}^{p}\left[\sum_{i=1}^{n}\psi_{j}(z_{i}, \vec{x}_{i}; \hat{\beta})\right]^{2} = o_{P}(n)$. (Ordinarily $\sum_{i=1}^{n}\psi(z_{i}, \vec{x}_{i}; \hat{\beta}) \equiv 0$; but in Bayesian estimation [\citealp[e.g.,][]{gelman2008weakly}] and in certain bias-reduction schemes [\citealp{firth:1993,kosmidisFirth2009bias}], $\hat\beta$ is the solution of $[\sum_{i=1}^{n}\psi(z_{i}, \vec{x}_{i}; \beta)] + \pen{\beta} =0$, some $\pen{\cdot}$.)
+We consider $\psi$ of form 
+\begin{equation}\label{eq:20}
+  \psi(z, \vec{x}, \beta) = v(z, g(\vec{x}\beta)) w(\vec{x}, g(\vec{x}\beta)) \vec{x}',
+\end{equation}
+a structure generalizing that of the logistic regression score function, $\psi(z, \vec{x}, \beta) = (z - g(\vec{x}\beta))\vec{x}'$.  
+We'll assume (condition \ref{A-psismooth} below) $\beta \mapsto \psi(z, \mathbf{x}; \beta)$ possesses smoothness comparable to that of the logistic regression estimating equations. We consider sequences of designs, with design matrices of increasing dimensions $n $ and $p$.  Define
+\begin{align}
+  \label{eq:7}
+ A_{n}(\gamma ) &= \frac{1}{n}\left\{ \E{ \sum_{i=1}^{n} \nabla_{\beta} \left. \psi(Z_{i}, \vec{x}_{i}; \beta) \right|_{\beta =  \gamma}} + \pen{\gamma}\right\}, \quad A_{n}  =  A_{n}(\betatrue);  \\
+ \hat{A}_{n}(\gamma ) &= \frac{1}{n}\left\{ \sum_{i=1}^{n} \nabla_{\beta} \left. \psi(z_{i}, \vec{x}_{i}; \beta) \right|_{\beta =  \gamma} + \pen{\gamma}\right\}, \quad \hat{A}_{n}  =  A_{n}(\hat\beta).  \nonumber
+\end{align}
+Say the IS is \textit{strongly estimable} if for each $n$ the IS is estimable, $A_{n}$ and $\hat{A}_{n}$  
+are invertible and $|{A}_{n}^{-1}|_{2}=O(1)$ and $|\hat{A}_{n}^{-1}|_{2}= O_{P}(1)$. 
+%the $p\times(m+p)$ submatrix $\tilde{A}_{n}$ of $\beta$-components of $A_{n}^{-1}$ satisfies  
+%$\lim\sup|\tilde{A}_{n}|_{2} <\infty$. 
+(Here $| \cdot |_{2}$ has its usual meaning:
+\begin{equation*}
+  \begin{array}{rclr}
+    |{a}|_{2} & = & \left[ \sum_{k=1}^{p} a_{k}^{2} \right]^{1/2}, & a \in \Re^{p};\\    |M|_{2} & = & \max_{a \in \Re^{p} } {|a|_{2}^{-1}}{|Ma|_{2}},& M\, \mathrm{a}\, p\times p\, \mathrm{matrix}.)
+  \end{array}
+\end{equation*}
+%  for $p$-vectors $\mathbf{a}$,  $|\mathbf{a}|_{2}^{2} = %p^{-1}
+% \sum_{k=1}^{p} a_{k}^{2}$; for $p \times p$ matrices $M$, $|M|_{2} = \sup \{ |Ma|_{2}: a \in \Re^{p}, |a|_{2} = 1\}$.  
+When estimating functions $\psi$ arise as derivatives of an objective function such as the log likelihood, the reciprocal of $|{A}_{n}^{-1}|_{2}$ is the expected size of that function's derivative in the direction of least decrease from its maximum $\betatrue$. 
+Strong estimability bounds this curvature from below.
+
+M-estimation distribution theory approximates $\hat\beta$ with a linear function of $\psi(\cdot, \mathbf{x}, \betatrue)$, namely 
+\begin{equation}
+  \label{eq:22}
+  \tilde{\beta}_{n} \equiv \betatrue + A_{n}^{-1} \left[n^{-1}\sum_{i=1}^{n} \psi(Z_{i}, \vec{x}_{i}; \betatrue )\right].  
+\end{equation}
+% We will use this approximation somewhat more broadly than is ordinarily justified, embedding it in the definitions of certain constructs that will be seen to have meaning even for some design sequences with divergent $p^{2}/n$, where the approximation is not reliable enough to ground inference about $\betatrue$ . 
+The covariances of the estimating functions, $n^{-1} \sum_{i=1}^{n} \psi(Z_{i}, \vec{x}_{i}; \betatrue )$, and, respectively, of $\tilde{\beta}_{n}$, are 
+\begin{align}
+\label{eq:13}
+B_{n}  &=  n^{-1}\EE  \sum_{i=1}^{n} \psi(Z_{i}, \vec{x}_{i}; \betatrue ) \psi(Z_{i}, \vec{x}_{i};  \betatrue )' \, \mathrm{and} \\
+C_{n} &= n^{-1}A_{n}^{-1}B_{n}A_{n}^{-1\prime}.\nonumber
+\end{align}
+% If $\psi$ is the score function corresponding to a well-specified likelihood, then $B_{n}$ is the expected information.
+
+We consider design sequences and estimating functions such that 
+\renewcommand{\theenumi}{A\arabic{enumi}}
+\begin{enumerate}
+\item \label{A-centering} Column 1 is an intercept, $x_{[1]} \equiv 1$, and/or $\bar{x}_{[k]}=0$, each remaining column $x_{[k]}$ of $\mathbf{x}$;
+\item \label{A-boundedinfo}
+$\lim\inf |A_{n}^{-1}|_{2},  \lim\inf n|C_{n}|_{2} > 0 $.
+% For some universal constant $c>0$, the information content of observation \marginpar{Maybe derive this from something else} $\vec{x}_{i}$ is bounded above by $c\vec{x}_{i}'\vec{x}_{i} $, in the sense that   
+% $$c \vec{x}_{i}'\vec{x}_{i} - \mathrm{E}\left\{ [\nabla_{\beta}\log g_{Z}(\vec{x}_{i}\beta)]_{\beta=\betatrue} '[\nabla_{\beta}\log g_{Z}(\vec{x}_{i}\beta)]_{\beta=\betatrue} \right\}$$
+% is nonnegative definite;
+\item\label{A-estimable} The IS is linear in $\mathbf{x}$ and strongly estimable, i.e.  $\{A_{n}(\betatrue)\}$ and $\{A_{n}(\hat\beta)\}$ are sequences of matrices that are invertible (in the latter case, with probability tending to 1) and satisfy $|{A}_{n}^{-1}|_{2}=O(1)$ and $|\hat{A}_{n}^{-1}|_{2}= O_{P}(1)$. 
+\item \label{A-psismooth} $\psi(z, \mathbf{x}, \beta)$ is of form \eqref{eq:20}. The function $\eta \mapsto v(z, g(\eta))w(\vec{x}, g(\eta))$ is twice differentiable; it and its first two derivatives are uniformly bounded. 
+% $\frac{\partial}{\partial_{i}} \psi _{j} (z, \vec{x}, \beta)  = c_{1}(z, \vec{x}\beta) x_{i}x_{j}$, 
+% $\frac{\partial^{2}}{\partial_{i}\partial_{j}} \psi _{k} (z, \vec{x}, \beta)  = c_{2}(z, \vec{x}\beta) x_{i}x_{j}x_{k}$, where $\Var{c_{1}(Z, \vec{x}, \beta)}$ and $|c_{2}(\cdot)|$ are uniformly bounded.  There is a scalar $c_{0}<\infty$ such that $|\Cov{\psi(Z, \vec{x}, \beta)}|_{2} \leq c_{0} |\vec{x}|_{2}^{2}$.
+\item \label{A-l2Sfinite} Each $S^{(x)} = (n-1)^{-1}\mathbf{x}'\mathbf{x}$ is of full rank, and the following quantities are $O(n)$:  $|(n-1)S^{(x)}|_{2} =$ 
+$$\max_{\gamma: |\gamma|_{2}=1} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2},\quad 
+\text{and}
+\max_{\substack{\gamma, \delta: |\gamma|_{2}=\\ |\delta|_{2} =1}} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2} (\vec{x}_{i}\delta)^{2}.$$ 
+% entails He & Shao's F1a, $\sum_{i=1}^{n}|\vec{x}_{i}|_{2}^{2} = O(n)$.  Related to F1b but weaker.
+\item \label{A-regPS} $p^{-1}|\betatrue|_{2}^{2} = p^{-1} \sum_k \betatrue[k]^2$ is bounded away from $\infty$;
+\item \label{A-boundedXes} $\sup_{i,n}|\vec{x}_{i}|_{\infty}  <\infty$. \marginpar{\ref{A-boundedXes} used to prove Lemma~\ref{lem:ChatC} \ldots} %in four places, none of which seems totally
+% unavoidable. First, it helps to control $\hat{A}(\betatrue) - A(\betatrue)$, 
+% $\hat{B}(\betatrue - B(\betatrue)$. Potentially this has to do with the limits of my 
+% technique for the bounding of spectral norms (although Wang 2011 resorts to 
+% similar devices).  I conjecture that these invocations are would be readily relaxed in 
+% a scheme with random design matrices. 
+% It's also used in that proof for control of $\hat{A} - \hat{A}(\betatrue)$ and $\hat{A} - \hat{A}(\betatrue)$, but in those uses it could have been 
+% supplanted by adding to \ref{A-l2Sfinite} the premise that 
+% $\max_{\substack{\gamma, \delta: |\gamma|_{2}=\\ |\delta|_{2} =1}} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2} |\vec{x}_{i}\delta|$, 
+% which seems much weaker than global boundedness. 
+% might have been able to relax this w/ random X's. 
+\item\label{A-PSvar}  $\lim\inf_{n}\betatrue'S^{(x)}\betatrue >0$,  but also $\lim\sup_{n} (\log p)^{-1}\betatrue'S^{(x)}\betatrue  < \infty$; and
+\item \label{A-rates} $p(\log p)/n \rightarrow 0$.%\textit{either}
+  % \begin{enumerate}
+  % \item  $p(\log p)/n \rightarrow 0$ (the weak rate assumption), \textit{or}
+  % \item $p^{2}(\log p)/n \rightarrow 0$ (the strong rate assumption).
+  % \end{enumerate}
+\seti
+\end{enumerate}
+%In \ref{A-estimable}--\ref{A-PSvar}, 
+%Assumptions \ref{A-estimable} and \ref{A-l2Sfinite} are needed for asmptotics of $\hat{\beta}$ \citep{he2000parameters}. 
+The method being developed here will require $p^2/n \downarrow 0$, as indicated in Section~\ref{sec:introduction}; but most of the supporting theory is valid under the weaker \ref{A-rates}.
+
+Assumptions \ref{A-centering} and \ref{A-boundedinfo} are shared characteristics of ordinarily used propensity score models.  While the link functions $\{g_{z}^{-1}: z\}$ are assumed the same for each $n$, the coefficient vector $\beta$ is permitted to fluctuate, and needn't converge to anything in particular.  However, \ref{A-PSvar} restricts attention to design sequences with non-trivial variation in ${x}\betatrue $: since $\beta'S^{(x)}\beta = s^{2}(\mathbf{x}\beta)$, it says there is a universal $\delta>0$ such that $s(\mathbf{x}\beta)>\delta$, each $n$.   It does permit the variance of $\mathbf{x}\betatrue$ to grow, but only slowly, no faster than $\log p$. 
+
+The invertibility aspect of strong estimability, \ref{A-estimable}, is less burdensome than it would be in other contexts, as for present applications one can freely change the basis of the design matrix, there being no interest in particular elements or contrasts of $\beta$.   
+\ref{A-l2Sfinite}'s appropriateness can be evaluated in advance of IS estimation, whereas \ref{A-estimable} and \ref{A-PSvar} must be assessed only indirectly, by inspection of model-fitting artifacts, following (an attempt at) estimation of $\beta$.
+Overfitting, if present, distorts both of these measures, exaggerating potential problems with \ref{A-estimable} while obscuring potential problems with (part 1 of) \ref{A-PSvar}.  A simple measure to reduce overfitting is to trim explanatory variables that contribute relatively little to the estimated log-likelihood, as indicated by common model selection criteria.
+
+Consistency for $(\betatrue: n)$ of solutions $\hat{\beta}$ of empirical estimating equations $\sum_{i=1}^{n}\psi(z_{i}, \vec{x}_{i}; \cdot) = 0 $ will mean  $|\hat\beta - \betatrue|_{2}^{2} \sim O_{P}(p/n)$.
+Random matrices $\{ \hat{M}_{n} \}$ are said to consistently estimate fixed matrices $\{M_{n}\}$ with $O_{P}(|M_{n}|_{2}) = n^{-1})$ if
+$$n|\hat{M}_{n} - {M}_{n}|_{2} \stackrel{P}{\rightarrow} 0.$$
+% the factor of $n$ being needed to justify use of $\hat{C}$ as a plug-in for $\mathrm{Cov}(\hat\beta) $ in tests and confidence intervals\citep[][Remark~5]{wang2011gee}.  (Under \ref{A-boundedinfo}, $\lim\inf_{n} n| C_{n}|_{2} >0$.)
+% Estimates $\hat\beta$ of $\betatrue$ are asymptotically Normal as well as consistent if 
+% for sequences $\{\gamma_{n}\} $, $\gamma_{n} \in \mathcal{S}_{p_{n}} = \{ (\gamma_{1}, \gamma_{2}, \ldots, \gamma_{p_{n}}): \sum_{i} \gamma_{i}^{2} = 1\}$,
+% %{Portnoy 1986 may justify describing this convergence as uniform in $\gamma$}%  
+% $ \gamma'(\hat{\beta} - \betatrue)/\sigma_{n}(\gamma) \stackrel{d}{\rightarrow} N(0,1)$, where $\sigma_{n}^{2}(\gamma) = \gamma'C_{n}\gamma$, $C_{n}$ the $p \times p$ matrix of $\beta$-components of $n^{-1}A_{n}^{-1}B_{n}A_{n}^{-1'}$. % $c_{n}'(\hat\beta - \betatrue)/[c_{n}'C_{n}c_{n}]^{1/2} \stackrel{P}{\rightarrow} N(0,1)$ for any sequence of norm-1 $p$-vectors $\{c_{n}\}$. 
+
+
+\section{Standard errors and index scores}
+
+Our regularity conditions entail consistency of $\hat\beta$, and of common estimators of $C_{n}$.  If $\psi$ is the gradient a (well-specified) log-likelihood, then $A_{n}=B_{n}$, and $C_{n}$ is estimated by $n^{-1}\hat{A}_{n}^{-1}(\hat\beta)$; more broadly, it is estimated by 
+% \begin{align*}
+% \hat{C}_{n} := & n^{-1}\hat{A}_{n}^{-1}(\hat\beta),\\
+% \hat{A}_{n}(\gamma) = &  n^{-1}\left( \sum_{i=1}^{n} \nabla_{\beta} \left. \psi(z_{i}, \vec{x}_{i}; \beta) \right|_{\beta = \gamma}\right) .  
+% \end{align*}
+% If $\psi$ derives from a pseudo-likelihood, or otherwise identifies propensity score coefficients without necessarily being gradients of the log of the generating likelihood, then one uses sandwich estimates, 
+\begin{align*}
+\hat{C}_{n} :=& n^{-1} [\hat{A}_{n}]^{-1} \hat{B}_{n} [\hat{A}_{n}']^{-1},\, \text{where}\\
+\hat{B}_{n}  =&  n^{-1} \sum_{i=1}^{n} \psi(z_{i}, \vec{x}_{i};  \hat{\beta} ) \psi(z_{i}, \vec{x}_{i};  \hat{\beta} )'.  
+\end{align*}
+% The symbol $\hat{C}$ will indicate either $n^{-1} \hat{A}_{n}^{-1} \hat{B}_{n} \hat{A}_{n}^{-1\prime} $ or $n^{-1} \hat{A}_{n}^{-1}$.  
+
+\begin{lemma} \label{lem:C-rate}
+  Under \ref{A-centering}--\ref{A-rates}, $|B_{n}|_{2} = O(1)$ and $|C_{n}|_{2} = O(n^{-1})$.
+\end{lemma}
+
+\begin{proof}[Proof of Lemma~\ref{lem:C-rate}]
+  In light of \eqref{eq:13}, Conditions~\ref{A-psismooth} and~\ref{A-l2Sfinite} combine to give $|B_{n}|_{2} = O_{P}(1)$.  Condition~\ref{A-estimable} gives $|{A}_{n}^{-1}|_{2}=O(1)$, so also $|{C}_{n}^{-1}|_{2}=O(n^{-1})$.
+\end{proof}
+
+
+\begin{lemma} \label{lem:ChatC}
+  Under \ref{A-centering}--\ref{A-rates}, $|\hat\beta - \betatrue|_{2} \stackrel{P}{\rightarrow} 0$, with rate $O_{P}\left( \sqrt{p/n} \right)$;   $|\hat{A}_{n} - A_{n}|_{2} \stackrel{P}{\rightarrow} 0$; and $n|\hat{C}_{n} - C_{n}|_{2} \stackrel{P}{\rightarrow} 0$. 
+\end{lemma}
+
+A proof, drawing from \citet{he2000parameters} and \citet{wang2011gee}, appears in the appendix.
+
+Despite these consistency results, use of $n^{-1}\hat{A}_{n}^{-1}$ or $\hat{C}_{n}$ as estimates of the covariance of $\hat\beta$ would necessitate a rate condition stronger than \ref{A-rates}, namely $p^{2}\log(p)/n \downarrow 0$ \citep[Theorem~2.2]{he2000parameters}; under \ref{A-rates}'s weaker condition $p(\log p)/n \downarrow 0$, these matrices estimate $\Cov{\tilde{\beta}}$, for $\tilde\beta$ as in \eqref{eq:22}, but not $\Cov{\hat\beta}$.   If $p^{2}\log(p)/n$ diverges, they remain useful for present purposes if provided that the conclusions of Lemmas~\ref{lem:ChatC} and~\ref{lem:C-rate} still hold. 
+
+
+\subsection{Standard errors for paired index score differences}
+Suppose we have estimated an index score (and the covariance of its
+coefficients) and for each treatment group member we wish to identify a
+subset of controls to be considered eligible for matching. If we hope to
+enjoy the benefits of index score matching, it is reasonable to
+confine matching to only those pairs separated on the index score
+by less than a small multiple---say 2, to be concrete---of the standard error:
+\begin{equation}
+|(\vec{x}_i - \vec{x}_j)\hat{\beta}| \leq 2 \mathrm{SE}\left( (\vec{x}_i - \vec{x}_j)\hat{\beta}\right) = 2\left[  (\vec{x}_i - \vec{x}_j)\hat{C}(\vec{x}_i - \vec{x}_j)' \right]^{1/2},
+\label{eq:ipse-i}
+\end{equation}
+where $\vec{x}_i$ and $\vec{x}_j$ are rows of the design matrix
+$\mathbf{x}$. If an intervention subject is separated from each
+potential control by this tolerance or more, deem him outside of the
+region of common support and exclude him from the match.  In broad
+strokes, this is the main idea of the paper --- although practical and
+conceptual considerations will demand a number of refinements.
+
+First up: among all conceivable pairings of treatment to control are a
+number that will have very large paired differences on the covariate,
+including large differences on the linear combination of the covariate
+that is the index score. As is clear from the form of
+\eqref{eq:ipse-i}, pairs with large differences on the index score
+will have correspondingly large standard errors, and may for this reason
+be deemed compatible by criterion \eqref{eq:ipse-i}. If the
+purpose of the restriction is to ensure a reasonable approximation of the
+ideal of perfect matching on $\mathbf{x}\betatrue$, this is a loophole that
+needs to be closed. 
+% But $\mathbf{x}\hat{\beta}$ is the best available
+% estimate of $\mathbf{x}\betatrue$ --- if not, we should revise our
+% estimating equations to make it so --- so we have the trappings of a
+% vicious circle. 
+% Without foreknowledge of $\betatrue$, how can we disentangle
+% the separate contributions of difference along $\mathbf{x}\betatrue$ and
+% errors of estimation in $\hat{\beta}$ to the sum that is
+% $(\vec{x}_1 - \vec{x}_2)\hat{\beta}$?
+
+To do this, we instead estimate the error $(\vec{x}_i - \vec{x}_j)\hat{\beta} $ \emph{as though}
+$(\vec{x}_i - \vec{x}_j){\betatrue}$ were equal to 0, to enforce a matching requirement along the lines of
+\begin{equation*}
+|(\vec{x}_i - \vec{x}_j)\hat{\beta}| \leq 2 \mathrm{SE}\left( (\vec{x}_i^{\perp \mathbf{x}\betatrue} - \vec{x}_j^{\perp \mathbf{x}\betatrue})\hat{\beta}\right) ,
+% = 2\left[  (\vec{x}_i^{\perp \mathbf{x}\betatrue} - \vec{x}_j^{\perp \mathbf{x}\betatrue})\hat{C}(\vec{x}_i^{\perp \mathbf{x}\betatrue} - \vec{x}_j^{\perp \mathbf{x}\betatrue})' \right]^{1/2},  
+\end{equation*}
+where $\mathbf{x}^{\perp v}$ denotes the 
+$n \times p$ matrix of residuals issuing from the simple regression of
+each column of $\mathbf{x}$ on $v$.  This precisely is not possible, since $\betatrue$ is not known; but it has a simple large-sample equivalent. 
+
+\begin{prop} \label{prop:PSdiffconsist}
+Let \ref{A-estimable}--\ref{A-rates} hold,  so that $\hat\beta$ and $\hat{C}$ are consistent estimates of $\betatrue$ and $C$: $|\hat\beta - \betatrue|_{2}^{2} = O_{P}\left(\frac {p}{n}\right)$ \marginpar{ToDo: confirm proof doesn't really assume $o_{P}\left(\frac {p}{n}\right)$} \citep[Theorem~2.1 and Example~3]{he2000parameters}; $n|\hat{C} - C|_{2} \stackrel{P}{\rightarrow} 0$ (see Section~\ref{sec:range-prop-score}??).  Then  %For sequences $\{d_{n} \} \subseteq \Re^{+}$, $\mathcal{D}_{n} = \{ \vec{x}_{i} - \vec{x}_{j}: |\vec{x}_{i} - \vec{x}_{j}|_{2} \leq d_{n}\}$,
+\begin{equation*}
+n \left( \sup_{\vec{x}_{i} \neq \vec{x}_{j}} 
+ \frac{ 
+\left|\mathrm{SE}^{2}_{p}(i,j)
+- \mathrm{SE}^{2}\left( (\vec{x}_i^{\perp \mathbf{x}\betatrue} - \vec{x}_j^{\perp \mathbf{x}\betatrue})\hat{\beta}\right)\right|}{|\vec{x}_{i} - \vec{x}_{j}|_{2}^{2}} \right)
+\stackrel{P}{\rightarrow} 0, 
+\end{equation*}
+where 
+\begin{align}
+\mathrm{SE}_p(i,j) := \big[ (\vec{x}_{i}^{\perp \mathbf{x}\hat{\beta}} - \vec{x}_{j}^{\perp \mathbf{x}\hat{\beta}}) 
+\hat{C}&
+(\vec{x}_{i}^{{\perp \mathbf{x}\hat{\beta}}} - \vec{x}_{j}^{\perp \mathbf{x}\hat{\beta}})'\big]^{1/2}, \label{eq:12a}\\
+\mathrm{SE}\left( (\vec{x}_i^{\perp \mathbf{x}\betatrue} - \vec{x}_j^{\perp \mathbf{x}\betatrue})\hat{\beta}\right) = \big[ (\vec{x}_{i}^{\perp \mathbf{x}\betatrue} - \vec{x}_{j}^{\perp \mathbf{x}\betatrue}) 
+\hat{C}&
+(\vec{x}_{i}^{{\perp \mathbf{x}\hat{\beta}}} - \vec{x}_{j}^{\perp \mathbf{x}\hat{\beta}})' \big]^{1/2}.\nonumber
+\end{align}
+% \begin{equation*}
+%  \sup_{\vec{x}_{i} \neq \vec{x}_{j}}\frac{\left|(\vec{x}_{i}^{\perp \mathbf{x}\betatrue} - \vec{x}_{j}^{\perp \mathbf{x}\betatrue}) {C}(\vec{x}_{i}^{{\perp \mathbf{x}\betatrue}} - \vec{x}_{j}^{\perp \mathbf{x}\betatrue})' -  
+%  (\vec{x}_{i}^{\perp \mathbf{x}\hat{\beta}} - \vec{x}_{j}^{\perp \mathbf{x}\hat{\beta}}) \hat{C}
+% (\vec{x}_{i}^{{\perp \mathbf{x}\hat{\beta}}} - \vec{x}_{j}^{\perp \mathbf{x}\hat{\beta}})'\right|}%
+% {|\vec{x}_{j} - \vec{x}_{j}|_{2}^{2}}
+% \end{equation*}
+% is $o_{P}(|C|_{2})$.
+\end{prop}
+Proposition~\ref{prop:PSdiffconsist} is proved in the Appendix.
+
+The first refinement of \eqref{eq:ipse-i}, then, is to permit matching of $i$ and $j$ only if  
+\begin{equation}
+|(\vec{x}_i - \vec{x}_j)\hat{\beta}|  \leq 2\mathrm{SE}_p(i,j) .
+% = 2[ (\vec{x}_i^{\perp \mathbf{x}\hat{\beta}} - \vec{x}_j^{\perp \mathbf{x}\hat{\beta}})\hat{C}(\vec{x}_i^{\perp \mathbf{x}\hat{\beta}} - \vec{x}_j^{\perp \mathbf{x}\hat{\beta}})' ]^{1/2}. 
+\label{eq:ipse-ii}
+\end{equation}
+The quantity $\mathrm{SE}_p(i,j) $ is termed the \emph{index standard error of potential pairing} $(i,j)$.  It's an estimate of the expected difference of $i$'s and $j$'s estimated index scores, figured after zeroing out differences in actual index scores.
+
+\subsection{The root mean square of pairs' standard errors}
+
+Current convention in caliper matching is to impose the same width restriction on all candidate pairings.  In contrast, \eqref{eq:ipse-ii} would separately tailor an $\mathbf{x}\hat\beta $-tolerance to each potential pairing.  This is not the advance it might seem at first blush.  
+
+Other things being equal, it may be desirable to encourage pairings $(i,j)$ with smaller values of $|\vec{x}_{i}\hat\beta - \vec{x}_{j}\hat\beta|/\mathrm{SE}_{p}(i,j)$; but to impose \eqref{eq:ipse-ii} as a hard requirement is to go too far.  As a matching restriction, it has the paradoxical consequence of privileging matches among pairs that are far apart in directions other than the index score.  If treatment $i$ is closer to control $j$ than control $k$ on aspects of the covariate apparently \textit{orthogonal} to selection, $|\mathbf{x}^{\perp\hat\beta}_{i} - \mathbf{x}^{\perp\hat\beta}_{j} |_{2} \lll |\mathbf{x}^{\perp\hat\beta}_{i} - \mathbf{x}^{\perp\hat\beta}_{k} |_{2}$, then $i$ and $j$ might be separated on $\mathbf{x}\beta $ by more than $2\mathrm{SE}_{p}(i,j)$ while $i$ and $k$'s separation is less than $2\mathrm{SE}_{p}(i,k)$, not because $j$ is closer to $i$ than $k$ but only because $\mathrm{SE}_{p}(i,j) < \mathrm{SE}_{p}(i,k) $.  This can occur even with $|(\vec{x}_{i} - \vec{x}_{j})\hat\beta| \lll |(\vec{x}_{i} - \vec{x}_{k})\hat\beta|$, ie even with $(i,j)$ being the better pairing in terms of $\mathbf{x}\hat\beta$ iself.  Besides, it's burdensome to have to calculate and keep track of $\# \{ i: z_i=1\} \times \# \{ j: z_j=0\}$ distinct matching tolerances, however, as would be needed to enforce \eqref{eq:ipse-ii} as a matching requirement. 
+
+Fortunately,  Proposition~\ref{prop:PSdiffconsist} also provides a basis for
+meaningful alternatives to \eqref{eq:ipse-ii} that cap paired PS distances at a single number.%, as opposed to a function of $i$ and $j$  
+
+\begin{prop} \label{prop:rmsSEp}
+ The mean square of index score standard errors (over all potential pairings) is 
+ \begin{equation}
+   \label{eq:12}
+ {n \choose 2}^{-1}\sum_{1\leq i< j \leq n} \mathrm{SE}_{p}^{2}(i,j) = 
+   2 {\fip{S^{\perp\hat\beta}
+%\mathbf{x}^{\perp \mathbf{x}\hat\beta \prime}\mathbf{x}^{\perp \mathbf{x}\hat\beta}
+}{ \hat{C}}}.% 
+ \end{equation}
+Here $S^{\perp\hat\beta} = (n-1)^{-1}\mathbf{x}^{\perp \hat\beta \prime} \mathbf{x}^{\perp \hat\beta}$ and $\langle (a_{cr}), (b_{cr}) \rangle_{F} = \sum_{c,r } a_{cr}b_{cr}$ is the sum of entrywise products of matrices $(a_{cr}: c,r=1,\ldots, p)$ and $(b_{cr}: c,r=1, \ldots, p)$, or $(a_{cr})$'s and  $(b_{cr})$'s Frobenius inner product.  Equivalently, 
+\begin{align}
+\label{eq:8}
+{n \choose 2}^{-1}\sum_{1\leq i< j \leq n} \mathrm{SE}_{p}^{2}(i,j) &=  2\left(\fip{S^{(x)}}{ \hat{C}} - %\hat{\beta}'S^{(x)}\hat{\beta}
+\frac{\fip{S^{(x)}\hat\beta\hat{\beta}'S^{(x)}}{ \hat{C}}}{s^{2}(\mathbf{x}\hat\beta)} \right);\\
+&= 2\left( \fip{S^{(x)}}{\hat{C}} - (s_{k} \rho_{k \hat\beta}: k ) \hat{C} (s_{k} \rho_{k \hat\beta}:k)' \right).  \label{eq:14}
+\end{align}
+In \eqref{eq:14}, $s_{i}^{2} = x_{[i]}'x_{[i]}/(n-1)$ and $\rho_{i\hat\beta} $ %= s^{-1}_{i} s^{-1}(\mathbf{x}\hat\beta) (x_{[i]}'\mathbf{x}\hat\beta/(n-1))
+ is the sample correlation of $x_{[i]}$ and $\mathbf{x}\hat\beta$. 
+\end{prop}
+
+The root mean square of potential pairings' index score standard
+errors, i.e. the square root of \eqref{eq:8} or \eqref{eq:14}, is
+termed \textit{paired index standard error} (PISE).  (Or if the is a
+propensity score, the ``PPSE,'' or paired propensity standard error.)
+
+\begin{remark}
+Ordinarily the index model has an intercept term. The standard error of the intercept does not contribute to the PISE: given that $x_{[1]} \equiv 1$,  $S^{(x)}_{1,i}= S^{(x)}_{i,1}=0$ and $S^{\perp \hat\beta}_{1,i}=S^{\perp \hat\beta}_{i,1}=0$, for each $i$. In the sum at right of \eqref{eq:12}, entries of the first row and column of $\hat{C}$ are multiplied by 0. In other words, the PISE can be obtained by applying \eqref{eq:12}, or \eqref{eq:8} or \eqref{eq:14}, after calculating $S^{(x)}$ using only the non-constant columns of $\mathbf{x}$, and including in $\hat C$ only the corresponding rows. Since the intercept is also removed from each difference $(\vec{x}_{i} - \vec{x}_{j})\hat{\beta}$, this is only fitting. 
+
+If matches are to be made within categories of a nominal variable represented in $\mathbf{x}$, the corresponding entries of $\hat\beta$ also make zero contribution to the error of  $(\vec{x}_{i} - \vec{x}_{j})\hat{\beta}$, regardless of the magnitudes of their standard errors.  At least, this will be true of pairs $i$ and $j$ belonging to the same exact matching category.  The PISE given exact matching on $c$ is defined as a mean square of $ \mathrm{SE}_{p}$s averaged over pairs within the same category of $c$: namely, if the exact matching variable is $c$, with categories $1, \ldots, K$,  and subsample sizes $n_{1}, \ldots, n_{K}$, 
+\begin{equation*}
+  \sum_{k} \frac{n_{k} -1}{n-K} {n_{k} \choose 2}^{-1} \sum_{c_{i}=c_{j}, i<j}  \mathrm{SE}_{p}^{2}(i, j)= 2 \fip{S^{\perp \hat\beta, c}}{\hat{C}},
+\end{equation*}
+where $S^{\perp \hat\beta, c} = (n-K)^{-1} \mathbf{x}^{\perp\{\mathbf{x}\hat\beta, c\}\prime}\mathbf{x}^{\perp\{\mathbf{x}\hat\beta, c\}}$, $x_{[i]}^{\perp\{\mathbf{x}\hat\beta, c\}}$ being the residual of $x_{[i]} $ after regression on $\mathbf{x}\hat\beta$ and $c$.
+\end{remark}
+
+
+\begin{proof}[Proof of Proposition~\ref{prop:rmsSEp}]
+
+Let $(I, J) \subseteq \{1, \ldots, n\}$ be a 
+randomly ordered simple random sample of size 2, and let $\mathbf{D}$ (or $\mathbf{D}^{\perp v}$, $v$ an $n$-vector) be a  $1 \times p$ random vector representing the paired difference $\vec{x}_{I} - \vec{x}_{J}$  (or $\vec{x}_{I}^{\perp v} - \vec{x}_{J}^{\perp v}$).  Then
+\begin{equation}
+  \label{eq:15}
+\mathrm{SE}_{p}^{2}(I,J) = \mathbf{D}^{\perp \mathbf{x}\hat\beta}\hat{C} \mathbf{D}^{\perp \mathbf{x}\hat\beta \prime}
+\end{equation}
+
+Because of the $U$-statistic representation of covariance\footnote{%
+Finite-sample covariances are represented as U-statistics via the probabilistic identity $\mathrm{Cov}(x_{I}, w_{I}) = \frac{1}{2} \E{x_{I} - x_{J}}(w_{I} - w_{J})$, where $I, J$ are independent, uniform draws from the index set $\{1, 2, \ldots, n\}$. Thus
+$\mathrm{Cov}(\mathbf{D}) = 2S^{(x)}$,   $S^{(x)}_{ij} = 
+\frac{1}{n-1}\sum_{k=1}^{n}(x_{ik} - \bar{x}_{i})(x_{jk} - \bar{x}_{j})$.
+}, $\mathrm{Cov} (\mathbf{D}) = 2 S^{(x)}$. By symmetry of the distribution of $(I,J)$,  $\E{\mathbf{D}} 
+%= \E{\mathbf{D}^{\perp v}} 
+=0 $, so that $\E{\mathbf{D}'\mathbf{D}} = \mathrm{Cov}(D) = 2S^{(x)}$.  
+
+Selection of $(I, J)$ pays no attention to the distinction between treatment and control, making $\mathbf{D}$ independent of $\{Z_{i}\}_{i=1}^{n}$ and, by extension, of $\hat{\beta}$ and $\hat{C}$.  Therefore its conditional and marginal moments coincide: $\E{\mathbf{D}| \hat\beta, \hat{C} } = \E{\mathbf{D}} = 0$; $ \E{\mathbf{D}'\mathbf{D}| \hat\beta, \hat{C} } = \mathrm{Cov}(\mathbf{D}| \hat\beta, \hat{C}) = \mathrm{Cov}(\mathbf{D} ) = 2S^{(x)}$.   
+%while $\mathbf{D}^{\perp \mathbf{x}\hat\beta} $ doesn't share this independence, we have 
+From the representation $x_{[l]}^{\perp v} = x_{[l]} - v[s^{-2}(v) \mathrm{s}(x_{[l]}, v)] $  we have 
+$\mathbf{x}^{\perp \mathbf{x}\hat{\beta}} = \mathbf{x} - s^{-2}(\mathbf{x}\hat{\beta}) \mathbf{x}\hat{\beta} \mathrm{s}(\mathbf{x}, \mathbf{x}\hat{\beta}) $, where $ s(w, v) = (n-1)^{-1}w'v$ and $s^{2}(w) = s(w,w)$; furthermore $\mathbf{x}^{\perp \mathbf{x}\hat{\beta}} = \mathbf{x} (I - \beta\beta' S^{(x)}/s^{2}(\mathbf{x}\hat{\beta})) $.  
+In consequence $\mathbf{D}^{\perp \mathbf{x}\hat{\beta}}$  factorizes as $\mathbf{D} (I - \hat\beta\hat\beta' S^{(x)}/s^{2}(\mathbf{x}\hat{\beta}))$; as the second factor is a function of $\hat{\beta}$, the identity $\E{\mathbf{D}'\mathbf{D}| \hat\beta, \hat{C}} = 2 S^{(x)}$ thus entails
+\begin{align}
+\frac{1}{2}\E{\mathbf{D}^{\perp \mathbf{x}\hat{\beta}\prime}\mathbf{D}^{\perp \mathbf{x}\hat{\beta}} | \hat\beta, \hat{C}}
+=&  (\mathbf{I} - \hat\beta\hat\beta' S^{(x)}/s^{2}(\mathbf{x}\hat{\beta}))'S^{(x)} (\mathbf{I} - \hat\beta\hat\beta' S^{(x)}/s^{2}(\mathbf{x}\hat{\beta})) \nonumber \\
+=&  S^{(x)} - 2s^{-2}(\mathbf{x}\hat{\beta})S^{(x)}\hat\beta\hat\beta'S^{(x)} + \nonumber \\
+ & s^{-4}(\mathbf{x}\hat{\beta}) S^{(x)}\hat{\beta}\underbrace{\hat{\beta}'S^{(x)}\hat{\beta}}\hat{\beta}' S^{(x)} \label{eq:18} \\
+=&  S^{(x)} - s^{-2}(\mathbf{x}\hat{\beta})S^{(x)}\hat\beta\hat\beta'S^{(x)} =: S^{\perp \hat{\beta}}. \label{eq:17}
+\end{align} 
+We can pass from \eqref{eq:18} to \eqref{eq:17} because $\hat{\beta}'S^{(x)}\hat{\beta}$ is equal to $s^{2}(\mathbf{x}\hat{\beta})$.
+
+To verify \eqref{eq:12}, observe first that for random $1\times p$ vectors $\mathbf{V}$ and fixed $p\times p$ matrices $M$, $\E{\mathbf{V} M \mathbf{V}'} = \fip{\E{\mathbf{V}'\mathbf{V}}}{M}$.  (Expand the quadratic form $\mathbf{V} M \mathbf{V}'$ and apply linearity of expectations.)  Then combine \eqref{eq:17} with \eqref{eq:15} to give
+\begin{equation*}
+  \frac{1}{2}\E{ \mathrm{SE}_{p}^{2}(I,J) \big| \hat\beta, \hat{C} } = \fip{\E{ \mathbf{D}^{\perp \mathbf{x}\hat{\beta}\prime} \mathbf{D}^{\perp \mathbf{x}\hat{\beta}}| \hat\beta, \hat{C} }}{\hat{C}} = \fip{S^{\perp \hat{\beta}}}{\hat{C}}.
+\end{equation*}
+% \begin{align*}
+%   %\label{eq:16}
+% {n \choose 2}^{-1}\sum_{(i,j): i\neq j} \mathrm{SE}_{p}^{2}(i,j) &=   \EE \bigg[\mathbf{D} \big(I - 
+% \frac{\hat\beta\hat{\beta}'S^{(x)}}{s^2(\mathbf{x}\hat\beta)} \big) \hat{C} 
+% \big(I - 
+% \frac{\hat\beta\hat{\beta}'S^{(x)}}{s^2(\mathbf{x}\hat\beta)} \big)' \mathbf{D}'
+% \bigg| \hat\beta, \hat{C} \bigg] \\
+% &= \EE  \big[ \mathbf{D}M\mathbf{D}'\big| M\big],\, M= \big(I - 
+% \frac{\hat\beta\hat{\beta}'S^{(x)}}{s^2(\mathbf{x}\hat\beta)} \big) \hat{C} 
+% \big(I - 
+% \frac{\hat\beta\hat{\beta}'S^{(x)}}{s^2(\mathbf{x}\hat\beta)} \big)',\, \mathrm{so}\\ {n \choose 2}^{-1}\sum_{(i,j): i\neq j} \mathrm{SE}_{p}^{2}(i,j)
+% & =  \sum_{i=1}^{k} M_{ii}\EE (D_{i}^{2})   + 
+% 2\sum_{i<j} M_{ij}\EE (D_{i}D_{j})  \\
+% & =  \fip{\mathrm{Cov}(D)}{M} = 2 \fip{S^{(x)}}{ M } .\\
+% \end{align*}
+
+For equality of the right hand sides of \eqref{eq:12} and \eqref{eq:8}, evaluate $\E{\mathbf{D}^{\perp \mathbf{x}\hat{\beta}\prime}\mathbf{D}^{\perp \mathbf{x}\hat{\beta}} | \hat\beta, \hat{C}} = \mathrm{Cov}(\mathbf{D}^{\perp \mathbf{x}\hat{\beta}} | \hat\beta, \hat{C})$ using the U-statistic representation of sample covariance to get $\mathrm{Cov}(\mathbf{D}^{\perp \mathbf{x}\hat{\beta}} | \hat\beta, \hat{C}) = 2(n-1)^{-1}\mathbf{x}^{\perp \mathbf{x}\hat\beta \prime}\mathbf{x}^{\perp \mathbf{x}\hat\beta}$.   Now compare to the representation of $\E{\mathbf{D}^{\perp \mathbf{x}\hat{\beta}\prime}\mathbf{D}^{\perp \mathbf{x}\hat{\beta}} | \hat\beta, \hat{C}}$ given in \eqref{eq:17}.
+
+
+Finally, for \eqref{eq:14}, note that $x_{[i]}^{\perp \mathbf{x}\hat\beta}$ can be written as  $x_{[i]} - s_{i}\rho_{i\hat\beta}s^{-1}(\mathbf{x}\hat\beta) \mathbf{x}\hat\beta $, so that  $S^{\perp \hat{\beta}}_{ij} =
+ s(x_{[i]}^{\perp \mathbf{x}\hat\beta}, x_{[j]}^{\perp \mathbf{x}\hat\beta}) = s_{i} s_{j} (\rho_{ij} - \rho_{i\hat\beta}\rho_{j\hat\beta})$.  Thus $S^{\perp \hat{\beta}} = S^{(x)} - (s_{k} \rho_{k \hat\beta}: k )' (s_{k} \rho_{k \hat\beta}: k) $.  As $S^{\perp \hat{\beta}} = \frac{1}{2}\E{\mathbf{D}^{\perp \mathbf{x}\hat{\beta}\prime}\mathbf{D}^{\perp \mathbf{x}\hat{\beta}} | \hat\beta, \hat{C}}$ also, \eqref{eq:17} gives $S^{\perp \hat{\beta}} = S^{(x)} - S^{(x)}\hat\beta\hat\beta'S^{(x)} $, and we have $ (s_{k} \rho_{k \hat\beta}: k )' (s_{k} \rho_{k \hat\beta}: k)= S^{(x)}\hat\beta\hat\beta'S^{(x)} $
+(an identity that can be established in various ways).  By algebra, $\fip{(s_{k} \rho_{k \hat\beta}: k )' (s_{k} \rho_{k \hat\beta}: k)}{\hat{C}} = (s_{k} \rho_{k \hat\beta}: k )\hat{C} (s_{k} \rho_{k \hat\beta}: k)'$, making
+the right hand side of \eqref{eq:14} equivalent to the right hand side of \eqref{eq:12}.
+\end{proof}
+% After calculating this difference, remember to take square roots. 
+
+
+
+
+
+\bibliographystyle{asa}
+\bibliography{abbrev_long,misc,causalinference,biomedicalapplications}
+
+\appendix
+
+\section*{Appendix: Proofs of Lemma~\ref{lem:ChatC} and Proposition~\ref{prop:PSdiffconsist}}
+\begin{proof}[Proof of Lemma~\ref{lem:ChatC}]
+The $|\hat\beta - \betatrue|_{2}$-consistency component of the lemma follows from Conditions~\ref{A-estimable}, \ref{A-l2Sfinite} and \ref{A-rates} and Theorem~2.1 of \citet{he2000parameters}, by the argument of He and Shao's Example 3.
+The remainder of this proof borrows heavily from \citet[][Proof of Thm.~3.10]{wang2011gee}.
+
+We establish $|\hat{A}_{n} - A_{n}|_{2} \stackrel{P}{\rightarrow} 0$ through separate characterizations of  
+$\sup_{\gamma: |\gamma|_{2}=1}\gamma'[\hat{A}_{n}(\betatrue) - A_{n}(\betatrue)]\gamma$ and $\sup_{\gamma: |\gamma|_{2}=1}\gamma'[\hat{A}_{n}(\hat\beta) - \hat{A}_{n}(\betatrue)]\gamma$.  In the important special case that $\psi$ is the score function of a generalized linear model, $\hat{A}_{n}(\beta) \equiv A_{n}(\beta)$ and $\gamma'[\hat{A}_{n}(\betatrue) - A_{n}(\betatrue)]\gamma \equiv 0$.  Otherwise, 
+\begin{align}
+  \gamma'[\hat{A}_{n}(\betatrue) - A_{n}(\betatrue)]\gamma =& \frac{1}{n} \sum_{i} [c_{1}(Z_{i}, \vec{x}_{i}, \betatrue) - \E{c_{1}(Z_{i}, \vec{x}_{i}, \betatrue)}](\vec{x}_{i}\gamma)^{2},\, \text{so} \nonumber \\
+\sup_{\gamma: |\gamma|_{2}=1}\gamma'[\hat{A}_{n}(\betatrue) - A_{n}(\betatrue)]\gamma \leq&
+\frac{1}{n} \sum_{i} [c_{1}(Z_{i}, \vec{x}_{i}, \betatrue) - \E{c_{1}(Z_{i}, \vec{x}_{i}, \betatrue)}]|\vec{x}_{i}|_{\infty}^{2} \label{eq:19}\\
+& \stackrel{P}{\rightarrow} 0, \nonumber
+  % \Var{\sup_{\gamma: |\gamma|_{2}=1} \gamma'[\hat{A}_{n}(\betatrue) - A_{n}(\betatrue)]\gamma} &= \frac{1}{n^{2}} \sum_{i}\Var{c(Z_{i}, \vec{x}_{i}, \betatrue) - \E{c(Z_{i}, \vec{x}_{i}, \betatrue)}}|\vec{x}_{i}|_{2}^{4}. 
+\end{align}
+at the last step invoking Conditions~\ref{A-psismooth} 
+and~\ref{A-boundedXes} \marginpar{\ref{A-boundedXes} is heavy, but unclear how to relax in this FW\ldots} % I have a vague sense we could have more readily dispensed with it 
+%                  had the X's been random.
+to bound variances of summands at right of~\eqref{eq:19} and apply the weak law for triangular arrays. 
+
+To establish $\sup_{\gamma: |\gamma|_{2}=1}\gamma'[\hat{A}_{n}(\hat\beta) - \hat{A}_{n}(\betatrue) ]\gamma  \stackrel{P}{\rightarrow} 0$,  invoke Condition~\ref{A-psismooth} to apply the Mean Value Theorem to the function $\eta \mapsto c_{1}(z, \eta)$, where $\nabla \psi(z, \vec{x}, \beta)  = c_{1}(z, \vec{x}\beta) \vec{x}'\vec{x}$, obtaining for any $(z_{i}, \vec{x}_{i})$ and $(j,k)$, $\partial/\partial_{\beta_{j}}\psi_{k}(z_{i}, \vec{x}_{i},\beta)_{\beta = \hat\beta} - \partial/\partial_{\beta_{j}}\psi_{k}(z_{i}, \vec{x}_{i}, \beta)_{\beta = \betatrue}  =  c_{2}(z_{i}, \etastarx)x_{j}x_{k}\vec{x}(\hat\beta - \betatrue)$, some $\etastarx$ between $\vec{x}_{i}\hat\beta$ and $\vec{x}_{i}\betatrue$. Recall that Condition~\ref{A-psismooth} holds this $c_{2}(\cdot, \cdot)$ to be uniformly bounded. Accordingly
+\begin{align}
+  \gamma'[\nabla_{\beta} \psi(z_{i}, \vec{x}_{i},\beta)_{\beta = \hat\beta} - \nabla_{\beta} \psi (z_{i}, \vec{x}_{i},\beta)_{\beta = \betatrue}]\gamma =& c_{2}(z_{i}, \etastarx) (\vec{x}_{i}\gamma)^{2} [\vec{x}_{i}(\hat\beta - \betatrue)], \nonumber \\
+\gamma'[\hat{A}_{n}(\hat\beta) - \hat{A}_{n}(\betatrue) ]\gamma \leq & |c_{2}(\cdot)|_{\infty}\frac{1}{n} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2}\vec{x}_{i} |\hat\beta - \betatrue| \label{eq:21};\\
+\max_{\gamma: |\gamma|_{2}=1} \gamma'[\hat{A}_{n}(\hat\beta) - \hat{A}_{n}(\betatrue) ]\gamma \leq & O \left[\frac{1}{n} 
+%\max_{\gamma, \delta :|\gamma|=|\delta|=1} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2}|\vec{x}_{i} \delta| 
+\max_{\gamma :|\gamma|=1} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2}|\vec{x}_{i}|_{\infty} 
+\right] \times  \nonumber \\
+& O_{P}(|\hat\beta - \betatrue |_{2})   = o_{P}(1), \nonumber
+\end{align}
+at the last step invoking consistency of $\hat\beta$ and a combination of Conditions~\ref{A-l2Sfinite} and \ref{A-boundedXes}. This completes the demonstration of $|\hat{A}_{n} - A_{n}|_{2} \stackrel{P}{\rightarrow} 0$.
+
+Since $|{A}_{n}^{-1}|_{2}=O(1)$ and $|\hat{A}_{n}^{-1}|_{2}= O_{P}(1)$ (Condition~\ref{A-estimable}), it follows that $|\hat{A}_{n}^{-1} - A_{n}^{-1}|_{2} \stackrel{P}{\rightarrow} 0$, by applying sub-multiplicativity of the spectral norm to the right-hand side of 
+$(\hat{A}_{n}^{-1} - A_{n}^{-1}) = \hat{A}_{n}^{-1} (\hat{A}_{n} - A_{n}) {A}_{n}^{-1}$.  Since also $|B_{n}|_{2} = O_{P}(1)$ (Lemma~\ref{lem:C-rate}), 
+the 2-norms of the *-terms in 
+\begin{multline*}
+  A_{n}^{-1}B_{n}A_{n}^{-1}  + \underbrace{(\hat{A}_{n}^{-1} - A_{n}^{-1})B_{n}A_{n}^{-1}}_{*} + \underbrace{\hat{A}_{n}^{-1}B_{n}(\hat{A}_{n}^{-1} - A_{n}^{-1})}_{*}   + \hat{A}_{n}^{-1}(\hat{B}_{n} - B_{n})\hat{A}_{n}^{-1}  \\[-2ex]
+=  \hat{A}_{n}^{-1}\hat{B}_{n}\hat{A}_{n}^{-1}
+\end{multline*}
+must tend in probability to 0.  Thus the stochastic order of $|A_{n}^{-1}B_{n}A_{n}^{-1} - \hat{A}_{n}^{-1}\hat{B}_{n}\hat{A}_{n}^{-1}|_{2}$ can be no greater than that of $|\hat{A}_{n}^{-1}(\hat{B}_{n} - B_{n}) \hat{A}_{n}^{-1}|_{2}$.  
+
+As~\ref{A-psismooth} and~\ref{A-l2Sfinite} entail that $|\hat{A}_{n}|_{2} = O_{P}(1)$, this means $O_{P}(|\hat{A}_{n}^{-1}(\hat{B}_{n} - B_{n}) \hat{A}_{n}^{-1}|_{2}) = O_{P}(|\hat{B}_{n} - B_{n}|_{2})$. But $|\hat{B}_{n} - B_{n}|_{2} \stackrel{P}{\rightarrow} 0$ follows from arguments analogous to those given for %$|\hat{A}_{n} - A_{n}|_{2} \stackrel{P}{\rightarrow} 0$ 
+$|\hat{B}_{n}(\betatrue) - B_{n}|_{2} \stackrel{P}{\rightarrow} 0$ and $|\hat{B}_{n} - \hat{B}_{n}(\betatrue)|_{2} \stackrel{P}{\rightarrow} 0$.   Conditions~\ref{A-psismooth}  and~\ref{A-boundedXes} support a bound for $\sup_{\gamma: |\gamma|=1}\gamma'[\hat{B}_{n}(\betatrue) - B_{n}(\betatrue)]\gamma$ similar to that of~\eqref{eq:19}, and the weak law for triangular arrays gives $|\hat{B}_{n}(\betatrue) - B_{n}(\betatrue)|_{2} \stackrel{P}{\rightarrow} 0$.   As to $|\hat{B}_{n}(\hat\beta) - \hat{B}_{n}(\betatrue)|_{2}$, Condition~\ref{A-psismooth}'s boundedness constraint on \eqref{eq:20}'s $v(z, g(\eta))w(\vec{x}, g(\eta))$, and on its derivative with respect to $\eta$, entail an inequality similar to \eqref{eq:21}, now also combining with Condition~\ref{A-l2Sfinite} and consistency of $\hat\beta$ to entail $\max_{\gamma: |\gamma|_{2}=1} \gamma'[\hat{B}_{n}(\hat\beta) - \hat{B}_{n}(\betatrue) ]\gamma \stackrel{P}{\rightarrow} 0$.
+\end{proof}
+%The argument depends crucially on strong estimability, \ref{A-estimable}, and further makes clear that good finite-sample performance will require that the minimum eigenvalue of $\hat{A}_{n}(\cdot)$ vary slowly within the $\sqrt{p/n}$-vecinity \marginpar{wc} of $\betatrue$.   
+
+\begin{proof}[Proof of Proposition~\ref{prop:PSdiffconsist}] 
+
+
+ First we characterize the form of  $\mathbf{x}^{\perp x\betatrue}$ and  $\mathbf{x}^{\perp x\hat\beta}$.  
+%Without loss of generality
+ Without loss of generality the columns of $\mathbf{x}$ are centered, by \ref{A-centering}; accordingly $\mathbf{x}\hat\beta $ and $\mathbf{x}\betatrue $ also are centered. Thus ${x}^{\perp \mathbf{x}\betatrue}_{[k]} = {x}_{[k]} - [s({x}_{[k]}, \mathbf{x}\betatrue)/s^{2}(\mathbf{x}\betatrue)] \mathbf{x}\betatrue $, where (for centered $v$ and $w$) $s(v,w) = \frac{1}{n-1} v'w$ and $s^{2}(v) = \frac{1}{n-1} v'v$.  Since $s^{2}(\mathbf{x}\betatrue) = \betatrue'S^{(x)}\betatrue$ (and $s^{2}(\mathbf{x}\hat\beta) = \hat\beta'S^{(x)}\hat\beta$) while $s({x}_{[k]}, \mathbf{x}\betatrue) = (s({x}_{[k]}, {x}_{[1]}), \ldots, s({x}_{[k]}, {x}_{[p]}))\betatrue = (S^{(x)}_{k1}, \ldots, S^{(x)}_{kp}) \betatrue$, matrix manipulations give
+
+  \begin{equation*}
+\mathbf{x}^{\perp x\betatrue} = \mathbf{x} - \frac{\mathbf{x}\betatrue(S^{(x)}\betatrue)'}{s^2(\mathbf{x}\betatrue)}
+= \mathbf{x} - \frac{\mathbf{x}\betatrue\betatrue'S^{(x)}}{s^{2}(\mathbf{x}\betatrue)} ;   \,\,
+\mathbf{x}^{\perp x\hat\beta} = \mathbf{x} - \frac{\mathbf{x} \hat\beta\hat{\beta}' S^{(x)}}{s^{2}(\mathbf{x}\hat\beta)}    .
+  \end{equation*}
+Let $\mathbf{d}$ denote a difference of rows of $\mathbf{x}$, $\vec{x}_{i} - \vec{x}_{j}$, with $\mathbf{d}^{\perp v}$ denoting the corresponding difference of rows of $\mathbf{x}^{\perp v}$.  
+Thus $ \mathbf{d}^{\perp \mathbf{x}\betatrue} = \mathbf{d} -  s^{-2}(\mathbf{x}\betatrue)({\mathbf{d}\betatrue\betatrue'S^{(x)}})$, and similarly for $\mathbf{d}^{\perp \mathbf{x}\hat\beta}$. So, applying the identity $(x+y)'M(x-y) = x'Mx - y'My$, %valid for symmetric M and conforming vectors $x$ and $y$
+\begin{align}
+  \left(\mathbf{d} -  \frac {\mathbf{d}\betatrue\betatrue'S^{(x)}}{s^2(\mathbf{x}\betatrue)}\right) & \hat{C}%
+ \left(\mathbf{d} - \frac {\mathbf{d}\betatrue\betatrue'S^{(x)}}{s^2(\mathbf{x}\betatrue)}\right)' - 
+  \left(\mathbf{d} - \frac {\mathbf{d}\hat\beta\hat{\beta}'S^{(x)}}{s^2(\mathbf{x}\hat\beta)}\right)\hat{C}%
+ \left(\mathbf{d} - \frac {\mathbf{d}\hat\beta\hat{\beta}'S^{(x)}}{s^2(\mathbf{x}\hat\beta)}\right)' \nonumber \\
+&= \left(2\mathbf{d} - \frac {\mathbf{d}\betatrue\betatrue'S^{(x)}}{s^2(\mathbf{x}\betatrue)} - \frac {\mathbf{d}\hat\beta\hat{\beta}'S^{(x)}}{s^2(\mathbf{x}\hat\beta)}\right) \hat{C} \left(\frac {\mathbf{d}\hat\beta\hat{\beta}'S^{(x)}}{s^2(\mathbf{x}\hat\beta)} - \frac {\mathbf{d}\betatrue\betatrue'S^{(x)}}{s^2(\mathbf{x}\betatrue)} \right)' \nonumber\\
+&= \mathbf{d} \underbrace{\left(2I - \frac {\hat\beta\hat{\beta}'S^{(x)}}{s^2(\mathbf{x}\hat\beta)} - \frac {\betatrue\betatrue'S^{(x)}}{s^2(\mathbf{x}\betatrue)} \right) \hat{C} \left(\frac {\hat\beta\hat{\beta}'S^{(x)}}{s^2(\mathbf{x}\hat\beta)} - \frac {\betatrue\betatrue'S^{(x)}}{s^2(\mathbf{x}\betatrue)} \right)'}_{*}\mathbf{d}'\label{eq:9}.
+% &= \frac{1}{s^2(\mathbf{x}\betatrue)} \left(2\mathbf{d} - \frac {\mathbf{d}\betatrue\betatrue'S^{(x)}}{s^2(\mathbf{x}\betatrue)} - \frac {\mathbf{d}\hat\beta\hat{\beta}'S^{(x)}}{s^2(\mathbf{x}\hat\beta)}\right) \hat{C} \left( \frac {s^2(\mathbf{x}\betatrue)}{s^2(\mathbf{x}\hat\beta)} {\mathbf{d}\hat\beta\hat{\beta}'S^{(x)}} -  
+% {\mathbf{d}\betatrue\betatrue'S^{(x)}} \right)' 
+\end{align}
+Our task reduces to showing that %for expression (*) appearing in \eqref{eq:9}, 
+$|(*)|_{2} \sim O_{P}(n^{-3/2}) $.
+
+By \ref{A-l2Sfinite}, $|S^{(x)}|_{2} \sim O(1)$.  For $S^{1/2}$ a Cholesky factor of $S^{(x)}$, $S^{(x)} = S^{1/2}S^{1/2\prime}$, $S^{1/2} \sim O(1)$ by \ref{A-l2Sfinite} and $|S^{{1/2}\prime}\betatrue |_{2}^{2} = |\betatrue'S^{(x)}\betatrue| = s^{2}(\mathbf{x}\betatrue) \sim O\left( \log p\right)
+$ by \ref{A-PSvar}; combining these, $|S^{(x)}\betatrue|_{2} = |S^{1/2}S^{{1/2}\prime}\betatrue|_{2} \leq O(1) O(s(\mathbf{x}\betatrue)) = O(s(\mathbf{x}\betatrue))  %= O((\log p)^{1/2})
+$.  Similarly, $|\betatrue\betatrue'S^{(x)}|_{2}  \leq |S^{-1}|_{2} |S^{(x)}\betatrue|_{2}^{2} \sim O(s^{2}(\mathbf{x}\betatrue))$. 
+
+Likewise $|\hat{\beta}\hat{\beta}'S^{(x)}|_{2} \sim O(s^{2}(\mathbf{x}\hat\beta))$.  Manipulations on matrix expressions for $s^2(\mathbf{x}\betatrue)$ and $s^2(\mathbf{x}\hat\beta)$ in turn give that 
+\begin{align}
+  s^{2}(\mathbf{x}\hat\beta) &= s^{2}(\mathbf{x}\betatrue) + 2(\hat\beta - \betatrue)S^{(x)}\betatrue + (\hat\beta - \betatrue)S^{(x)}(\hat\beta -\betatrue) \nonumber \\
+  &= s^{2}(\mathbf{x}\betatrue) + O_{P}\left(\left[\frac{p }{n}\right]^{1/2}s(\mathbf{x}\betatrue)\right) + O_{P}\left(  \frac{p}{n} \right) \nonumber \\
+& = s^{2}(\mathbf{x}\betatrue) + O_{P}\left(\left[\frac{p}{n}\right]^{1/2}s(\mathbf{x}\betatrue)\right)  ,\label{eq:11}
+\end{align}
+invoking  $|\hat\beta - \betatrue|_{2}^{2} \sim O(p/n)$ (consistency of $\hat\beta$).
+Under either version of the rate assumption (\ref{A-rates}) this entails $ s^{2}(\mathbf{x}\hat\beta) -  s^{2}(\mathbf{x}\betatrue) \stackrel{P}{\rightarrow} 0$.  \ref{A-PSvar} thus says that both  $\lim\inf s^{2}(\mathbf{x}\betatrue)$ and $\lim\inf s^{2}(\mathbf{x}\hat\beta)$ exceed 0. 
+In \eqref{eq:9}, then, the spectral norms of the 3 summands in parentheses at left of $\hat{C}$'s are therefore $O(1)$, $O_{P}(1)$, and $O(1)$, respectively. By the triangle inequality, the spectral norm of their sum is $O_{P}(1)$.
+
+The middle term of \eqref{eq:9}, $\hat C$, is controlled by the consequence of \ref{A-boundedinfo} that $\lim\inf n|C_{n}|>0$ and the premise that $|\hat{C}_{n} - C_{n}|_{2} \sim o(n^{-1})$, i.e. the consistency of $\hat{C}$.  
+
+For the right parenthetical in \eqref{eq:9}, the difference of ${s^{-2}(\mathbf{x}\hat\beta)} {\hat\beta\hat{\beta}'S^{(x)}} $ and $ {s^{-2}(\mathbf{x}\betatrue)}{\betatrue\betatrue'S^{(x)}}$, observe first that by 
+\eqref{eq:11},
+\begin{equation}
+ s^{-2}(\mathbf{x}\hat\beta) = s^{-2}(\mathbf{x}\betatrue) + O_{P}\left(\left[\frac{p^{1/2}}{n^{1/2}s(\mathbf{x}\betatrue)}\right]\right) , \label{eq:1}
+\end{equation}
+so the difference may be characterized as
+\begin{equation} \label{eq:10}
+{\hat\beta\hat{\beta}'S^{(x)}} O_{P}\left(\left[\frac{p^{1/2}}{n^{1/2}s(\mathbf{x}\betatrue)}\right]\right) + 
+\frac{\hat\beta\hat{\beta}'S^{(x)} - \betatrue\betatrue'S^{(x)}}{s^{2}(\mathbf{x}\betatrue)}.
+\end{equation}
+As noted above, $|\hat\beta\hat{\beta}'S^{(x)} |_{2} \sim O(s^{2}(\mathbf{x}\hat\beta)) = O_{P}(s^{2}(\mathbf{x}\betatrue))$, so the first term of \eqref{eq:10} has spectal norm that's $O_{P}\left(\frac{p^{1/2}s(\mathbf{x}\betatrue)}{n^{1/2}} \right)$. \ref{A-PSvar} and \ref{A-rates} combine to say this is $o_{P}(1)$. As to the second term of \eqref{eq:10}:
+% Now \ref{A-regPS} says the $l_{2}$-induced norms of $\betatrue'$ or $\betatrue$, considered as linear maps of $\Re^{p}$ into $\Re$ or $\Re$ into $\Re^{p}$, respectively, are $O(p^{1/2})$.
+% Similarly $|S^{(x)}\betatrue|_{2} = O(??)$, due to \ref{A-l2Sfinite}. \marginpar{Conj: $\betatrue'S^{(x)}\betatrue \sim O(\log p ) \Rightarrow |S^{(x)}\betatrue| \sim O(\log p)$.} 
+\begin{align*}
+|\hat\beta\hat{\beta}'S^{(x)} - \betatrue{\betatrue}'S^{(x)}|_{2} &= |(\hat\beta-\betatrue){\betatrue}'S^{(x)} + \betatrue(\hat\beta - \betatrue)'S^{(x)} + (\hat\beta -\betatrue)(\hat\beta - \betatrue)'S^{(x)}|_{2} \\
+&\leq |(\hat\beta-\betatrue){\betatrue}'S^{(x)}|_{2} + |\betatrue(\hat\beta - \betatrue)'S^{(x)}|_{2} +| (\hat\beta -\betatrue)(\hat\beta - \betatrue)'S^{(x)}|_{2}\\
+&\sim |(\hat\beta-\betatrue){\betatrue}'S^{(x)}|_{2} + |S^{(x)}\betatrue(\hat\beta - \betatrue)'||S^{(x)} (S^{(x)})^{-1}|_{2} +|  (\hat\beta -\betatrue)(\hat\beta - \betatrue)'S^{(x)}|_{2}\\
+&\sim |\hat\beta-\betatrue|_{2} |{\betatrue}'S^{(x)}|_{2} + |S^{(x)}\betatrue|_{2}|(\hat\beta - \betatrue)'| +|  
+\hat\beta -\betatrue|_{2}^{2}\\
+&= O_{P}\left(\frac{p^{1/2}s(\mathbf{x}\betatrue)}{n^{1/2}}\right) + O_{P}\left(\frac{p^{1/2}s(\mathbf{x}\betatrue)}{n^{1/2}}\right) + O_{P}\left(\frac{p}{n}\right),
+\end{align*} 
+or, by \ref{A-PSvar} and \ref{A-rates}, $O_{P}\left([(p\log p)/n]^{1/2}\right) \sim o_{P}(1)$. This shows that the three matrices appearing between $\mathbf{d}$ and $\mathbf{d}'$ in \eqref{eq:9} have spectral norms of orders $O_{P}(1)$, $O_{P}(n^{-1})$ and $o_{P}(1)$, respectively, entailing the spectral norm of their product to be no greater than $o_{P}(n^{-1})$.
+\end{proof}
+
+
+\end{document}
+
+% Older version of main discussion
+
+CAL continues to entail asymptotic normality: 
+for sequences $\{\gamma_{n}\} $, $\gamma_{n} \in \mathcal{S}_{p_{n}} = \{ (\gamma_{1}, \gamma_{2}, \ldots, \gamma_{p_{n}}): \sum_{i} \gamma_{i}^{2} = 1\}$,
+%{Portnoy 1986 may justify describing this convergence as uniform in $\gamma$}%  
+$n^{1/2} \gamma'(\hat{\beta} - \betatrue)/\sigma_{n}(\gamma) \stackrel{d}{\rightarrow} N(0,1)$. This $\sigma_{n}^{2}(\gamma)$ can be taken as $\gamma'A_{n}^{-1}B_{n}A_{n}^{'-1}\gamma$ \citep{he2000parameters}.  
+
+We'll say that $\hat{C}_{n}$ 
+consistently estimates $C_{n} =n^{-1} A_{n}^{-1}B_{n}A_{n}^{'-1}$ if $A_{n}$ is invertible (so that $C_{n}$ is well-defined) and $\|\hat{C}_{n} - C_{n}\|_{F}^{2} $, the squared Frobenius norm % I think
+of $\hat{C} - A_{n}^{-1}B_{n}A_{n}^{'-1}$, is $o_{P}(p/n)$.  
+% (Large sample $t$-tests and confidence intervals for $\betatrue$ presume both that $\hat{\beta}$ is CAL and some version of consistent estimability of $C_{n}$; see \citet[][Remark~5]{wang2011gee}.)  
+% SHE MAY ACTUALLY HAVE BEEN TALKING ABOUT THE L2-NORM
+% Best practice in regression modeling, specifically restricting the set of independent variables to avoid marked collinearity and transforming other regression variable to limit skewness, will limit from below and above, respectively,  the minimum and maximum eigenvalues of $A_{n}$ and $B_{n}$, motivating an assumption that the largest eigenvalue of $C_{n}$ has a finite limit supremum. 
+We'll suppose that $|S^{(x)}|_{F}$, the Frobenius norm of $S^{(x)}$, is $O(p)$. 
+
+Being a mean square, $\E{ (D \hat{\beta} - D\betatrue)^{2} }$ is a sum of variance and bias terms:
+\begin{equation} \label{eq:4}
+ \E{ (D \hat{\beta} - D\betatrue)^{2} } = %&=& 
+\left\{ \fip{ S^{(x)} }{ \mathrm{Cov}(\hat{\beta})} 
++ \fip{ S^{(x)} }{ (\EE \hat{\beta} - \betatrue) (\EE \hat{\beta} - \betatrue)'} 
+\right\}. %\\
+% & = & \sum_{i,j=1}^{p} S^{(x)}_{ij}\mathrm{Var}^{1/2}(\hat{\beta}_{i}) \mathrm{Var}^{1/2}(\hat{\beta}_{j})\left(r_{\betatrue ij} - \frac{\EE \hat{\beta}_{i} - \beta_{0i}}{\mathrm{Var}^{1/2}(\hat{\beta}_{i})} \frac{\EE \hat{\beta}_{i} - \beta_{0j}}{\mathrm{Var}^{1/2}(\hat{\beta}_{j})}\right). \\
+\end{equation}
+
+If $\{ \hat{\beta} \}_{n=1}^{\infty}$ is asymptotically linear, 
+ \begin{equation}
+   \label{eq:3}
+   \hat{\beta} - \betatrue = - n^{-1} \sum_{i=1}^{n} \tilde{A}_{n} \psi(y_{i}, \vec{x}_{i};  \betatrue) + r_{n},\, \|r_{n}\|_{2} = o_{p}(n^{-1/2}),
+ \end{equation}  
+and also uniformly integrable (UI), 
+then we can take expectations on either side of \eqref{eq:3} and
+$\|\EE \hat{\beta} - \betatrue \| = o(n^{-1/2})$, i.e. $\sum_{j=1}^{p} (\EE \hat{\beta}_{j} - \beta_{0j})^{2} = o(n^{-1}).$  (\eqref{eq:3} follows from \ref{A-estimable} and \ref{A-l2Sfinite} under the strong rate condition $p^{2}\log(p)/n \rightarrow 0$.) So the bias term at right of \eqref{eq:4} is $o({p}/{n})$:
+\begin{align} 
+%\nonumber
+{\fip{S^{(x)}}{(\EE \hat{\beta} - \betatrue) (\EE \hat{\beta} - \betatrue)'} }
+\leq &|S^{(x)}|_{F}|(\EE \hat{\beta} - \betatrue) (\EE \hat{\beta} - \betatrue)'|_{F}  \label{eq:5}\\
+\label{eq:6}\leq&   |S^{(x)}|_{F}|(\EE \hat{\beta} - \betatrue)|_{F}|(\EE \hat{\beta} - \betatrue)|_{F} \\
+\nonumber &  =  |S^{(x)}|_{F} |(\EE \hat{\beta} - \betatrue)|_{F}^{2}\\
+\nonumber & = |S^{(x)}|_{F} \sum_{j=1}^{p} (\EE \hat{\beta}_{j} - \beta_{0j})^{2} \\
+ = &  O(p) o(n^{-1}) ,
+\end{align}
+ where at \eqref{eq:5} we use the fact that the Frobenius norm $| \cdot |_{F}$ is the norm induced by the Frobenius inner product $(a,b) \rightarrow \fip{a}{b}$ while at \eqref{eq:6}  we use submultiplicativity (under matrix multiplication of conformable matrices) of the Frobenius norm. 
+% do I need a cite for sub-multiplicativity of the F norm as applied to conformable 
+%but not identically dimensioned matrices?  If so, one poss is http://www.matrixanalysis.com/page279.pdf 
+%it would be better still to find an authoritative textbook reference that had this and any facts about Hadamard
+%submultiplicativity that we might use.
+
+On the other hand the entries of $\mathrm{Cov} (\hat{\beta})$ are $O(n^{-1})$, making the variance contribution to~\eqref{eq:4} $O(p/n)$, as we shall see; so when $\{ \hat{\beta} \}_{n=1}^{\infty}$ is UI and CAL, the contribution of bias in $\hat{\beta}$ to  $ \E{ (D \hat{\beta} - D\betatrue)^{2} }$  is negligible as compared to that of the variance.  
+
+Now 
+\begin{align*}
+ \frac{n}{2} \E{ (D \hat{\beta} - D\betatrue)^{2}}   
+& =  \fip{S^{(x)}}{n\mathrm{Cov}_{\betatrue}(\hat\beta)} + {\fip{S^{(x)}}{(\EE \hat{\beta} - \betatrue) (\EE \hat{\beta} - \betatrue)'} }\\
+& =  \fip{S^{(x)}}{{C}_{n}} + \fip{S^{(x)}}{n\mathrm{Cov}_{\betatrue}(\hat\beta) - {C}_{n}} + {\fip{S^{(x)}}{(\EE \hat{\beta} - \betatrue) (\EE \hat{\beta} - \betatrue)'} }\\
+&= \fip{S^{(x)}}{C_{n}} + o(1) + o(1).
+\end{align*}
+At the last step we assume that $\|s_{x}\|_{2}^{2} = O(p)$, $s_{x}= ( (S^{(x)}_{ii})^{1/2}: i=1, \ldots, p)$, and invoke submultiplicativity of the spectral norm $\| \cdot \|_{2}$  with respect to the entrywise (Hadamard) matrix product \citep{johnson2000hadamard}, $\hadaprod{(a_{ij}:i,j)}{(b_{ij}:i,j)} = (a_{ij}b_{ij}: i,j) $, to show  $\|\hadaprod{R^{(x)}}{(n\mathrm{Cov}(\betatrue) - C_{n})} \|_{2} \leq  \| R^{(x)} \|_{2}  \| n\mathrm{Cov}(\hat\beta) - C_{n} \|_{2}  \leq  \| n\mathrm{Cov}(\hat\beta) - C_{n} \|_{2} $, for $R^{(x)}$ the correlation matrix corresponding to $S^{(x)}$, and hence that $ \fip{S^{(x)}}{n\mathrm{Cov}(\hat\beta) - C_{n}}  = s_{x}'\hadaprod{R^{(x)}}{n\mathrm{Cov}(\hat\beta) - C_{n}} s_{x} = o(p) $.   
+
+Thus for CAL index score estimates, 
+ \begin{equation} \label{eq:2}
+\E{(D\hat{\beta} - D\betatrue)^{2}} = 2 \fip{S^{(x)}}{n^{-1} \hat{C}_{n}} + o(p/n).
+\end{equation}
+(Recall that we assume $p\log p/n \rightarrow 0$ for consistency of $\hat{\beta}$.)  The mean square estimation error in the paired difference in index scores, averaged across all pairs, is estimated by twice the sum of element-wise products of $S^{(x)}$ and $\hat{C}_{n}$.
+% \begin{equation} \label{eq:2}
+% 2\sum_{i=1}^{k}  S^{(x)}_{ii}\hat{C}_{ i i}  + 4 \sum_{i<j} S^{(x)}_{ij}\hat{C}_{ij}
+% \end{equation}
