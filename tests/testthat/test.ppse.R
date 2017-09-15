@@ -1,5 +1,5 @@
-source("../../R/ppse.R")
-stopifnot(require("testthat"))
+#source("../../R/ppse.R")
+#stopifnot(require("testthat"))
 data(nuclearplants, package="optmatch")
 aglm <- glm(pr~.-cost, data=nuclearplants, family=binomial)
 expect_false(is.null(aglm$qr))

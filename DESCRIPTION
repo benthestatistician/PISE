@@ -1,6 +1,6 @@
 Package: PISE
 Title: Paired index score standard error
-Version: 0.0.0.9000
+Version: 0.1.0.9000
 Authors@R: person("Ben", "Hansen", email = "bbh@umich.edu", role = c("aut", "cre"))
 Description: Code and information about calculation of
              paired standard errors attaching to an index score
@@ -9,3 +9,4 @@ License: MIT
 Encoding: UTF-8
 LazyData: true
 Suggests: testthat
+RoxygenNote: 6.0.1
