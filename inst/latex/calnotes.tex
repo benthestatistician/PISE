@@ -16,7 +16,7 @@
 
 \theoremstyle{remark}
 \newtheorem*{remark}{Remark}
-\author{Ben B. Hansen\thanks{This work benefited from helpful comments of Jake Bowers, Joshua Errickson, Mark M. Fredrickson, and Xuming He, none of whom bear responsibility for potential errors or omissions.}}
+\author{Ben B. Hansen\thanks{Whatever its faults, this work has had the benefit of helpful comments from Jake Bowers, Joshua Errickson, Mark Fredrickson and Xuming He. The author bears full responsibility for any errors, omissions or offensive statements.}}
 \title{Diminishing calipers for propensity and other index scores}
 \begin{document}
 
@@ -44,18 +44,18 @@ uniformly bounded. Scanning across samples as
 a whole, one expects $|\vec{x}_i - \vec{x}_j|_2^2$ of order $p$, both on
 average and in the worst case. Accordingly the errors of estimates of
 difference on the index score are not of order $\sqrt{p/n}$, as are the
-index coefficients themselves, but larger:
+index coefficients themselves, but somewhat larger:
 
 \begin{equation*}
 |(\vec{x}_i -\vec{x}_j)(\hat\beta - \betatrue)| \leq |\vec{x}_i -\vec{x}_j|_2 |\hat\beta - \betatrue|_2 = O(p^{1/2})O_P[\sqrt{p/n}] = O_P(p/\sqrt{n}) . 
 \end{equation*}
 
-Even among pairs $(i,j)$ that are perfectly matched on the index score,
-$(\vec{x}_i - \vec{x}_j)\betatrue = 0$, there are still $p-1$ nonzero
+In fact, even among pairs $(i,j)$ that are perfectly matched on the index score,
+$(\vec{x}_i - \vec{x}_j)\betatrue = 0$, there are still $p-1$ potentially nonzero
 components in the sum that is $|\vec{x}_i - \vec{x}_j|_2^2$, and
 differences on the estimated index,
-$|(\vec{x}_i - \vec{x}_j)\hat\beta|_2$, are of order
-$(p-1)^{1/2} \cdot (p/n)^{1/2}$, i.e.~again $p/\sqrt{n}$.
+$|(\vec{x}_i - \vec{x}_j)\hat\beta|_2$, can be expected to be of order
+$(p-1)^{1/2} \cdot (p/n)^{1/2}$ --- i.e., again $p/\sqrt{n}$, not $\sqrt{p/n}$.
 
 In consequence, if $p^2/n$ diverges then it is not possible to
 articulate a maximum permissible difference of estimated
@@ -137,7 +137,8 @@ paired or subclassified effect estimates, under the combination of
 strong ignorability \citep{rosenbaum:rubi:1983} plus modest additional conditions on the
 matching or subclassification scheme.
 
-\section{The range of index score models considered} \label{sec:range-prop-score}
+\section{Assumptions}
+\subsection{The range of index score models considered} \label{sec:range-prop-score}
 ``Propensity score'' is ambiguous, having originally been defined \citep{rosenbaum:rubi:1983} as \textit{either} the  conditional probability of assignment to treatment as opposed to control given measured covariates $X$, $\mathbf{x} \mapsto \Pr{Z=1: \mathbf{X} = \mathbf{x}} $, \textit{or} as a montonic transformation of that function.  We'll say the propensity score is linear in $\mathbf{x}$ if there is a $\beta \in \Re^{p}$ such that for any 
 %set of treatment conditions $\mathcal{A}$, there is a $g_{\mathcal{A}}: \Re \rightarrow [0,1]$  
 % such that $\Pr{Z \in \mathcal{A}: \mathbf{X}=\mathbf{x}} = g_{\mathcal{A}}^{-1}(\mathbf{x}\beta)$. 
@@ -227,13 +228,26 @@ $$\max_{\gamma: |\gamma|_{2}=1} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2},\quad
 \end{enumerate}
 %In \ref{A-estimable}--\ref{A-PSvar}, 
 %Assumptions \ref{A-estimable} and \ref{A-l2Sfinite} are needed for asmptotics of $\hat{\beta}$ \citep{he2000parameters}. 
-The method being developed here will require $p^2/n \downarrow 0$, as indicated in Section~\ref{sec:introduction}; but most of the supporting theory is valid under the weaker \ref{A-rates}.
+The method being developed here will require $p^2/n \downarrow 0$ for consistency of matched effect estimates, as indicated in Section~\ref{sec:introduction}; but theory supporting the interpretation of key quantities will be valid under the weaker \ref{A-rates}.
 
 Assumptions \ref{A-centering} and \ref{A-boundedinfo} are shared characteristics of ordinarily used propensity score models.  While the link functions $\{g_{z}^{-1}: z\}$ are assumed the same for each $n$, the coefficient vector $\beta$ is permitted to fluctuate, and needn't converge to anything in particular.  However, \ref{A-PSvar} restricts attention to design sequences with non-trivial variation in ${x}\betatrue $: since $\beta'S^{(x)}\beta = s^{2}(\mathbf{x}\beta)$, it says there is a universal $\delta>0$ such that $s(\mathbf{x}\beta)>\delta$, each $n$.   It does permit the variance of $\mathbf{x}\betatrue$ to grow, but only slowly, no faster than $\log p$. 
 
 The invertibility aspect of strong estimability, \ref{A-estimable}, is less burdensome than it would be in other contexts, as for present applications one can freely change the basis of the design matrix, there being no interest in particular elements or contrasts of $\beta$.   
 \ref{A-l2Sfinite}'s appropriateness can be evaluated in advance of IS estimation, whereas \ref{A-estimable} and \ref{A-PSvar} must be assessed only indirectly, by inspection of model-fitting artifacts, following (an attempt at) estimation of $\beta$.
 Overfitting, if present, distorts both of these measures, exaggerating potential problems with \ref{A-estimable} while obscuring potential problems with (part 1 of) \ref{A-PSvar}.  A simple measure to reduce overfitting is to trim explanatory variables that contribute relatively little to the estimated log-likelihood, as indicated by common model selection criteria.
+
+\subsection{The range of matching structures considered}
+
+The estimated index $\mathbf{x}\hat\beta$ will inform the selection of an equivalence relation ``$\sim$'' on subject indices $i = 1, \ldots, n$; ``$[i]$'' denotes $\{j\leq N: i \sim j\}$. Statistical analysis to estimate or test hypotheses about treatment effects will make comparisons within equivalence classes, ordinarily before aggregation across equivalence classes, so the equivalence relation is an indication of which comparisons have been deemed to be fair comparisons.  Subjects not deemed comparable to any other member of the sample are placed into equivalence classes of cardinality 1.  In pair matching, for example, pairs correspond to equivalence classes of cardinality 2, each containing a subject who happened to fall in the treatment group, $z=1$, and another with realized  $z$-value 0. Subclassification is represented wit larger equivalence classes, potentially containing multiple treatment group members and multiple controls. 
+
+We shall assume
+\begin{enumerate} \conti
+\item \label{A-bddedmatchratio} There exists $\epsilon>0$ s.t. among $\sim$ equivalence classes $\mathbf{s}$ of cardinality $\# \mathbf{s}$ larger than 1, $\epsilon \leq (\# \{Z_i=1: i\in \mathbf{s} \})/(\# \mathbf{s}) \leq 1-\epsilon$. 
+\end{enumerate}
+
+Condition~\ref{A-bddedmatchratio} is immediate for pair matching, 1:k matching and matching with varying numbers of controls.  Note carefully that it is \textit{not} accompanied by a restricting that conditional probabilities of assignment to the treatment group be bounded away from 0 or 1. 
+
+\section{Standard errors and index scores}
 
 Consistency for $(\betatrue: n)$ of solutions $\hat{\beta}$ of empirical estimating equations $\sum_{i=1}^{n}\psi(z_{i}, \vec{x}_{i}; \cdot) = 0 $ will mean  $|\hat\beta - \betatrue|_{2}^{2} \sim O_{P}(p/n)$.
 Random matrices $\{ \hat{M}_{n} \}$ are said to consistently estimate fixed matrices $\{M_{n}\}$ with $O_{P}(|M_{n}|_{2}) = n^{-1})$ if
@@ -243,11 +257,9 @@ $$n|\hat{M}_{n} - {M}_{n}|_{2} \stackrel{P}{\rightarrow} 0.$$
 % for sequences $\{\gamma_{n}\} $, $\gamma_{n} \in \mathcal{S}_{p_{n}} = \{ (\gamma_{1}, \gamma_{2}, \ldots, \gamma_{p_{n}}): \sum_{i} \gamma_{i}^{2} = 1\}$,
 % %{Portnoy 1986 may justify describing this convergence as uniform in $\gamma$}%  
 % $ \gamma'(\hat{\beta} - \betatrue)/\sigma_{n}(\gamma) \stackrel{d}{\rightarrow} N(0,1)$, where $\sigma_{n}^{2}(\gamma) = \gamma'C_{n}\gamma$, $C_{n}$ the $p \times p$ matrix of $\beta$-components of $n^{-1}A_{n}^{-1}B_{n}A_{n}^{-1'}$. % $c_{n}'(\hat\beta - \betatrue)/[c_{n}'C_{n}c_{n}]^{1/2} \stackrel{P}{\rightarrow} N(0,1)$ for any sequence of norm-1 $p$-vectors $\{c_{n}\}$. 
+Our regularity conditions entail consistency of $\hat\beta$, and of common estimators of $C_{n}$.  
 
-
-\section{Standard errors and index scores}
-
-Our regularity conditions entail consistency of $\hat\beta$, and of common estimators of $C_{n}$.  If $\psi$ is the gradient a (well-specified) log-likelihood, then $A_{n}=B_{n}$, and $C_{n}$ is estimated by $n^{-1}\hat{A}_{n}^{-1}(\hat\beta)$; more broadly, it is estimated by 
+If $\psi$ is the gradient a (well-specified) log-likelihood, then $A_{n}=B_{n}$, and $C_{n}$ is estimated by $n^{-1}\hat{A}_{n}^{-1}(\hat\beta)$; more broadly, it is estimated by 
 % \begin{align*}
 % \hat{C}_{n} := & n^{-1}\hat{A}_{n}^{-1}(\hat\beta),\\
 % \hat{A}_{n}(\gamma) = &  n^{-1}\left( \sum_{i=1}^{n} \nabla_{\beta} \left. \psi(z_{i}, \vec{x}_{i}; \beta) \right|_{\beta = \gamma}\right) .  
@@ -325,7 +337,7 @@ $n \times p$ matrix of residuals issuing from the simple regression of
 each column of $\mathbf{x}$ on $v$.  This precisely is not possible, since $\betatrue$ is not known; but it has a simple large-sample equivalent. 
 
 \begin{prop} \label{prop:PSdiffconsist}
-Let \ref{A-estimable}--\ref{A-rates} hold,  so that $\hat\beta$ and $\hat{C}$ are consistent estimates of $\betatrue$ and $C$: $|\hat\beta - \betatrue|_{2}^{2} = O_{P}\left(\frac {p}{n}\right)$ \marginpar{ToDo: confirm proof doesn't really assume $o_{P}\left(\frac {p}{n}\right)$} \citep[Theorem~2.1 and Example~3]{he2000parameters}; $n|\hat{C} - C|_{2} \stackrel{P}{\rightarrow} 0$ (see Section~\ref{sec:range-prop-score}??).  Then  %For sequences $\{d_{n} \} \subseteq \Re^{+}$, $\mathcal{D}_{n} = \{ \vec{x}_{i} - \vec{x}_{j}: |\vec{x}_{i} - \vec{x}_{j}|_{2} \leq d_{n}\}$,
+Let \ref{A-estimable}--\ref{A-rates} hold,  so that $\hat\beta$ and $\hat{C}$ are consistent estimates of $\betatrue$ and $C$: $|\hat\beta - \betatrue|_{2}^{2} = O_{P}\left(\frac {p}{n}\right)$ \marginpar{ToDo: confirm proof doesn't really assume $o_{P}\left(\frac {p}{n}\right)$} \citep[Theorem~2.1 and Example~3]{he2000parameters}; $n|\hat{C} - C|_{2} \stackrel{P}{\rightarrow} 0$ (see Lemmas~\ref{lem:C-rate} and~\ref{lem:ChatC}).  Then  %For sequences $\{d_{n} \} \subseteq \Re^{+}$, $\mathcal{D}_{n} = \{ \vec{x}_{i} - \vec{x}_{j}: |\vec{x}_{i} - \vec{x}_{j}|_{2} \leq d_{n}\}$,
 \begin{equation*}
 n \left( \sup_{\vec{x}_{i} \neq \vec{x}_{j}} 
  \frac{ 
@@ -391,7 +403,7 @@ In \eqref{eq:14}, $s_{i}^{2} = x_{[i]}'x_{[i]}/(n-1)$ and $\rho_{i\hat\beta} $ %
 
 The root mean square of potential pairings' index score standard
 errors, i.e. the square root of \eqref{eq:8} or \eqref{eq:14}, is
-termed \textit{paired index standard error} (PISE).  (Or if the is a
+termed \textit{paired index standard error} (PISE).  (Or if the index is a
 propensity score, the ``PPSE,'' or paired propensity standard error.)
 
 \begin{remark}
