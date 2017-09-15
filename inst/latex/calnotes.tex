@@ -238,14 +238,14 @@ Overfitting, if present, distorts both of these measures, exaggerating potential
 
 \subsection{The range of matching structures considered}
 
-The estimated index $\mathbf{x}\hat\beta$ will inform the selection of an equivalence relation ``$\sim$'' on subject indices $i = 1, \ldots, n$; ``$[i]$'' denotes $\{j\leq N: i \sim j\}$. Statistical analysis to estimate or test hypotheses about treatment effects will make comparisons within equivalence classes, ordinarily before aggregation across equivalence classes, so the equivalence relation is an indication of which comparisons have been deemed to be fair comparisons.  Subjects not deemed comparable to any other member of the sample are placed into equivalence classes of cardinality 1.  In pair matching, for example, pairs correspond to equivalence classes of cardinality 2, each containing a subject who happened to fall in the treatment group, $z=1$, and another with realized  $z$-value 0. Subclassification is represented wit larger equivalence classes, potentially containing multiple treatment group members and multiple controls. 
+The estimated index $\mathbf{x}\hat\beta$ will inform the selection of an equivalence relation ``$\sim$'' on subject indices $i = 1, \ldots, n$; ``$[i]$'' denotes $\{j\leq N: i \sim j\}$. Statistical analysis to estimate or test hypotheses about treatment effects will make comparisons within equivalence classes, ordinarily before aggregation across equivalence classes, so the equivalence relation is an indication of which comparisons have been deemed to be fair comparisons.  Subjects not deemed comparable to any other member of the sample are placed into equivalence classes of cardinality 1.  In pair matching, for example, pairs correspond to equivalence classes of cardinality 2, each containing a subject who happened to fall in the treatment group, $z=1$, and another with realized  $z$-value 0. Subclassification is represented with larger equivalence classes, potentially containing multiple treatment group members and multiple controls. 
 
 We shall assume
 \begin{enumerate} \conti
-\item \label{A-bddedmatchratio} There exists $\epsilon>0$ s.t. among $\sim$ equivalence classes $\mathbf{s}$ of cardinality $\# \mathbf{s}$ larger than 1, $\epsilon \leq (\# \{Z_i=1: i\in \mathbf{s} \})/(\# \mathbf{s}) \leq 1-\epsilon$. 
+\item \label{A-bddedmatchratio} There exists $\epsilon>0$ s.t. among $\sim$ equivalence classes $\mathbf{s}$ of cardinality $|\mathbf{s}|$ larger than 1, $\epsilon \leq | \{Z_i=1: i\in \mathbf{s} \}|/|\mathbf{s}| \leq 1-\epsilon$. 
 \end{enumerate}
 
-Condition~\ref{A-bddedmatchratio} is immediate for pair matching, 1:k matching and matching with varying numbers of controls.  Note carefully that it is \textit{not} accompanied by a restricting that conditional probabilities of assignment to the treatment group be bounded away from 0 or 1. 
+Condition~\ref{A-bddedmatchratio} is immediate for pair matching, \atob{1}{k} matching and matching with varying numbers of controls.  Note carefully that it is \textit{not} accompanied by a restricting that conditional probabilities of assignment to the treatment group be bounded away from 0 or 1. 
 
 \section{Standard errors and index scores}
 
@@ -479,8 +479,59 @@ the right hand side of \eqref{eq:14} equivalent to the right hand side of \eqref
 % After calculating this difference, remember to take square roots. 
 
 
+\section{Consistency of propensity score matches within PPSE-based calipers}
+
+in this section we assume the index score is a propensity score.  For concreteness,
+take the fitted model to be a logit-linear model.\marginpar{Relax me!}
+
+Write $\theta(\mathbf{x})$ for the logit-scale propensity score $\mathrm{logit} \left\{ \PP (Z =1 | \mathbf{X} =  \mathbf{x}) \right\}$, $\theta_{i}$ for $\theta(\mathbf{x}_{i})$.  More directly relevant to stratified inference are the probabilities of assignment to treatment with conditioning on $\mathbf{X}$ and the per-stratum treatment counts,
+\begin{eqnarray}
+\pi_i &:=& 
+{\PP (Z_{i}=1 | (\mathbf{X}_{j} : j \sim i),  |\{j \sim i: Z_{j}=1\}|=m_{[i]} )  }  
+\nonumber\\
+& = &  
+\exp({\theta_{i}})\frac{ \sum_{\mathcal{I} \subseteq [i]\setminus\{i\}: |\mathcal{I}| =m_{[i]}-1} \exp\left( \sum_{j \in \mathcal{I}} \theta_{j} \right) }{\sum_{\mathcal{J} \subseteq [i]: |\mathcal{J}| =m_{[i]}} \exp \left(\sum_{j \in \mathcal{J} }  \theta_{j} \right) } \label{eq:23},
+\end{eqnarray}
+where ``$|\mathcal{A}|$'' denotes the size  of $\mathcal{A}$ and $\sum_{\mathcal{I} \subseteq [i]\setminus\{i\}: |\mathcal{I}| =m_{[i]}-1} f(\mathcal{I}) =1$  when $m_{[i]} =1$.% and ``$\mathcal{P}(\mathcal{A})$'' 
+.  % and the collection of permutations of a set $\mathcal{A}$, respectively. 
+(Thus \eqref{eq:23}'s numerator and denominator involve sums over $(|[i]| -1)!/(|[i]| -m_{[i]} -1)!$ and $(|[i]|)!/(|[i]| -m_{[i]})!$ terms, respectively.)
+
+If $i$ is perfectly matched on the logit-scale propensity score, $\theta_{j} = 
+\theta_i$ for all  $j \sim i$, then $(\pi_{j}: j \in [i] )$ is also constant, concentrating on $\piP{[i]}:= |\{j \in [i]: z_{j}=0 \}|/|[i]|$.  It is common to pretend that $\pi_{i} = \piP{[i]}$, as a simplifying assumption \citep[\textit{e.g.}][]{rubin:1991,rosenbaum2010design}.  The following lemma characterizes one important aspect of the error that assumption incurs.
+
+\begin{lemma} \label{lem:msPSerr}
+Let $\mathbf{s} \subseteq 1, \ldots, N$ satisfy one or both of $|\{i \in \mathbf{s}: z_{i} =0\}| = 1$ and/or $|\{i \in \mathbf{s}: z_{i} =1\}| = 1$.  Write $\hat{\theta}_{\mathbf{s}} = (|\mathbf{s}|)^{-1} \sum_{i \in \mathbf{s}} \theta_{i}$, $\piP{\mathbf{s}}  = |\mathbf{s}|^{-1} \sum_{i \in \mathbf{s}} z_i$. 
+For $\delta_\mathbf{s} = \max_{i \in \mathbf{s}} |\theta_i - \bar{\theta}_{\mathbf{s}}| $ we have
+\begin{equation}
+  \label{eq:24}
+  |\pi_{i}  - \piP{\mathbf{s}} |  \leq \min(\piP{\mathbf{s}}, 1-\piP{\mathbf{s}}) \left(e^{2\delta_\mathbf{s}}  -1 \right),\,\, \mathrm{all}\,\, i \in \mathbf{s}.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+
+If either of $\{j \in \mathbf{s}: z_{i} =0\}$ and $\{j \in \mathbf{s}: z_{i} >0\}$ is empty, then $\pi_{j} \equiv \piP{\mathbf{s}} =1$ or $0$, respectively, for all $j \in \mathbf{s}$, and \eqref{eq:24} holds trivially.  Assuming that neither is empty, suppose  first that $|\{j \in \mathbf{s}: z_{i} >0\}| = 1$. Let $i\in \mathbf{s}$ satisfy $z_{i}=1$, so that $i$ denotes a treatment subject matched to one or more controls; then \eqref{eq:23} reduces to $\exp({\theta_{i}})/\sum_{j\sim i} \exp({\theta_{j}})$, while $\piP{\mathbf{s}} = |\mathbf{s} |^{-1}$.  Thus
+\begin{eqnarray*}
+\frac{\pi_{i}}{\piP{\mathbf{s}}} -1 &=& \frac{\exp({z_i\theta_{i}}) - |\mathbf{s}|^{-1} \sum_{j \in \mathbf{s}}\exp({z_i\theta_{j}})}{|\mathbf{s}|^{-1} \sum_{j \in \mathbf{s}} \exp({z_i\theta_{u}})}; \, \mathrm{and} \\
+\left|\frac{\pi_{i}}{\piP{\mathbf{s}}} -1\right| & \leq  &
+\frac{\left|\exp({z_i(\theta_{i} - \bar{\theta}_{\mathbf{s}})}) - |\mathbf{s}|^{-1} \sum_{j \in \mathbf{s}}\exp({z_i(\theta_{j} - \bar{\theta}_{\mathbf{s}})}) \right|
+}{
+|\mathbf{s}|^{-1} \sum_{j \in \mathbf{s}} \exp({z_i(\theta_{j} - \bar{\theta}_{\mathbf{s}})})} \\
+&\leq & \frac{\exp({\delta}) - \exp({-\delta})}{\exp({-\delta})} = e^{2\delta} -1,
+\end{eqnarray*}
+at the last step recalling the assumption that $Z \leq 1$.  By the
+hypotheses that $|\{i \in \mathbf{s}: z_{i} >0\}| = 1$ while $|\{i \in
+\mathbf{s}: z_{i} >0\}| >0$, $\piP{\mathbf{s}} \leq 1/2$, and
+$\min(\piP{\mathbf{s}}, 1-\piP{\mathbf{s}}) = \piP{\mathbf{s}}$.  This
+establishes \eqref{eq:24} for the case that $|\{i \in \mathbf{s}: z_{i}
+>0\}| = 1$.
 
 
+To handle the case that $\{j \in \mathbf{s}: z_{i} =0\}=1$,
+define $\tilde{z}_{i} \equiv 1- z_{i}$, $\tilde{\pi}_{i} = 1-\pi_{i}$ and $\tildepiP{}^{\mathbf{s}} = 1 - \piP{\mathbf{s}}$,  so that $\tilde{z}_{\mathbf{}}'\tilde{z}_{\mathbf{s}} =1$. Substituting $\tilde{\pi}$'s for $\pi$'s, the previous argument now establishes that $|\tilde{\pi}_{i}  - \tildepiP{\mathbf{s}} | = |\pi_{i}  - \piP{\mathbf{s}} | \leq  \tildepiP{\mathbf{s}}  (e^{2\delta}  -1) = (1-\piP{\mathbf{s}})  (e^{2\delta}  -1) $.
+\end{proof}
+
+Lemma~\ref{lem:msPSerr} applies most directly to matched designs, groupings of study subjects combining \atob{1}{1} pairs, \atob{1}{k} matches of a treatment group member to $k>1$ controls, and/or \atob{l}{1} configurations in which $l >1$ members of the treatment group share the same control.  In \citet{rosenbaum:1991a}, the process of stratifying in such a way that each stratum has one of these three structures is called ``full matching.''  The corresponding class of stratifications, ``full matches,'' is characterized by the requirement that in each equivalence class $\mathbf{s}$, either $\sum_{i \in \mathbf{s}} z_{i} \leq 1$ or $\sum_{i \in \mathbf{s}} (1-z_{i}) \leq 1$, or both, using equivalence classes of size 1 to represent the situation of some subjects being left out of the match.
 
 \bibliographystyle{asa}
 \bibliography{abbrev_long,misc,causalinference,biomedicalapplications}
