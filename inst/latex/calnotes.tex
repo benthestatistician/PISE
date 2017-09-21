@@ -174,7 +174,7 @@ are invertible and $|{A}_{n}^{-1}|_{2}=O(1)$ and $|\hat{A}_{n}^{-1}|_{2}= O_{P}(
 When estimating functions $\psi$ arise as derivatives of an objective function such as the log likelihood, the reciprocal of $|{A}_{n}^{-1}|_{2}$ is the expected size of that function's derivative in the direction of least decrease from its maximum $\betatrue$. 
 Strong estimability bounds this curvature from below.
 
-M-estimation distribution theory approximates $\hat\beta$ with a linear function of $\psi(\cdot, \mathbf{x}, \betatrue)$, namely 
+M-estimation distribution theory couples $\hat\beta$ to an approximating random variable that is linear in $\psi(\cdot, \mathbf{x}, \betatrue)$, namely 
 \begin{equation}
   \label{eq:22}
   \tilde{\beta}_{n} \equiv \betatrue + A_{n}^{-1} \left[n^{-1}\sum_{i=1}^{n} \psi(Z_{i}, \vec{x}_{i}; \betatrue )\right].  
@@ -219,7 +219,25 @@ $$\max_{\gamma: |\gamma|_{2}=1} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2},\quad
 % which seems much weaker than global boundedness. 
 % might have been able to relax this w/ random X's. 
 \item\label{A-PSvar}  $\lim\inf_{n}\betatrue'S^{(x)}\betatrue >0$,  but also $\lim\sup_{n} (\log p)^{-1}\betatrue'S^{(x)}\betatrue  < \infty$; and
-\item \label{A-rates} $p(\log p)/n \rightarrow 0$.%\textit{either}
+\item \label{A-rates} $p^{2}/n \rightarrow 0$.
+% Why not $p (\log p) / n \rightarrow 0$?  (the following note appears in git commit log also)
+% The tactics being used to control
+% $|\hat{A}_{n}(\hat\beta) - \hat{A}_{n}(\betatrue)|_2$
+% (in the proof of Lemma~\ref{lem:ChatC}) actually require $p^2/n = o(1)$,
+% not just $p(\log p)/n = o(1)$.
+% The same may be true for the similar tactic applied to
+% $|\hat{B}_{n}(\hat\beta) - \hat{B}_{n}(\betatrue)|_2$.
+% Previous versions maintaining otherwise
+% appear to have been mistaken.
+%
+% The proof is adapted from Wang 2011, which makes still 
+% stronger rate conditions, so perhaps this is not surprising.  
+% Potentially a variation on the proof strategy could avoid 
+% having to be backed into this corner.
+% For instance, asserting or exerting control over 
+% $|\hat\beta - \betatrue|_1$, instead of or in addition   
+% to $|\hat\beta - \betatrue|_2$, would do the trick here. 
+%\textit{either}
   % \begin{enumerate}
   % \item  $p(\log p)/n \rightarrow 0$ (the weak rate assumption), \textit{or}
   % \item $p^{2}(\log p)/n \rightarrow 0$ (the strong rate assumption).
@@ -228,7 +246,7 @@ $$\max_{\gamma: |\gamma|_{2}=1} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2},\quad
 \end{enumerate}
 %In \ref{A-estimable}--\ref{A-PSvar}, 
 %Assumptions \ref{A-estimable} and \ref{A-l2Sfinite} are needed for asmptotics of $\hat{\beta}$ \citep{he2000parameters}. 
-The method being developed here will require $p^2/n \downarrow 0$ for consistency of matched effect estimates, as indicated in Section~\ref{sec:introduction}; but theory supporting the interpretation of key quantities will be valid under the weaker \ref{A-rates}.
+
 
 Assumptions \ref{A-centering} and \ref{A-boundedinfo} are shared characteristics of ordinarily used propensity score models.  While the link functions $\{g_{z}^{-1}: z\}$ are assumed the same for each $n$, the coefficient vector $\beta$ is permitted to fluctuate, and needn't converge to anything in particular.  However, \ref{A-PSvar} restricts attention to design sequences with non-trivial variation in ${x}\betatrue $: since $\beta'S^{(x)}\beta = s^{2}(\mathbf{x}\beta)$, it says there is a universal $\delta>0$ such that $s(\mathbf{x}\beta)>\delta$, each $n$.   It does permit the variance of $\mathbf{x}\betatrue$ to grow, but only slowly, no faster than $\log p$. 
 
@@ -286,7 +304,9 @@ If $\psi$ is the gradient a (well-specified) log-likelihood, then $A_{n}=B_{n}$,
 
 A proof, drawing from \citet{he2000parameters} and \citet{wang2011gee}, appears in the appendix.
 
-Despite these consistency results, use of $n^{-1}\hat{A}_{n}^{-1}$ or $\hat{C}_{n}$ as estimates of the covariance of $\hat\beta$ would necessitate a rate condition stronger than \ref{A-rates}, namely $p^{2}\log(p)/n \downarrow 0$ \citep[Theorem~2.2]{he2000parameters}; under \ref{A-rates}'s weaker condition $p(\log p)/n \downarrow 0$, these matrices estimate $\Cov{\tilde{\beta}}$, for $\tilde\beta$ as in \eqref{eq:22}, but not $\Cov{\hat\beta}$.   If $p^{2}\log(p)/n$ diverges, they remain useful for present purposes if provided that the conclusions of Lemmas~\ref{lem:ChatC} and~\ref{lem:C-rate} still hold. 
+Despite these consistency results, use of $n^{-1}\hat{A}_{n}^{-1}$ or
+$\hat{C}_{n}$ as estimates of the covariance of $\hat\beta$ would
+necessitate a rate condition marginally stronger than \ref{A-rates}, namely $p^{2}\log(p)/n \downarrow 0$ \citep[Theorem~2.2]{he2000parameters}. (Under \ref{A-rates}, these matrices estimate $\Cov{\tilde{\beta}}$, for $\tilde\beta$ as in \eqref{eq:22}, but not $\Cov{\hat\beta}$.)
 
 
 \subsection{Standard errors for paired index score differences}
@@ -560,14 +580,19 @@ to bound variances of summands at right of~\eqref{eq:19} and apply the weak law 
 To establish $\sup_{\gamma: |\gamma|_{2}=1}\gamma'[\hat{A}_{n}(\hat\beta) - \hat{A}_{n}(\betatrue) ]\gamma  \stackrel{P}{\rightarrow} 0$,  invoke Condition~\ref{A-psismooth} to apply the Mean Value Theorem to the function $\eta \mapsto c_{1}(z, \eta)$, where $\nabla \psi(z, \vec{x}, \beta)  = c_{1}(z, \vec{x}\beta) \vec{x}'\vec{x}$, obtaining for any $(z_{i}, \vec{x}_{i})$ and $(j,k)$, $\partial/\partial_{\beta_{j}}\psi_{k}(z_{i}, \vec{x}_{i},\beta)_{\beta = \hat\beta} - \partial/\partial_{\beta_{j}}\psi_{k}(z_{i}, \vec{x}_{i}, \beta)_{\beta = \betatrue}  =  c_{2}(z_{i}, \etastarx)x_{j}x_{k}\vec{x}(\hat\beta - \betatrue)$, some $\etastarx$ between $\vec{x}_{i}\hat\beta$ and $\vec{x}_{i}\betatrue$. Recall that Condition~\ref{A-psismooth} holds this $c_{2}(\cdot, \cdot)$ to be uniformly bounded. Accordingly
 \begin{align}
   \gamma'[\nabla_{\beta} \psi(z_{i}, \vec{x}_{i},\beta)_{\beta = \hat\beta} - \nabla_{\beta} \psi (z_{i}, \vec{x}_{i},\beta)_{\beta = \betatrue}]\gamma =& c_{2}(z_{i}, \etastarx) (\vec{x}_{i}\gamma)^{2} [\vec{x}_{i}(\hat\beta - \betatrue)], \nonumber \\
-\gamma'[\hat{A}_{n}(\hat\beta) - \hat{A}_{n}(\betatrue) ]\gamma \leq & |c_{2}(\cdot)|_{\infty}\frac{1}{n} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2}\vec{x}_{i} |\hat\beta - \betatrue| \label{eq:21};\\
+\gamma'[\hat{A}_{n}(\hat\beta) - \hat{A}_{n}(\betatrue) ]\gamma \leq & 
+|c_{2}(\cdot)|_{\infty}\frac{1}{n} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2}
+|\vec{x}_{i}|_{2} |\hat\beta - \betatrue|_{2}
+\label{eq:21};\\
 \max_{\gamma: |\gamma|_{2}=1} \gamma'[\hat{A}_{n}(\hat\beta) - \hat{A}_{n}(\betatrue) ]\gamma \leq & O \left[\frac{1}{n} 
 %\max_{\gamma, \delta :|\gamma|=|\delta|=1} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2}|\vec{x}_{i} \delta| 
-\max_{\gamma :|\gamma|=1} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2}|\vec{x}_{i}|_{\infty} 
+\max_{\gamma :|\gamma|=1} [\sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2}] \sup_{i}|\vec{x}_{i}|_{\infty} O(p^{1/2})
 \right] \times  \nonumber \\
-& O_{P}(|\hat\beta - \betatrue |_{2})   = o_{P}(1), \nonumber
+& O_{P}(|\hat\beta - \betatrue |_{2})   = O(1)O(p^{1/2}) O_{P}(\sqrt{p/n}) = o_{P}(1), \nonumber
 \end{align}
-at the last step invoking consistency of $\hat\beta$ and a combination of Conditions~\ref{A-l2Sfinite} and \ref{A-boundedXes}. This completes the demonstration of $|\hat{A}_{n} - A_{n}|_{2} \stackrel{P}{\rightarrow} 0$.
+at the last step invoking consistency of $\hat\beta$,
+Conditions~\ref{A-l2Sfinite} and~\ref{A-boundedXes}, and finally~\ref{A-rates}. 
+This completes the demonstration of $|\hat{A}_{n} - A_{n}|_{2} \stackrel{P}{\rightarrow} 0$.
 
 Since $|{A}_{n}^{-1}|_{2}=O(1)$ and $|\hat{A}_{n}^{-1}|_{2}= O_{P}(1)$ (Condition~\ref{A-estimable}), it follows that $|\hat{A}_{n}^{-1} - A_{n}^{-1}|_{2} \stackrel{P}{\rightarrow} 0$, by applying sub-multiplicativity of the spectral norm to the right-hand side of 
 $(\hat{A}_{n}^{-1} - A_{n}^{-1}) = \hat{A}_{n}^{-1} (\hat{A}_{n} - A_{n}) {A}_{n}^{-1}$.  Since also $|B_{n}|_{2} = O_{P}(1)$ (Lemma~\ref{lem:C-rate}), 
@@ -621,7 +646,7 @@ Likewise $|\hat{\beta}\hat{\beta}'S^{(x)}|_{2} \sim O(s^{2}(\mathbf{x}\hat\beta)
 & = s^{2}(\mathbf{x}\betatrue) + O_{P}\left(\left[\frac{p}{n}\right]^{1/2}s(\mathbf{x}\betatrue)\right)  ,\label{eq:11}
 \end{align}
 invoking  $|\hat\beta - \betatrue|_{2}^{2} \sim O(p/n)$ (consistency of $\hat\beta$).
-Under either version of the rate assumption (\ref{A-rates}) this entails $ s^{2}(\mathbf{x}\hat\beta) -  s^{2}(\mathbf{x}\betatrue) \stackrel{P}{\rightarrow} 0$.  \ref{A-PSvar} thus says that both  $\lim\inf s^{2}(\mathbf{x}\betatrue)$ and $\lim\inf s^{2}(\mathbf{x}\hat\beta)$ exceed 0. 
+Under \ref{A-rates} this entails $ s^{2}(\mathbf{x}\hat\beta) -  s^{2}(\mathbf{x}\betatrue) \stackrel{P}{\rightarrow} 0$.  \ref{A-PSvar} thus says that both  $\lim\inf s^{2}(\mathbf{x}\betatrue)$ and $\lim\inf s^{2}(\mathbf{x}\hat\beta)$ exceed 0. 
 In \eqref{eq:9}, then, the spectral norms of the 3 summands in parentheses at left of $\hat{C}$'s are therefore $O(1)$, $O_{P}(1)$, and $O(1)$, respectively. By the triangle inequality, the spectral norm of their sum is $O_{P}(1)$.
 
 The middle term of \eqref{eq:9}, $\hat C$, is controlled by the consequence of \ref{A-boundedinfo} that $\lim\inf n|C_{n}|>0$ and the premise that $|\hat{C}_{n} - C_{n}|_{2} \sim o(n^{-1})$, i.e. the consistency of $\hat{C}$.  
