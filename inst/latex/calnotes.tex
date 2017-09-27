@@ -201,18 +201,13 @@ $\lim\inf |A_{n}^{-1}|_{2},  \lim\inf n|C_{n}|_{2} > 0 $.
 \item \label{A-psismooth} $\psi(z, \mathbf{x}, \beta)$ is of form \eqref{eq:20}. The function $\eta \mapsto v(z, g(\eta))w(\vec{x}, g(\eta))$ is twice differentiable; it and its first two derivatives are uniformly bounded. 
 % $\frac{\partial}{\partial_{i}} \psi _{j} (z, \vec{x}, \beta)  = c_{1}(z, \vec{x}\beta) x_{i}x_{j}$, 
 % $\frac{\partial^{2}}{\partial_{i}\partial_{j}} \psi _{k} (z, \vec{x}, \beta)  = c_{2}(z, \vec{x}\beta) x_{i}x_{j}x_{k}$, where $\Var{c_{1}(Z, \vec{x}, \beta)}$ and $|c_{2}(\cdot)|$ are uniformly bounded.  There is a scalar $c_{0}<\infty$ such that $|\Cov{\psi(Z, \vec{x}, \beta)}|_{2} \leq c_{0} |\vec{x}|_{2}^{2}$.
-\item \label{A-Sfullrank} Each $S^{(x)} = (n-1)^{-1}\mathbf{x}'\mathbf{x}$ is of full rank.
-% \item \label{A-l2Sfinite} The following quantities are $O(n)$:  $|(n-1)S^{(x)}|_{2} =$ 
-% $$\max_{\gamma: |\gamma|_{2}=1} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2},\quad 
-% \text{and}
-% \max_{\substack{\gamma, \delta: |\gamma|_{2}=\\ |\delta|_{2} =1}} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2} (\vec{x}_{i}\delta)^{2}.$$ 
-% % entails He & Shao's F1a, $\sum_{i=1}^{n}|\vec{x}_{i}|_{2}^{2} = O(n)$.  Related to F1b but weaker.
+\item \label{A-l2Sfinite} Each $S^{(x)} = (n-1)^{-1}\mathbf{x}'\mathbf{x}$ is of full rank, and the following quantities are $O(n)$:  $|(n-1)S^{(x)}|_{2} =$ 
+$$\max_{\gamma: |\gamma|_{2}=1} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2},\quad 
+\text{and}
+\max_{\substack{\gamma, \delta: |\gamma|_{2}=\\ |\delta|_{2} =1}} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2} (\vec{x}_{i}\delta)^{2}.$$ 
+% entails He & Shao's F1a, $\sum_{i=1}^{n}|\vec{x}_{i}|_{2}^{2} = O(n)$.  Related to F1b but weaker.
 \item \label{A-regPS} $p^{-1}|\betatrue|_{2}^{2} = p^{-1} \sum_k \betatrue[k]^2$ is bounded away from $\infty$;
-\item \label{A-boundedXes} $\sup_{i,n}|\vec{x}_{i}|_{\infty}   <\infty$. 
-% In light of this, the old A-l2Sfinite was redundant; see also notes
-% to git commit titled "In light of $|x|_\infty$ condition, excise |X|_2 moment conditions"
-% A-boundedXes is used to prove Lemma~\ref{lem:ChatC}
-%in at least four places, none of which seems totally
+\item \label{A-boundedXes} $\sup_{i,n}|\vec{x}_{i}|_{\infty}  <\infty$. \marginpar{\ref{A-boundedXes} used to prove Lemma~\ref{lem:ChatC} \ldots} %in four places, none of which seems totally
 % unavoidable. First, it helps to control $\hat{A}(\betatrue) - A(\betatrue)$, 
 % $\hat{B}(\betatrue - B(\betatrue)$. Potentially this has to do with the limits of my 
 % technique for the bounding of spectral norms (although Wang 2011 resorts to 
@@ -256,7 +251,7 @@ $\lim\inf |A_{n}^{-1}|_{2},  \lim\inf n|C_{n}|_{2} > 0 $.
 Assumptions \ref{A-centering} and \ref{A-boundedinfo} are shared characteristics of ordinarily used propensity score models.  While the link functions $\{g_{z}^{-1}: z\}$ are assumed the same for each $n$, the coefficient vector $\beta$ is permitted to fluctuate, and needn't converge to anything in particular.  However, \ref{A-PSvar} restricts attention to design sequences with non-trivial variation in ${x}\betatrue $: since $\beta'S^{(x)}\beta = s^{2}(\mathbf{x}\beta)$, it says there is a universal $\delta>0$ such that $s(\mathbf{x}\beta)>\delta$, each $n$.   It does permit the variance of $\mathbf{x}\betatrue$ to grow, but only slowly, no faster than $\log p$. 
 
 The invertibility aspect of strong estimability, \ref{A-estimable}, is less burdensome than it would be in other contexts, as for present applications one can freely change the basis of the design matrix, there being no interest in particular elements or contrasts of $\beta$.   
-\ref{A-Sfullrank}'s appropriateness can be evaluated in advance of IS estimation, whereas \ref{A-estimable} and \ref{A-PSvar} must be assessed only indirectly, by inspection of model-fitting artifacts, following (an attempt at) estimation of $\beta$.
+\ref{A-l2Sfinite}'s appropriateness can be evaluated in advance of IS estimation, whereas \ref{A-estimable} and \ref{A-PSvar} must be assessed only indirectly, by inspection of model-fitting artifacts, following (an attempt at) estimation of $\beta$.
 Overfitting, if present, distorts both of these measures, exaggerating potential problems with \ref{A-estimable} while obscuring potential problems with (part 1 of) \ref{A-PSvar}.  A simple measure to reduce overfitting is to trim explanatory variables that contribute relatively little to the estimated log-likelihood, as indicated by common model selection criteria.
 
 \subsection{The range of matching structures considered}
@@ -299,8 +294,7 @@ If $\psi$ is the gradient a (well-specified) log-likelihood, then $A_{n}=B_{n}$,
 \end{lemma}
 
 \begin{proof}[Proof of Lemma~\ref{lem:C-rate}]
-  In light of \eqref{eq:13}, Conditions~\ref{A-psismooth} and~\ref{A-boundedXes}%\ref{A-l2Sfinite}
- combine to give $|B_{n}|_{2} = O_{P}(1)$.  Condition~\ref{A-estimable} gives $|{A}_{n}^{-1}|_{2}=O(1)$, so also $|{C}_{n}^{-1}|_{2}=O(n^{-1})$.
+  In light of \eqref{eq:13}, Conditions~\ref{A-psismooth} and~\ref{A-l2Sfinite} combine to give $|B_{n}|_{2} = O_{P}(1)$.  Condition~\ref{A-estimable} gives $|{A}_{n}^{-1}|_{2}=O(1)$, so also $|{C}_{n}^{-1}|_{2}=O(n^{-1})$.
 \end{proof}
 
 
@@ -566,8 +560,7 @@ Lemma~\ref{lem:msPSerr} applies most directly to matched designs, groupings of s
 
 \section*{Appendix: Proofs of Lemma~\ref{lem:ChatC} and Proposition~\ref{prop:PSdiffconsist}}
 \begin{proof}[Proof of Lemma~\ref{lem:ChatC}]
-The $|\hat\beta - \betatrue|_{2}$-consistency component of the lemma follows from Conditions~\ref{A-estimable}, \ref{A-boundedXes}%\ref{A-l2Sfinite}
- and \ref{A-rates} and Theorem~2.1 of \citet{he2000parameters}, by the argument of He and Shao's Example 3.
+The $|\hat\beta - \betatrue|_{2}$-consistency component of the lemma follows from Conditions~\ref{A-estimable}, \ref{A-l2Sfinite} and \ref{A-rates} and Theorem~2.1 of \citet{he2000parameters}, by the argument of He and Shao's Example 3.
 The remainder of this proof borrows heavily from \citet[][Proof of Thm.~3.10]{wang2011gee}.
 
 We establish $|\hat{A}_{n} - A_{n}|_{2} \stackrel{P}{\rightarrow} 0$ through separate characterizations of  
@@ -598,7 +591,7 @@ To establish $\sup_{\gamma: |\gamma|_{2}=1}\gamma'[\hat{A}_{n}(\hat\beta) - \hat
 & O_{P}(|\hat\beta - \betatrue |_{2})   = O(1)O(p^{1/2}) O_{P}(\sqrt{p/n}) = o_{P}(1), \nonumber
 \end{align}
 at the last step invoking consistency of $\hat\beta$,
-Condition~\ref{A-boundedXes}, and finally~\ref{A-rates}. 
+Conditions~\ref{A-l2Sfinite} and~\ref{A-boundedXes}, and finally~\ref{A-rates}. 
 This completes the demonstration of $|\hat{A}_{n} - A_{n}|_{2} \stackrel{P}{\rightarrow} 0$.
 
 Since $|{A}_{n}^{-1}|_{2}=O(1)$ and $|\hat{A}_{n}^{-1}|_{2}= O_{P}(1)$ (Condition~\ref{A-estimable}), it follows that $|\hat{A}_{n}^{-1} - A_{n}^{-1}|_{2} \stackrel{P}{\rightarrow} 0$, by applying sub-multiplicativity of the spectral norm to the right-hand side of 
@@ -610,10 +603,8 @@ the 2-norms of the *-terms in
 \end{multline*}
 must tend in probability to 0.  Thus the stochastic order of $|A_{n}^{-1}B_{n}A_{n}^{-1} - \hat{A}_{n}^{-1}\hat{B}_{n}\hat{A}_{n}^{-1}|_{2}$ can be no greater than that of $|\hat{A}_{n}^{-1}(\hat{B}_{n} - B_{n}) \hat{A}_{n}^{-1}|_{2}$.  
 
-As~\ref{A-psismooth} and~\ref{A-boundedXes}%\ref{A-l2Sfinite}
- entail that $|\hat{A}_{n}|_{2} = O_{P}(1)$, this means $O_{P}(|\hat{A}_{n}^{-1}(\hat{B}_{n} - B_{n}) \hat{A}_{n}^{-1}|_{2}) = O_{P}(|\hat{B}_{n} - B_{n}|_{2})$. But $|\hat{B}_{n} - B_{n}|_{2} \stackrel{P}{\rightarrow} 0$ follows from arguments analogous to those given for %$|\hat{A}_{n} - A_{n}|_{2} \stackrel{P}{\rightarrow} 0$ 
-$|\hat{B}_{n}(\betatrue) - B_{n}|_{2} \stackrel{P}{\rightarrow} 0$ and $|\hat{B}_{n} - \hat{B}_{n}(\betatrue)|_{2} \stackrel{P}{\rightarrow} 0$.   Conditions~\ref{A-psismooth}  and~\ref{A-boundedXes} support a bound for $\sup_{\gamma: |\gamma|=1}\gamma'[\hat{B}_{n}(\betatrue) - B_{n}(\betatrue)]\gamma$ similar to that of~\eqref{eq:19}, and the weak law for triangular arrays gives $|\hat{B}_{n}(\betatrue) - B_{n}(\betatrue)|_{2} \stackrel{P}{\rightarrow} 0$.   As to $|\hat{B}_{n}(\hat\beta) - \hat{B}_{n}(\betatrue)|_{2}$, Condition~\ref{A-psismooth}'s boundedness constraint on \eqref{eq:20}'s $v(z, g(\eta))w(\vec{x}, g(\eta))$, and on its derivative with respect to $\eta$, entail an inequality similar to \eqref{eq:21}, now also combining with Condition~\ref{A-boundedXes}%\ref{A-l2Sfinite}
- and consistency of $\hat\beta$ to entail $\max_{\gamma: |\gamma|_{2}=1} \gamma'[\hat{B}_{n}(\hat\beta) - \hat{B}_{n}(\betatrue) ]\gamma \stackrel{P}{\rightarrow} 0$.
+As~\ref{A-psismooth} and~\ref{A-l2Sfinite} entail that $|\hat{A}_{n}|_{2} = O_{P}(1)$, this means $O_{P}(|\hat{A}_{n}^{-1}(\hat{B}_{n} - B_{n}) \hat{A}_{n}^{-1}|_{2}) = O_{P}(|\hat{B}_{n} - B_{n}|_{2})$. But $|\hat{B}_{n} - B_{n}|_{2} \stackrel{P}{\rightarrow} 0$ follows from arguments analogous to those given for %$|\hat{A}_{n} - A_{n}|_{2} \stackrel{P}{\rightarrow} 0$ 
+$|\hat{B}_{n}(\betatrue) - B_{n}|_{2} \stackrel{P}{\rightarrow} 0$ and $|\hat{B}_{n} - \hat{B}_{n}(\betatrue)|_{2} \stackrel{P}{\rightarrow} 0$.   Conditions~\ref{A-psismooth}  and~\ref{A-boundedXes} support a bound for $\sup_{\gamma: |\gamma|=1}\gamma'[\hat{B}_{n}(\betatrue) - B_{n}(\betatrue)]\gamma$ similar to that of~\eqref{eq:19}, and the weak law for triangular arrays gives $|\hat{B}_{n}(\betatrue) - B_{n}(\betatrue)|_{2} \stackrel{P}{\rightarrow} 0$.   As to $|\hat{B}_{n}(\hat\beta) - \hat{B}_{n}(\betatrue)|_{2}$, Condition~\ref{A-psismooth}'s boundedness constraint on \eqref{eq:20}'s $v(z, g(\eta))w(\vec{x}, g(\eta))$, and on its derivative with respect to $\eta$, entail an inequality similar to \eqref{eq:21}, now also combining with Condition~\ref{A-l2Sfinite} and consistency of $\hat\beta$ to entail $\max_{\gamma: |\gamma|_{2}=1} \gamma'[\hat{B}_{n}(\hat\beta) - \hat{B}_{n}(\betatrue) ]\gamma \stackrel{P}{\rightarrow} 0$.
 \end{proof}
 %The argument depends crucially on strong estimability, \ref{A-estimable}, and further makes clear that good finite-sample performance will require that the minimum eigenvalue of $\hat{A}_{n}(\cdot)$ vary slowly within the $\sqrt{p/n}$-vecinity \marginpar{wc} of $\betatrue$.   
 
@@ -644,7 +635,7 @@ Thus $ \mathbf{d}^{\perp \mathbf{x}\betatrue} = \mathbf{d} -  s^{-2}(\mathbf{x}\
 Our task reduces to showing that %for expression (*) appearing in \eqref{eq:9}, 
 $|(*)|_{2} \sim O_{P}(n^{-3/2}) $.
 
-By \ref{A-Sfullrank}, $|S^{(x)}|_{2} \sim O(1)$.  For $S^{1/2}$ a Cholesky factor of $S^{(x)}$, $S^{(x)} = S^{1/2}S^{1/2\prime}$, $|S^{1/2}|_{2} \sim O(1)$ and $|S^{{1/2}\prime}\betatrue |_{2}^{2} = |\betatrue'S^{(x)}\betatrue| = s^{2}(\mathbf{x}\betatrue) \sim O\left( \log p\right)
+By \ref{A-l2Sfinite}, $|S^{(x)}|_{2} \sim O(1)$.  For $S^{1/2}$ a Cholesky factor of $S^{(x)}$, $S^{(x)} = S^{1/2}S^{1/2\prime}$, $S^{1/2} \sim O(1)$ by \ref{A-l2Sfinite} and $|S^{{1/2}\prime}\betatrue |_{2}^{2} = |\betatrue'S^{(x)}\betatrue| = s^{2}(\mathbf{x}\betatrue) \sim O\left( \log p\right)
 $ by \ref{A-PSvar}; combining these, $|S^{(x)}\betatrue|_{2} = |S^{1/2}S^{{1/2}\prime}\betatrue|_{2} \leq O(1) O(s(\mathbf{x}\betatrue)) = O(s(\mathbf{x}\betatrue))  %= O((\log p)^{1/2})
 $.  Similarly, $|\betatrue\betatrue'S^{(x)}|_{2}  \leq |S^{-1}|_{2} |S^{(x)}\betatrue|_{2}^{2} \sim O(s^{2}(\mathbf{x}\betatrue))$. 
 
@@ -672,7 +663,7 @@ so the difference may be characterized as
 \end{equation}
 As noted above, $|\hat\beta\hat{\beta}'S^{(x)} |_{2} \sim O(s^{2}(\mathbf{x}\hat\beta)) = O_{P}(s^{2}(\mathbf{x}\betatrue))$, so the first term of \eqref{eq:10} has spectal norm that's $O_{P}\left(\frac{p^{1/2}s(\mathbf{x}\betatrue)}{n^{1/2}} \right)$. \ref{A-PSvar} and \ref{A-rates} combine to say this is $o_{P}(1)$. As to the second term of \eqref{eq:10}:
 % Now \ref{A-regPS} says the $l_{2}$-induced norms of $\betatrue'$ or $\betatrue$, considered as linear maps of $\Re^{p}$ into $\Re$ or $\Re$ into $\Re^{p}$, respectively, are $O(p^{1/2})$.
-% Similarly $|S^{(x)}\betatrue|_{2} = O(??)$, due to \ref{A-Sfullrank}. \marginpar{Conj: $\betatrue'S^{(x)}\betatrue \sim O(\log p ) \Rightarrow |S^{(x)}\betatrue| \sim O(\log p)$.} 
+% Similarly $|S^{(x)}\betatrue|_{2} = O(??)$, due to \ref{A-l2Sfinite}. \marginpar{Conj: $\betatrue'S^{(x)}\betatrue \sim O(\log p ) \Rightarrow |S^{(x)}\betatrue| \sim O(\log p)$.} 
 \begin{align*}
 |\hat\beta\hat{\beta}'S^{(x)} - \betatrue{\betatrue}'S^{(x)}|_{2} &= |(\hat\beta-\betatrue){\betatrue}'S^{(x)} + \betatrue(\hat\beta - \betatrue)'S^{(x)} + (\hat\beta -\betatrue)(\hat\beta - \betatrue)'S^{(x)}|_{2} \\
 &\leq |(\hat\beta-\betatrue){\betatrue}'S^{(x)}|_{2} + |\betatrue(\hat\beta - \betatrue)'S^{(x)}|_{2} +| (\hat\beta -\betatrue)(\hat\beta - \betatrue)'S^{(x)}|_{2}\\
