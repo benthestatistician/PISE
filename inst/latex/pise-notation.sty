@@ -41,8 +41,11 @@
 {\langle #1, #2\rangle_{F}}
 \newcommand{\hadaprod}[2]{\left(#1 \circ #2 \right)}
 \newcommand{\betatrue}[1][]{\ensuremath{\beta_{n #1}}}
-\newcommand{\betastarx}{\ensuremath{\beta^*_{i}}}
-\newcommand{\etastarx}{\ensuremath{\eta^*_{i}}}
+\newcommand{\betastarx}[1][*]{\ensuremath{\beta^{#1}_{i}}}
+\newcommand{\etastarx}[1][*]{\ensuremath{\eta^{#1}_{i}}}
+\newcommand{\psiC}[1]{\ensuremath{c_{0}(#1)}}
+\newcommand{\psiCi}[1]{\ensuremath{c_{1}(#1)}}
+\newcommand{\psiCii}[1]{\ensuremath{c_{2}(#1)}}
 \expandafter\endinput\fi
 
 % To generate a notation cheat-sheet, do
@@ -78,7 +81,10 @@
 \Notii{\pen}{b}
 
 \Noti{\betatrue} , 
-\Notiopt{\betatrue}{k}; \Noti{\etastarx} \\
+\Notiopt{\betatrue}{k}; \Noti{\betastarx}, \Notiopt{\betastarx}{!},
+\Noti{\etastarx}, \Notiopt{\etastarx}{!} \\
+\Notii{\psiC}{z, x, n}, \Notii{\psiC}{Z}; \Notii{\psiCi}{Z}, \Notii{\psiCii}{Z}  (common factor in $\psi$
+functions, and its 1st and second derivs w.r.t. $\eta$)\\ 
 \Notiii{\fip}{S}{C} (Frobenius inner product of matrices $S$ and $C$)\\
 \Notiii{\hadaprod}{a}{b} (Hadamard/entrywise matrix product of matrices $a$ and $b$, i.e. $(a_{ij}b_{ij}: i,j)$.
 
