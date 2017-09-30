@@ -9,5 +9,6 @@ agencyyears.rda
 *.pdf
 *.aux
 *.log
+inst/latex/delimset.sty
 *~
 ToDo.md
