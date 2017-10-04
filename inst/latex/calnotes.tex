@@ -2,8 +2,6 @@
 \usepackage{amsmath,amssymb}
 \usepackage{amsthm}
 \usepackage{natbib}
-% \usepackage{enumitem}
-% \setlist[enumerate]{label*=\alph*),\ref=\alph*}
 
 
 \usepackage{pise-notation}
@@ -16,11 +14,16 @@
 
 \theoremstyle{remark}
 \newtheorem*{remark}{Remark}
-\author{Ben B. Hansen\thanks{Whatever its faults, this work has had the benefit of helpful comments from Jake Bowers, Joshua Errickson, Mark Fredrickson and Xuming He. The author bears full responsibility for any errors, omissions or offensive statements.}}
+
+% temporarily omit marginalia
+% \renewcommand{\marginpar}[1]{}
+
+\author{Ben B. Hansen\thanks{Whatever its faults may be, this work has had the benefit of helpful comments from Jake Bowers, Joshua Errickson, Mark Fredrickson, Xuming He and Lan Wang. Responsibility for errors or omissions rests with the author.}}
 \title{Diminishing calipers for propensity and other index scores}
 \begin{document}
 
 %http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0081045
+%fogarty et al '16.
 \maketitle
 
 \section{Introduction} \label{sec:introduction}
@@ -37,9 +40,9 @@ $p(\log p)/n \downarrow 0$ \citep{he2000parameters}. The index made from
 these estimates takes the form $\vec{x}_i \hat\beta$, and matches or
 candidate matches between study subjects $i$ and $j$ are assessed in
 terms of $(\vec{x}_i -\vec{x}_j)\hat\beta$, a stand-in for
-$(\vec{x}_i - \vec{x}_j)\betatrue$. Let us make the favorable assumption
-that as $n$ and $p$ increase, observing the convention that 
-design matrix columns $x_{i}$ each have s.d. 1, entries in $\mathbf{x}$ are
+$(\vec{x}_i - \vec{x}_j)\betatrue$.  Observing the convention that 
+design matrix columns $x_{i}$ each have s.d. 1, we make the favorable assumption
+that as $n$ and $p$ increase, entries in $\mathbf{x}$ are
 uniformly bounded. Scanning across samples as
 a whole, one expects $|\vec{x}_i - \vec{x}_j|_2^2$ of order $p$, both on
 average and in the worst case. Accordingly the errors of estimates of
@@ -83,16 +86,19 @@ in the large sample limit, rendering inapplicable conceptual analyses
 of the matched comparisons that presume the pairing to have removed
 differences in the index value. 
 
-Unfortunately, the common practice of matching to within
-a quarter or a fifth of $s_{p}$, the pooled standard deviation on an
-estimated propensity score, fails this test, since this $s_{p}$ does not diminish with increasing $n$;
-if that is all that is done to ensure that paired subjects' propensity
-score values are close, then the pairing cannot be said to enjoy
-propensity score matching's purported benefits
-\citep{rosenbaum:rubi:1983}, whatever the ratio of $p$ to $\sqrt{n}$.
-What is needed is a criterion that scales downward in sync with the
-precision of modeling, not in the manner of a sample standard
-deviation but rather in the manner we expect of standard errors.
+Available recommendations suggest matching within small multiples of
+$s_{p}$, the pooled standard deviation of the estimated propensity
+score, such as a quarter \citep{rosenbaum:rubi:1985a,rubin:thom:2000}
+or a fifth \citep{austin2011optimal,wang2013PScalipers3groups}.  Each
+of these practices fails our test, since this $s_{p}$ does not
+diminish with increasing $n$; if that is all that is done to ensure
+that paired subjects' propensity score values are close, then the
+pairing cannot be said to enjoy propensity score matching's purported
+benefits \citep{rosenbaum:rubi:1983}, whatever the ratio of $p$ to
+$\sqrt{n}$.  What is needed is a criterion that scales downward in
+sync with the precision of modeling, not in the manner of a sample
+standard deviation but rather in the manner we expect of standard
+errors.\nocite{lunt2013PScalipers}
 
 It so happens that if we tighten the rate requirement for index score
 modeling very slightly, from $p^2/n \downarrow 0$ to
@@ -150,14 +156,22 @@ A PS, and more generally an index score (IS), is \textit{estimable} if we have $
 The PS coefficent estimates  $\hat{\beta}$ are assumed to satisfy $\sum_{j=1}^{p}\left[\sum_{i=1}^{n}\psi_{j}(z_{i}, \vec{x}_{i}; \hat{\beta})\right]^{2} = o_{P}(n)$. (Ordinarily $\sum_{i=1}^{n}\psi(z_{i}, \vec{x}_{i}; \hat{\beta}) \equiv 0$; but in Bayesian estimation [\citealp[e.g.,][]{gelman2008weakly}] and in certain bias-reduction schemes [\citealp{firth:1993,kosmidisFirth2009bias}], $\hat\beta$ is the solution of $[\sum_{i=1}^{n}\psi(z_{i}, \vec{x}_{i}; \beta)] + \pen{\beta} =0$, some $\pen{\cdot}$.)
 We consider $\psi$ of form 
 \begin{equation}\label{eq:20}
-  \psi(z, \vec{x}, \beta) = v(z, g(\vec{x}\beta)) w(\vec{x}, g(\vec{x}\beta)) \vec{x}',
+  \psi(z, \vec{x}, \beta) = v(z, g(\vec{x}\beta)) w(\vec{x}, g(\vec{x}\beta)) \vec{x}' =: \psiC{z, \vec{x}, \vec{x}\beta}\vec{x}',
 \end{equation}
-a structure generalizing that of the logistic regression score function, $\psi(z, \vec{x}, \beta) = (z - g(\vec{x}\beta))\vec{x}'$.  
+a structure generalizing that of the logistic regression score
+function, $\psi(z, \vec{x}, \beta) = (z - g(\vec{x}\beta))\vec{x}'$,
+to include various robust methods for binary regression \citep{cantoniRonchetti2001robustglms,liu2004robit}.  
 We'll assume (condition \ref{A-psismooth} below) $\beta \mapsto \psi(z, \mathbf{x}; \beta)$ possesses smoothness comparable to that of the logistic regression estimating equations. We consider sequences of designs, with design matrices of increasing dimensions $n $ and $p$.  Define
 \begin{align}
   \label{eq:7}
- A_{n}(\gamma ) &= \frac{1}{n}\left\{ \E{ \sum_{i=1}^{n} \nabla_{\beta} \left. \psi(Z_{i}, \vec{x}_{i}; \beta) \right|_{\beta =  \gamma}} + \pen{\gamma}\right\}, \quad A_{n}  =  A_{n}(\betatrue);  \\
- \hat{A}_{n}(\gamma ) &= \frac{1}{n}\left\{ \sum_{i=1}^{n} \nabla_{\beta} \left. \psi(z_{i}, \vec{x}_{i}; \beta) \right|_{\beta =  \gamma} + \pen{\gamma}\right\}, \quad \hat{A}_{n}  =  A_{n}(\hat\beta).  \nonumber
+A_{n}  &=  A_{n}(\betatrue),\, & A_{n}(\gamma ) &= \frac{1}{n}\Bigg\{ \E{ \sum_{i=1}^{n}
+                  \nabla_{\beta} \left. \psi(Z_{i}, \vec{x}_{i};
+                  \beta) \right|_{\beta =  \gamma}} &+
+                  \pen{\gamma}\Bigg\};  \\
+\hat{A}_{n}  &=  A_{n}(\hat\beta),\, &\hat{A}_{n}(\gamma ) &= \frac{1}{n}\Bigg\{ \sum_{i=1}^{n}
+                        \nabla_{\beta} \left. \psi(z_{i}, \vec{x}_{i};
+                        \beta) \right|_{\beta =  \gamma} &+
+                        \pen{\gamma}\Bigg\} .  \nonumber
 \end{align}
 Say the IS is \textit{strongly estimable} if for each $n$ the IS is estimable, $A_{n}$ and $\hat{A}_{n}$  
 are invertible and $|{A}_{n}^{-1}|_{2}=O(1)$ and $|\hat{A}_{n}^{-1}|_{2}= O_{P}(1)$. 
@@ -180,11 +194,11 @@ M-estimation distribution theory couples $\hat\beta$ to an approximating random 
   \tilde{\beta}_{n} \equiv \betatrue + A_{n}^{-1} \left[n^{-1}\sum_{i=1}^{n} \psi(Z_{i}, \vec{x}_{i}; \betatrue )\right].  
 \end{equation}
 % We will use this approximation somewhat more broadly than is ordinarily justified, embedding it in the definitions of certain constructs that will be seen to have meaning even for some design sequences with divergent $p^{2}/n$, where the approximation is not reliable enough to ground inference about $\betatrue$ . 
-The covariances of the estimating functions, $n^{-1} \sum_{i=1}^{n} \psi(Z_{i}, \vec{x}_{i}; \betatrue )$, and, respectively, of $\tilde{\beta}_{n}$, are 
+The covariances of the estimating functions, $n^{-1} \sum_{i=1}^{n} \psi(Z_{i}, \vec{x}_{i}; \betatrue )$, and, respectively, of $\tilde{\beta}_{n}$, are: 
 \begin{align}
 \label{eq:13}
-B_{n}  &=  n^{-1}\EE  \sum_{i=1}^{n} \psi(Z_{i}, \vec{x}_{i}; \betatrue ) \psi(Z_{i}, \vec{x}_{i};  \betatrue )' \, \mathrm{and} \\
-C_{n} &= n^{-1}A_{n}^{-1}B_{n}A_{n}^{-1\prime}.\nonumber
+B_{n}  =  B_{n}(\betatrue),\quad B_{n}(\beta) &= n^{-1}\EE  \sum_{i=1}^{n} \psi(Z_{i}, \vec{x}_{i}; \beta ) \psi(Z_{i}, \vec{x}_{i};  \beta )'\, ; \, \mathrm{and}\\
+ C_{n} &= n^{-1}A_{n}^{-1}B_{n}A_{n}^{-1\prime}.\nonumber
 \end{align}
 % If $\psi$ is the score function corresponding to a well-specified likelihood, then $B_{n}$ is the expected information.
 
@@ -198,16 +212,27 @@ $\lim\inf |A_{n}^{-1}|_{2},  \lim\inf n|C_{n}|_{2} > 0 $.
 % $$c \vec{x}_{i}'\vec{x}_{i} - \mathrm{E}\left\{ [\nabla_{\beta}\log g_{Z}(\vec{x}_{i}\beta)]_{\beta=\betatrue} '[\nabla_{\beta}\log g_{Z}(\vec{x}_{i}\beta)]_{\beta=\betatrue} \right\}$$
 % is nonnegative definite;
 \item\label{A-estimable} The IS is linear in $\mathbf{x}$ and strongly estimable, i.e.  $\{A_{n}(\betatrue)\}$ and $\{A_{n}(\hat\beta)\}$ are sequences of matrices that are invertible (in the latter case, with probability tending to 1) and satisfy $|{A}_{n}^{-1}|_{2}=O(1)$ and $|\hat{A}_{n}^{-1}|_{2}= O_{P}(1)$. 
-\item \label{A-psismooth} $\psi(z, \mathbf{x}, \beta)$ is of form \eqref{eq:20}. The function $\eta \mapsto v(z, g(\eta))w(\vec{x}, g(\eta))$ is twice differentiable; it and its first two derivatives are uniformly bounded. 
-% $\frac{\partial}{\partial_{i}} \psi _{j} (z, \vec{x}, \beta)  = c_{1}(z, \vec{x}\beta) x_{i}x_{j}$, 
-% $\frac{\partial^{2}}{\partial_{i}\partial_{j}} \psi _{k} (z, \vec{x}, \beta)  = c_{2}(z, \vec{x}\beta) x_{i}x_{j}x_{k}$, where $\Var{c_{1}(Z, \vec{x}, \beta)}$ and $|c_{2}(\cdot)|$ are uniformly bounded.  There is a scalar $c_{0}<\infty$ such that $|\Cov{\psi(Z, \vec{x}, \beta)}|_{2} \leq c_{0} |\vec{x}|_{2}^{2}$.
+\item \label{A-psismooth} $\psi(z, \mathbf{x}, \beta)$ is of form
+  \eqref{eq:20}. The function $\eta \mapsto \psiC{z,\vec{x}, \eta}$ is
+  twice differentiable, and its first two derivatives, $\psiCi{z,
+  \vec{x}, \eta}$ and $\psiCii{z, \vec{x}, \eta}$, are uniformly bounded. 
+% $\frac{\partial}{\partial_{i}} \psi _{j} (z, \vec{x}, \beta)  = \psiCi{z, \vec{x}\beta} x_{i}x_{j}$, 
+% $\frac{\partial^{2}}{\partial_{i}\partial_{j}} \psi _{k} (z, \vec{x}, \beta)  = \psiCii{z, \vec{x}\beta} x_{i}x_{j}x_{k}$, where $\Var{\psiCi{Z, \vec{x}, \beta}}$ and $|\psiCii{\cdot}|$ are uniformly bounded.  There is a scalar $c_{0}<\infty$ such that $|\Cov{\psi(Z, \vec{x}, \beta)}|_{2} \leq c_{0} |\vec{x}|_{2}^{2}$.
+\item \label{A-c0moments} $\psi(z, \mathbf{x}, \beta)$ is of form
+  \eqref{eq:20}. For $n, i\leq n$ the random variables
+  $\psiC{Z_{i},\vec{x}_{i}, \vec{x}_{i}\betatrue}$
+have four finite moments, $m_{1in}, m_{2in}, m_{3in}$ and $m_{4in}$,
+which are summable, in the sense that $\sum_{i=1}^{n} m_{jin} = O(n)$,
+$j=1, 2, 3, 4$.
 \item \label{A-l2Sfinite} Each $S^{(x)} = (n-1)^{-1}\mathbf{x}'\mathbf{x}$ is of full rank, and the following quantities are $O(n)$:  $|(n-1)S^{(x)}|_{2} =$ 
 $$\max_{\gamma: |\gamma|_{2}=1} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2},\quad 
-\text{and}
+\text{and} 
 \max_{\substack{\gamma, \delta: |\gamma|_{2}=\\ |\delta|_{2} =1}} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2} (\vec{x}_{i}\delta)^{2}.$$ 
 % entails He & Shao's F1a, $\sum_{i=1}^{n}|\vec{x}_{i}|_{2}^{2} = O(n)$.  Related to F1b but weaker.
 \item \label{A-regPS} $p^{-1}|\betatrue|_{2}^{2} = p^{-1} \sum_k \betatrue[k]^2$ is bounded away from $\infty$;
-\item \label{A-boundedXes} $\sup_{i,n}|\vec{x}_{i}|_{\infty}  <\infty$. \marginpar{\ref{A-boundedXes} used to prove Lemma~\ref{lem:ChatC} \ldots} %in four places, none of which seems totally
+\item \label{A-boundedXes} $\sup_{i,n}|\vec{x}_{i}|_{\infty}  <\infty$. 
+%NB: \ref{A-boundedXes} used to prove 
+%Lemma~\ref{lem:ChatC} in four places, none of which seems totally
 % unavoidable. First, it helps to control $\hat{A}(\betatrue) - A(\betatrue)$, 
 % $\hat{B}(\betatrue - B(\betatrue)$. Potentially this has to do with the limits of my 
 % technique for the bounding of spectral norms (although Wang 2011 resorts to 
@@ -218,7 +243,7 @@ $$\max_{\gamma: |\gamma|_{2}=1} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2},\quad
 % $\max_{\substack{\gamma, \delta: |\gamma|_{2}=\\ |\delta|_{2} =1}} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2} |\vec{x}_{i}\delta|$, 
 % which seems much weaker than global boundedness. 
 % might have been able to relax this w/ random X's. 
-\item\label{A-PSvar}  $\lim\inf_{n}\betatrue'S^{(x)}\betatrue >0$,  but also $\lim\sup_{n} (\log p)^{-1}\betatrue'S^{(x)}\betatrue  < \infty$; and
+\item\label{A-PSvar}  $\inf_{n}\betatrue'S^{(x)}\betatrue >0$,  but also $\sup_{n} (\log p)^{-1}\betatrue'S^{(x)}\betatrue  < \infty$; and
 \item \label{A-rates} $p^{2}/n \rightarrow 0$.
 % Why not $p (\log p) / n \rightarrow 0$?  (the following note appears in git commit log also)
 % The tactics being used to control
@@ -250,7 +275,7 @@ $$\max_{\gamma: |\gamma|_{2}=1} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2},\quad
 
 Assumptions \ref{A-centering} and \ref{A-boundedinfo} are shared characteristics of ordinarily used propensity score models.  While the link functions $\{g_{z}^{-1}: z\}$ are assumed the same for each $n$, the coefficient vector $\beta$ is permitted to fluctuate, and needn't converge to anything in particular.  However, \ref{A-PSvar} restricts attention to design sequences with non-trivial variation in ${x}\betatrue $: since $\beta'S^{(x)}\beta = s^{2}(\mathbf{x}\beta)$, it says there is a universal $\delta>0$ such that $s(\mathbf{x}\beta)>\delta$, each $n$.   It does permit the variance of $\mathbf{x}\betatrue$ to grow, but only slowly, no faster than $\log p$. 
 
-The invertibility aspect of strong estimability, \ref{A-estimable}, is less burdensome than it would be in other contexts, as for present applications one can freely change the basis of the design matrix, there being no interest in particular elements or contrasts of $\beta$.   
+The invertibility aspect of strong estimability, \ref{A-estimable}, will be less burdensome than in other contexts, as for present applications one can freely change the basis of the design matrix, there being no interest in particular elements or contrasts of $\beta$.   
 \ref{A-l2Sfinite}'s appropriateness can be evaluated in advance of IS estimation, whereas \ref{A-estimable} and \ref{A-PSvar} must be assessed only indirectly, by inspection of model-fitting artifacts, following (an attempt at) estimation of $\beta$.
 Overfitting, if present, distorts both of these measures, exaggerating potential problems with \ref{A-estimable} while obscuring potential problems with (part 1 of) \ref{A-PSvar}.  A simple measure to reduce overfitting is to trim explanatory variables that contribute relatively little to the estimated log-likelihood, as indicated by common model selection criteria.
 
@@ -285,18 +310,9 @@ If $\psi$ is the gradient a (well-specified) log-likelihood, then $A_{n}=B_{n}$,
 % If $\psi$ derives from a pseudo-likelihood, or otherwise identifies propensity score coefficients without necessarily being gradients of the log of the generating likelihood, then one uses sandwich estimates, 
 \begin{align*}
 \hat{C}_{n} :=& n^{-1} [\hat{A}_{n}]^{-1} \hat{B}_{n} [\hat{A}_{n}']^{-1},\, \text{where}\\
-\hat{B}_{n}  =&  n^{-1} \sum_{i=1}^{n} \psi(z_{i}, \vec{x}_{i};  \hat{\beta} ) \psi(z_{i}, \vec{x}_{i};  \hat{\beta} )'.  
+\hat{B}_{n}  =&  \hat{B}_n(\hat\beta), \quad \hat{B}_n(\beta) = n^{-1} \sum_{i=1}^{n} \psi(z_{i}, \vec{x}_{i};  {\beta} ) \psi(z_{i}, \vec{x}_{i};  {\beta} )'.  
 \end{align*}
 % The symbol $\hat{C}$ will indicate either $n^{-1} \hat{A}_{n}^{-1} \hat{B}_{n} \hat{A}_{n}^{-1\prime} $ or $n^{-1} \hat{A}_{n}^{-1}$.  
-
-\begin{lemma} \label{lem:C-rate}
-  Under \ref{A-centering}--\ref{A-rates}, $|B_{n}|_{2} = O(1)$ and $|C_{n}|_{2} = O(n^{-1})$.
-\end{lemma}
-
-\begin{proof}[Proof of Lemma~\ref{lem:C-rate}]
-  In light of \eqref{eq:13}, Conditions~\ref{A-psismooth} and~\ref{A-l2Sfinite} combine to give $|B_{n}|_{2} = O_{P}(1)$.  Condition~\ref{A-estimable} gives $|{A}_{n}^{-1}|_{2}=O(1)$, so also $|{C}_{n}^{-1}|_{2}=O(n^{-1})$.
-\end{proof}
-
 
 \begin{lemma} \label{lem:ChatC}
   Under \ref{A-centering}--\ref{A-rates}, $|\hat\beta - \betatrue|_{2} \stackrel{P}{\rightarrow} 0$, with rate $O_{P}\left( \sqrt{p/n} \right)$;   $|\hat{A}_{n} - A_{n}|_{2} \stackrel{P}{\rightarrow} 0$; and $n|\hat{C}_{n} - C_{n}|_{2} \stackrel{P}{\rightarrow} 0$. 
@@ -304,10 +320,32 @@ If $\psi$ is the gradient a (well-specified) log-likelihood, then $A_{n}=B_{n}$,
 
 A proof, drawing from \citet{he2000parameters} and \citet{wang2011gee}, appears in the appendix.
 
-Despite these consistency results, use of $n^{-1}\hat{A}_{n}^{-1}$ or
-$\hat{C}_{n}$ as estimates of the covariance of $\hat\beta$ would
-necessitate a rate condition marginally stronger than \ref{A-rates}, namely $p^{2}\log(p)/n \downarrow 0$ \citep[Theorem~2.2]{he2000parameters}. (Under \ref{A-rates}, these matrices estimate $\Cov{\tilde{\beta}}$, for $\tilde\beta$ as in \eqref{eq:22}, but not $\Cov{\hat\beta}$.)
 
+\begin{lemma} \label{lem:C-rate}
+  Under \ref{A-centering}--\ref{A-rates}, $|B_{n}|_{2} = O(1)$ and $|C_{n}|_{2} = O(n^{-1})$.
+\end{lemma}
+
+\begin{proof}[Proof of Lemma~\ref{lem:C-rate}]
+  It follows from  $\sum_{i}\E{\psiC{Z_{i},\vec{x}_{i},
+ \vec{x}_{i}\betatrue}^{4}} = O(n)$  (Condition~\ref{A-c0moments})
+that $\sum_{i}\E{\psiC{Z_{i},\vec{x}_{i},
+ \vec{x}_{i}\betatrue}^{2}}^{2} = O(n)$. Combining this with $\sup_{\gamma:
+  |\gamma|_{2}=1} \sum_{i}(\vec{x}_{i}\gamma)^{4} = O(n)$
+(Condition~\ref{A-l2Sfinite}), Cauchy-Schwartz gives $\sup_{\gamma:
+  |\gamma|_{2}=1} \sum_{i} \E{\psiC{Z_{i},\vec{x}_{i},
+ \vec{x}_{i}\betatrue}^{2}}(\vec{x}_{i}\gamma)^{2} = O(n)$, i.e.
+ $\sup_{\gamma:
+  |\gamma|_{2}=1} \gamma' B_{n}|_{2}\gamma =
+O(1)$.   Condition~\ref{A-estimable} gives $|{A}_{n}^{-1}|_{2}=O(1)$, so also $|{C}_{n}^{-1}|_{2}=O(n^{-1})$.
+\end{proof}
+
+In consequence, 
+under \ref{A-centering}--\ref{A-rates}  $\hat{C}_n$ consistently
+estimates the covariance of $\tilde{\beta}$.  
+If also $p^2(\log p) = O(n^{-1}$,  $\tilde{\beta}$ and $\hat\beta$
+couple \citep[Theorem~2.2]{he2000parameters}, and the difference of any $i$'s and $j$'s estimated index scores, $\vec{x}_i\hat\beta$ and $\vec{x}_j\hat\beta$, have RMSE approximately $[(\vec{x}_i - \vec{x}_j) \hat{C}_n (\vec{x}_i - \vec{x}_j)']^{1/2}$.    
+
+A second consequence is that $|\hat{C}_n|_F = O_P(p/n)$.
 
 \subsection{Standard errors for paired index score differences}
 Suppose we have estimated an index score (and the covariance of its
@@ -429,7 +467,17 @@ propensity score, the ``PPSE,'' or paired propensity standard error.)
 \begin{remark}
 Ordinarily the index model has an intercept term. The standard error of the intercept does not contribute to the PISE: given that $x_{[1]} \equiv 1$,  $S^{(x)}_{1,i}= S^{(x)}_{i,1}=0$ and $S^{\perp \hat\beta}_{1,i}=S^{\perp \hat\beta}_{i,1}=0$, for each $i$. In the sum at right of \eqref{eq:12}, entries of the first row and column of $\hat{C}$ are multiplied by 0. In other words, the PISE can be obtained by applying \eqref{eq:12}, or \eqref{eq:8} or \eqref{eq:14}, after calculating $S^{(x)}$ using only the non-constant columns of $\mathbf{x}$, and including in $\hat C$ only the corresponding rows. Since the intercept is also removed from each difference $(\vec{x}_{i} - \vec{x}_{j})\hat{\beta}$, this is only fitting. 
 
-If matches are to be made within categories of a nominal variable represented in $\mathbf{x}$, the corresponding entries of $\hat\beta$ also make zero contribution to the error of  $(\vec{x}_{i} - \vec{x}_{j})\hat{\beta}$, regardless of the magnitudes of their standard errors.  At least, this will be true of pairs $i$ and $j$ belonging to the same exact matching category.  The PISE given exact matching on $c$ is defined as a mean square of $ \mathrm{SE}_{p}$s averaged over pairs within the same category of $c$: namely, if the exact matching variable is $c$, with categories $1, \ldots, K$,  and subsample sizes $n_{1}, \ldots, n_{K}$, 
+If matches are to be made within categories of a nominal variable
+represented in $\mathbf{x}$, the corresponding entries of $\hat\beta$
+also make zero contribution to the error of
+$(\vec{x}_{i} - \vec{x}_{j})\hat{\beta}$, regardless of the magnitudes
+of their standard errors.  At least, this will be true of pairs $i$
+and $j$ belonging to the same exact matching category.  The PISE given
+exact matching on $c$ \marginpar{Notation conflict between $\psiC{}$
+  and this ``$c$''?}  is defined as a mean square of
+$ \mathrm{SE}_{p}$s averaged over pairs within the same category of
+$c$: namely, if the exact matching variable is $c$, with categories
+$1, \ldots, K$, and subsample sizes $n_{1}, \ldots, n_{K}$,
 \begin{equation*}
   \sum_{k} \frac{n_{k} -1}{n-K} {n_{k} \choose 2}^{-1} \sum_{c_{i}=c_{j}, i<j}  \mathrm{SE}_{p}^{2}(i, j)= 2 \fip{S^{\perp \hat\beta, c}}{\hat{C}},
 \end{equation*}
@@ -561,37 +609,65 @@ Lemma~\ref{lem:msPSerr} applies most directly to matched designs, groupings of s
 \section*{Appendix: Proofs of Lemma~\ref{lem:ChatC} and Proposition~\ref{prop:PSdiffconsist}}
 \begin{proof}[Proof of Lemma~\ref{lem:ChatC}]
 The $|\hat\beta - \betatrue|_{2}$-consistency component of the lemma follows from Conditions~\ref{A-estimable}, \ref{A-l2Sfinite} and \ref{A-rates} and Theorem~2.1 of \citet{he2000parameters}, by the argument of He and Shao's Example 3.
-The remainder of this proof borrows heavily from \citet[][Proof of Thm.~3.10]{wang2011gee}.
+Parts of the proof to follow, of Lemma~\ref{lem:ChatC}'s remaining
+claims, are based on \citet[][Proof of Thm.~3.10]{wang2011gee}.
 
 We establish $|\hat{A}_{n} - A_{n}|_{2} \stackrel{P}{\rightarrow} 0$ through separate characterizations of  
-$\sup_{\gamma: |\gamma|_{2}=1}\gamma'[\hat{A}_{n}(\betatrue) - A_{n}(\betatrue)]\gamma$ and $\sup_{\gamma: |\gamma|_{2}=1}\gamma'[\hat{A}_{n}(\hat\beta) - \hat{A}_{n}(\betatrue)]\gamma$.  In the important special case that $\psi$ is the score function of a generalized linear model, $\hat{A}_{n}(\beta) \equiv A_{n}(\beta)$ and $\gamma'[\hat{A}_{n}(\betatrue) - A_{n}(\betatrue)]\gamma \equiv 0$.  Otherwise, 
-\begin{align}
-  \gamma'[\hat{A}_{n}(\betatrue) - A_{n}(\betatrue)]\gamma =& \frac{1}{n} \sum_{i} [c_{1}(Z_{i}, \vec{x}_{i}, \betatrue) - \E{c_{1}(Z_{i}, \vec{x}_{i}, \betatrue)}](\vec{x}_{i}\gamma)^{2},\, \text{so} \nonumber \\
-\sup_{\gamma: |\gamma|_{2}=1}\gamma'[\hat{A}_{n}(\betatrue) - A_{n}(\betatrue)]\gamma \leq&
-\frac{1}{n} \sum_{i} [c_{1}(Z_{i}, \vec{x}_{i}, \betatrue) - \E{c_{1}(Z_{i}, \vec{x}_{i}, \betatrue)}]|\vec{x}_{i}|_{\infty}^{2} \label{eq:19}\\
-& \stackrel{P}{\rightarrow} 0, \nonumber
-  % \Var{\sup_{\gamma: |\gamma|_{2}=1} \gamma'[\hat{A}_{n}(\betatrue) - A_{n}(\betatrue)]\gamma} &= \frac{1}{n^{2}} \sum_{i}\Var{c(Z_{i}, \vec{x}_{i}, \betatrue) - \E{c(Z_{i}, \vec{x}_{i}, \betatrue)}}|\vec{x}_{i}|_{2}^{4}. 
-\end{align}
-at the last step invoking Conditions~\ref{A-psismooth} 
-and~\ref{A-boundedXes} \marginpar{\ref{A-boundedXes} is heavy, but unclear how to relax in this FW\ldots} % I have a vague sense we could have more readily dispensed with it 
-%                  had the X's been random.
-to bound variances of summands at right of~\eqref{eq:19} and apply the weak law for triangular arrays. 
+$|\hat{A}_{n}(\betatrue) - A_{n}(\betatrue)|_2$ and $|\hat{A}_{n}(\hat\beta) - \hat{A}_{n}(\betatrue)|_2$.  In the important special case that $\psi$ is the score function of a generalized linear model, $\hat{A}_{n}(\beta) \equiv A_{n}(\beta)$ and $|\hat{A}_{n}(\betatrue) - A_{n}(\betatrue)|_{2} \equiv 0$.  Otherwise,
+$|\hat{A}_{n}(\betatrue) - A_{n}(\betatrue)|_{2} \leq
+|\hat{A}_{n}(\betatrue) - A_{n}(\betatrue)|_{F}$, where $|\cdot|_{F}
+\equiv \fip{\cdot}{\cdot}^{1/2}$ indicates the Frobenius norm, and 
+\begin{equation*}
+  |\hat{A}_{n}(\betatrue) - A_{n}(\betatrue)|_{F}^2 = \sum_{j,k \leq p} 
+\bkt[4]{n^{-1}\sum_{i\leq n} \bkt[3]{ \psiCi{z_i, \vec{x}_i, \vec{x}_i\betatrue} - 
+\E{\psiCi{Z_i, \vec{x}_i, \vec{x}_i\betatrue}} 
+}x_{ij}x_{ik} }^2.
+\end{equation*}
+The supremum of the expected values of these $p^2$ nonnegative random variables 
+is $O(n^{-1})$, % $O(n^{-1}\log n)$ if 
+%relaxing A-boundedXes to increase at rate $\sqrt{\log n}$, ie expected value of max of gaussians
+by~\ref{A-psismooth} and~\ref{A-boundedXes}.  So their sum, the squared Frobenius norm, 
+is a nonnegative random variable the expected value of which is $O(p^2/n)$,
+i.e. tends to 0 (in light of~\ref{A-rates}). That 
+$|\hat{A}_{n}(\betatrue) - A_{n}(\betatrue)|_{F}^2 \stackrel{P}{\rightarrow} 0$ then follows from Markov's inequality.
 
-To establish $\sup_{\gamma: |\gamma|_{2}=1}\gamma'[\hat{A}_{n}(\hat\beta) - \hat{A}_{n}(\betatrue) ]\gamma  \stackrel{P}{\rightarrow} 0$,  invoke Condition~\ref{A-psismooth} to apply the Mean Value Theorem to the function $\eta \mapsto c_{1}(z, \eta)$, where $\nabla \psi(z, \vec{x}, \beta)  = c_{1}(z, \vec{x}\beta) \vec{x}'\vec{x}$, obtaining for any $(z_{i}, \vec{x}_{i})$ and $(j,k)$, $\partial/\partial_{\beta_{j}}\psi_{k}(z_{i}, \vec{x}_{i},\beta)_{\beta = \hat\beta} - \partial/\partial_{\beta_{j}}\psi_{k}(z_{i}, \vec{x}_{i}, \beta)_{\beta = \betatrue}  =  c_{2}(z_{i}, \etastarx)x_{j}x_{k}\vec{x}(\hat\beta - \betatrue)$, some $\etastarx$ between $\vec{x}_{i}\hat\beta$ and $\vec{x}_{i}\betatrue$. Recall that Condition~\ref{A-psismooth} holds this $c_{2}(\cdot, \cdot)$ to be uniformly bounded. Accordingly
+To establish $|\hat{A}_{n}(\hat\beta) - \hat{A}_{n}(\betatrue)|_2 = \sup_{\gamma:
+  |\gamma|_{2}=1}\gamma'[\hat{A}_{n}(\hat\beta) -
+\hat{A}_{n}(\betatrue) ]\gamma  \stackrel{P}{\rightarrow} 0$,  invoke
+Condition~\ref{A-psismooth} to apply the Mean Value Theorem to the
+function $\eta \mapsto \psiCi{z, \eta}$, where $\nabla \psi(z, \vec{x},
+\beta)  = \psiCi{z, \vec{x}\beta} \vec{x}'\vec{x}$, obtaining for any
+$(z_{i}, \vec{x}_{i})$ and $(j,k)$,
+$\partial/\partial_{\beta_{j}}\psi_{k}(z_{i},
+\vec{x}_{i},\beta)_{\beta = \hat\beta}
+- \partial/\partial_{\beta_{j}}\psi_{k}(z_{i}, \vec{x}_{i},
+\beta)_{\beta = \betatrue}  =  \psiCii{z_{i},
+\etastarx}x_{j}x_{k}\vec{x}(\hat\beta - \betatrue)$, some $\etastarx$
+between $\vec{x}_{i}\hat\beta$ and $\vec{x}_{i}\betatrue$. Recall that
+Condition~\ref{A-psismooth} holds this $\psiCii{\cdot, \cdot}$ to be
+uniformly bounded. Accordingly 
 \begin{align}
-  \gamma'[\nabla_{\beta} \psi(z_{i}, \vec{x}_{i},\beta)_{\beta = \hat\beta} - \nabla_{\beta} \psi (z_{i}, \vec{x}_{i},\beta)_{\beta = \betatrue}]\gamma =& c_{2}(z_{i}, \etastarx) (\vec{x}_{i}\gamma)^{2} [\vec{x}_{i}(\hat\beta - \betatrue)], \nonumber \\
+  \gamma'[\nabla_{\beta} \psi(z_{i}, \vec{x}_{i},\beta)_{\beta = \hat\beta} - \nabla_{\beta} \psi (z_{i}, \vec{x}_{i},\beta)_{\betatrue}]\gamma =& \psiCii{z_{i}, \etastarx} (\vec{x}_{i}\gamma)^{2} [\vec{x}_{i}(\hat\beta - \betatrue)], \label{eq:21} \\
 \gamma'[\hat{A}_{n}(\hat\beta) - \hat{A}_{n}(\betatrue) ]\gamma \leq & 
-|c_{2}(\cdot)|_{\infty}\frac{1}{n} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2}
-|\vec{x}_{i}|_{2} |\hat\beta - \betatrue|_{2}
-\label{eq:21};\\
-\max_{\gamma: |\gamma|_{2}=1} \gamma'[\hat{A}_{n}(\hat\beta) - \hat{A}_{n}(\betatrue) ]\gamma \leq & O \left[\frac{1}{n} 
-%\max_{\gamma, \delta :|\gamma|=|\delta|=1} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2}|\vec{x}_{i} \delta| 
-\max_{\gamma :|\gamma|=1} [\sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2}] \sup_{i}|\vec{x}_{i}|_{\infty} O(p^{1/2})
-\right] \times  \nonumber \\
-& O_{P}(|\hat\beta - \betatrue |_{2})   = O(1)O(p^{1/2}) O_{P}(\sqrt{p/n}) = o_{P}(1), \nonumber
+C_{2}\frac{1}{n} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2}
+|\vec{x}_{i}|_{2} |\hat\beta - \betatrue|_{2}, \nonumber
 \end{align}
-at the last step invoking consistency of $\hat\beta$,
-Conditions~\ref{A-l2Sfinite} and~\ref{A-boundedXes}, and finally~\ref{A-rates}. 
+where $C_{2}$is an upper bound for $|\psiCii{\cdot}|$; so for $\gamma$ with $|\gamma|_{2}=1$, 
+\begin{equation*}
+ \gamma'[\hat{A}_{n}(\hat\beta) - \hat{A}_{n}(\betatrue) ]\gamma \leq
+ C_{2} \left[\frac{1}{n} 
+%\max_{\gamma, \delta :|\gamma|=|\delta|=1} \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2}|\vec{x}_{i} \delta| 
+\sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2}\right] \sup_{i}|\vec{x}_{i}|_{\infty} p^{1/2}
+\times  |\hat\beta - \betatrue |_{2}.  
+\end{equation*}
+
+By Conditions~\ref{A-l2Sfinite}, \ref{A-boundedXes} %
+% NB: in lieu of invoking {A-boundedXes} to control $|\vec{x}_{i}|_{2}$
+% above, we might have instead added to {A-l2Sfinite} control of
+% $\max_{\substack{\gamma, \delta: |\gamma|_{2}=\\ |\delta|_{2} =1}} 
+% \sum_{i=1}^{n}(\vec{x}_{i}\gamma)^{2} |\vec{x}_{i}\delta|$
+and consistency of
+$\hat\beta$, this is $O(1)O(p^{1/2}) O_{P}(\sqrt{p/n})$, which by~\ref{A-rates} is $o_{P}(1)$. 
 This completes the demonstration of $|\hat{A}_{n} - A_{n}|_{2} \stackrel{P}{\rightarrow} 0$.
 
 Since $|{A}_{n}^{-1}|_{2}=O(1)$ and $|\hat{A}_{n}^{-1}|_{2}= O_{P}(1)$ (Condition~\ref{A-estimable}), it follows that $|\hat{A}_{n}^{-1} - A_{n}^{-1}|_{2} \stackrel{P}{\rightarrow} 0$, by applying sub-multiplicativity of the spectral norm to the right-hand side of 
@@ -601,10 +677,91 @@ the 2-norms of the *-terms in
   A_{n}^{-1}B_{n}A_{n}^{-1}  + \underbrace{(\hat{A}_{n}^{-1} - A_{n}^{-1})B_{n}A_{n}^{-1}}_{*} + \underbrace{\hat{A}_{n}^{-1}B_{n}(\hat{A}_{n}^{-1} - A_{n}^{-1})}_{*}   + \hat{A}_{n}^{-1}(\hat{B}_{n} - B_{n})\hat{A}_{n}^{-1}  \\[-2ex]
 =  \hat{A}_{n}^{-1}\hat{B}_{n}\hat{A}_{n}^{-1}
 \end{multline*}
-must tend in probability to 0.  Thus the stochastic order of $|A_{n}^{-1}B_{n}A_{n}^{-1} - \hat{A}_{n}^{-1}\hat{B}_{n}\hat{A}_{n}^{-1}|_{2}$ can be no greater than that of $|\hat{A}_{n}^{-1}(\hat{B}_{n} - B_{n}) \hat{A}_{n}^{-1}|_{2}$.  
+must tend in probability to 0.  Thus the stochastic order of
+$|A_{n}^{-1}B_{n}A_{n}^{-1} -
+\hat{A}_{n}^{-1}\hat{B}_{n}\hat{A}_{n}^{-1}|_{2}$ can be no greater
+than that of $|\hat{A}_{n}^{-1}(\hat{B}_{n} - B_{n})
+\hat{A}_{n}^{-1}|_{2}$.  As~\ref{A-psismooth} and~\ref{A-l2Sfinite}
+entail that $|\hat{A}_{n}|_{2} = O_{P}(1)$, this means
+$O_{P}(|\hat{A}_{n}^{-1}(\hat{B}_{n} - B_{n}) \hat{A}_{n}^{-1}|_{2}) =
+O_{P}(|\hat{B}_{n} - B_{n}|_{2})$. 
 
-As~\ref{A-psismooth} and~\ref{A-l2Sfinite} entail that $|\hat{A}_{n}|_{2} = O_{P}(1)$, this means $O_{P}(|\hat{A}_{n}^{-1}(\hat{B}_{n} - B_{n}) \hat{A}_{n}^{-1}|_{2}) = O_{P}(|\hat{B}_{n} - B_{n}|_{2})$. But $|\hat{B}_{n} - B_{n}|_{2} \stackrel{P}{\rightarrow} 0$ follows from arguments analogous to those given for %$|\hat{A}_{n} - A_{n}|_{2} \stackrel{P}{\rightarrow} 0$ 
-$|\hat{B}_{n}(\betatrue) - B_{n}|_{2} \stackrel{P}{\rightarrow} 0$ and $|\hat{B}_{n} - \hat{B}_{n}(\betatrue)|_{2} \stackrel{P}{\rightarrow} 0$.   Conditions~\ref{A-psismooth}  and~\ref{A-boundedXes} support a bound for $\sup_{\gamma: |\gamma|=1}\gamma'[\hat{B}_{n}(\betatrue) - B_{n}(\betatrue)]\gamma$ similar to that of~\eqref{eq:19}, and the weak law for triangular arrays gives $|\hat{B}_{n}(\betatrue) - B_{n}(\betatrue)|_{2} \stackrel{P}{\rightarrow} 0$.   As to $|\hat{B}_{n}(\hat\beta) - \hat{B}_{n}(\betatrue)|_{2}$, Condition~\ref{A-psismooth}'s boundedness constraint on \eqref{eq:20}'s $v(z, g(\eta))w(\vec{x}, g(\eta))$, and on its derivative with respect to $\eta$, entail an inequality similar to \eqref{eq:21}, now also combining with Condition~\ref{A-l2Sfinite} and consistency of $\hat\beta$ to entail $\max_{\gamma: |\gamma|_{2}=1} \gamma'[\hat{B}_{n}(\hat\beta) - \hat{B}_{n}(\betatrue) ]\gamma \stackrel{P}{\rightarrow} 0$.
+It remains to show $|\hat{B}_{n} - B_{n}|_{2}
+\stackrel{P}{\rightarrow} 0$, which will
+follow by showing 
+$|\hat{B}_{n}(\betatrue) - B_{n}|_{F} \stackrel{P}{\rightarrow} 0$
+(recalling that in general $|M|_{2}\leq |M|_{F}$) and
+$|\hat{B}_{n} - \hat{B}_{n}(\betatrue)|_{2} \stackrel{P}{\rightarrow}
+0$. 
+
+\begin{equation*}
+|\hat{B}_{n}(\betatrue) - B_{n}|_{F}^{2} = \sum_{j,k\leq p} \bkt[3]{n^{-1}\sum_{i} 
+\bkt[2]{\psiC{Z_{i}, \vec{x}_{i}, \betatrue}^{2}
+ - \E{\psiC{Z_{i}, \vec{x}_{i},\betatrue}^{2}}}
+(x_{j} x_{k})}^{2}, 
+\end{equation*} 
+a sum of squares of $p^{2}$ mean-0 random
+variables. Taking expected values and applying~\ref{A-c0moments}
+and~\ref{A-boundedXes} gives a sum that is
+$O(p^{2}/n)$, which by~\ref{A-rates} tends to 0. Thus
+$|\hat{B}_{n}(\betatrue) - B_{n}|_{F}^{2} \stackrel{P}{\rightarrow} 0$
+follows from Markov's inequality. 
+ 
+As to $|\hat{B}_{n}(\hat\beta) - \hat{B}_{n}(\betatrue)|_{2}$,
+Condition~\ref{A-psismooth}'s boundedness constraint on
+$\psiC{\cdot, \cdot, \eta}$'s derivative $\psiCi{\cdot, \cdot, \eta}$
+entails an inequality similar to \eqref{eq:21}, but with
+$\Psi(z_{i}, \vec{x}_{i}, \hat\beta) \Psi(z_{i}, \vec{x}_{i},
+\hat\beta)' - \Psi(z_{i}, \vec{x}_{i}, \betatrue) \Psi(z_{i},
+\vec{x}_{i}, \betatrue)'$ at left and
+$(d/d\eta) \psiC{z_{i}, \vec{x}_{i}, \etastarx}^{2}
+=2\psiC{z_{i},\vec{x}_{i}, \etastarx}\psiCi{z_{i},\vec{x}_{i},
+  \etastarx}$
+in place of $\psiCii{z_{i}, \vec{x}_{i}, \etastarx}$ at right.  In
+contrast with $\psiCii{\cdot}$, however, $(d/d\eta) \psiC{z, \vec{x}, \eta}^2$
+is not necessarily bounded, and a variation of the argument following
+\eqref{eq:21} is needed.  First, a second application of the
+intermediate value theorem gives that
+$(d/d\eta) \psiC{z_{i}, \vec{x}_{i}, \etastarx}^{2} =
+2[\psiC{z_{i},\vec{x}_{i}, \eta_{i}} + \psiCi{z_{i},\vec{x}_{i},
+  \etastarx[\dagger]} (\etastarx - \eta_{i})]\psiCi{z_{i},\vec{x}_{i},
+  \etastarx}$,
+for some $\etastarx[\dagger]$ between $\eta_{i}$ and $\etastarx$. By
+Condition~\ref{A-psismooth}, $\psiCi{z_{i},\vec{x}_{i},
+  \etastarx[\dagger]}$ is bounded, and \ref{A-boundedXes} combines with consistency of $\hat\beta$ to give
+$\sup_{i}|\vec{x}_{i}(\hat\beta - \betatrue)|_{2} = \sup_{i}|\hat{\eta}_{i} - \eta_{i}|_{2}\leq O_{P}(p/\sqrt{n})$,
+so that also $\sup_{i\leq n}|\etastarx - \eta_{i}|_{2} \leq O_{P}(p/\sqrt{n})$, and
+by extension $\psiCi{z_{i},\vec{x}_{i},
+  \etastarx[\dagger]} (\etastarx - \eta_{i}) \stackrel{P}{\rightarrow}
+0$.  Thus we can write, with $C_{1}$ denoting a finite
+(by~\ref{A-psismooth}) upper bound for $|2\psiCi{z,\vec{x}, \eta}|$,
+$\sup_{i\leq n }|\epsilon_{i}| = o_{P}(1)$ and
+$\gamma$ ranging over column vectors with $|\gamma|_{2}=1$,
+\begin{align}
+  \gamma'[\hat{B}_{n}(\hat\beta) - \hat{B}_{n}(\betatrue)]\gamma 
+&\leq \frac{C_{1}}{n} \sum_i [\psiC{z_{i},\vec{x}_{i},
+  \vec{x}_i\betatrue} + \epsilon_{i}] (\vec{x}_i \gamma)^2
+|\vec{x}_{i}|_{2} |\hat\beta - \betatrue|_{2} \nonumber\\
+&\leq \left\{\frac{C_{1}}{n} \sum_i \psiC{z_{i},\vec{x}_{i},
+  \vec{x}_i\betatrue}  (\vec{x}_i \gamma)^2
+\right\} (\max_{i\leq n } |\vec{x}_{i}|_{2}) |\hat\beta - \betatrue|_{2} + o_{P}(1)\label{eq:25}
+\end{align}
+(invoking \ref{A-l2Sfinite}, \ref{A-boundedXes} and~\ref{A-rates} at the second step).
+By~\ref{A-c0moments}, $\sum_i \Var{\bkt[2]{\psiC{Z_{i},\vec{x}_{i},
+  \vec{x}_i\betatrue}}^{2}} = O(n)$, so that $\sum_i {\bkt[2]{\psiC{Z_{i},\vec{x}_{i},
+  \vec{x}_i\betatrue}}^{2}}  - \sum_i \E{\bkt[2]{\psiC{Z_{i},\vec{x}_{i},
+  \vec{x}_i\betatrue}}^{2}} = o_{P}(n)$; in consequence, since~\ref{A-c0moments} also
+gives $\sum_i \E{\bkt[2]{\psiC{Z_{i},\vec{x}_{i},
+  \vec{x}_i\betatrue}}^{2}} = O(n)$,  $n^{-1} \sum_i \psiC{z_{i},\vec{x}_{i},
+  \vec{x}_i\betatrue}^{2}  = O_{P}(1)$.   Combining this with~\ref{A-l2Sfinite} and the
+Cauchy-Schwartz inequality, 
+$$\sup_{\gamma: |\gamma|_{2}=1}n^{-1} \sum_{i}\psiC{z_{i},\vec{x}_{i}, \vec{x}_i\betatrue} 
+(\vec{x}_i \gamma)^2 = O_{P}(1).$$  
+Since also $\max_{i}|\vec{x}_{i}|_{2} = O(p^{1/2})$ (by~\ref{A-boundedXes}) whereas 
+$|\hat\beta - \betatrue|_{2} = O_{P}(\sqrt{p/n})$,  in light
+of~\ref{A-rates} \eqref{eq:25} gives
+$\sup_{\gamma: |\gamma|_{2}=1}\gamma'[\hat{B}_{n}(\hat\beta) -
+\hat{B}_{n}(\betatrue)]\gamma \stackrel{P}{\rightarrow} 0$.
 \end{proof}
 %The argument depends crucially on strong estimability, \ref{A-estimable}, and further makes clear that good finite-sample performance will require that the minimum eigenvalue of $\hat{A}_{n}(\cdot)$ vary slowly within the $\sqrt{p/n}$-vecinity \marginpar{wc} of $\betatrue$.   
 
@@ -635,7 +792,7 @@ Thus $ \mathbf{d}^{\perp \mathbf{x}\betatrue} = \mathbf{d} -  s^{-2}(\mathbf{x}\
 Our task reduces to showing that %for expression (*) appearing in \eqref{eq:9}, 
 $|(*)|_{2} \sim O_{P}(n^{-3/2}) $.
 
-By \ref{A-l2Sfinite}, $|S^{(x)}|_{2} \sim O(1)$.  For $S^{1/2}$ a Cholesky factor of $S^{(x)}$, $S^{(x)} = S^{1/2}S^{1/2\prime}$, $S^{1/2} \sim O(1)$ by \ref{A-l2Sfinite} and $|S^{{1/2}\prime}\betatrue |_{2}^{2} = |\betatrue'S^{(x)}\betatrue| = s^{2}(\mathbf{x}\betatrue) \sim O\left( \log p\right)
+By \ref{A-l2Sfinite}, $|S^{(x)}|_{2} \sim O(1)$.  For $S^{1/2}$ a Cholesky factor of $S^{(x)}$, $S^{(x)} = S^{1/2}S^{1/2\prime}$, $|S^{1/2}|_{2} \sim O(1)$ and $|S^{{1/2}\prime}\betatrue |_{2}^{2} = |\betatrue'S^{(x)}\betatrue| = s^{2}(\mathbf{x}\betatrue) \sim O\left( \log p\right)
 $ by \ref{A-PSvar}; combining these, $|S^{(x)}\betatrue|_{2} = |S^{1/2}S^{{1/2}\prime}\betatrue|_{2} \leq O(1) O(s(\mathbf{x}\betatrue)) = O(s(\mathbf{x}\betatrue))  %= O((\log p)^{1/2})
 $.  Similarly, $|\betatrue\betatrue'S^{(x)}|_{2}  \leq |S^{-1}|_{2} |S^{(x)}\betatrue|_{2}^{2} \sim O(s^{2}(\mathbf{x}\betatrue))$. 
 
