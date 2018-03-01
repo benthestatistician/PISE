@@ -270,9 +270,8 @@ Vagrancy arrests in the 60s and 70s
 
 ### Discussion
 
->- Getting consistency out of PPSE caliper requires $p^2/n \downarrow 0$.  If $p/n \downarrow 0$, still interpretable as an SE of sorts. 
+>- Getting consistency out of PPSE caliper requires $p^2/n \downarrow 0$.  
 >- No need to restrict yourself to a single index score.
->- With a saturated PS model, observed information may be poorly conditioned.  The method of PPSE estimation as described here requires some elaboration (see code on github).
 >- Likeness of observations ("like to like") is interpreted in terms of PS variables.  If too strict or too loose, then adjust PS variables.  
 
 <!-- Matches between 1 and 3 PPSEs might be considered "marginal" (Austin & Lee, 2009).-->
@@ -280,6 +279,6 @@ Vagrancy arrests in the 60s and 70s
 ### Recommendations: 
 
 >- I like calipers of 2.5 PPSEs
->- I'm using sandwich estimates of $\mathrm{Cov} (\hat\beta) $, w/ some special sauce to limit numerical instability.
+>- I'm using sandwich estimates of $\mathrm{Cov} (\hat\beta) $, w/ some special sauce (cf. github.com/benthestatistician/PISE) to limit numerical instability.
 >- Our `optmatch` R package (Fredrickson et al, 2016) does optimal pair and full matching (Gu & Rosenbaum, 1993; Hansen & Klopfer, 2006; Stuart & Green, 2008), readily accommodating PS calipers.
 
