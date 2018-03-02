@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Propensity score calipers and the overlap condition</title>
+  <title>Diminishing propensity score calipers</title>
   <meta charset="utf-8">
-  <meta name="description" content="Propensity score calipers and the overlap condition">
+  <meta name="description" content="Diminishing propensity score calipers">
   <meta name="author" content="Ben Hansen, UMich Statistics (bbh@umich.edu).  Project site -">
   <meta name="generator" content="slidify" />
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -31,7 +31,7 @@
     <!-- LOGO SLIDE -->
         <slide class="title-slide segue nobackground">
   <hgroup class="auto-fadein">
-    <h1>Propensity score calipers and the overlap condition</h1>
+    <h1>Diminishing propensity score calipers</h1>
     <h2></h2>
     <p>Ben Hansen, UMich Statistics (bbh@umich.edu).  Project site -<br/>github.com/benthestatistician/PISE (code/manuscript), benthestatistician.github.io/PISE (slides)</p>
   </hgroup>
@@ -107,9 +107,9 @@
 </ul></li>
 <li>No unmeasured confounding says, there are natural experiments in each &quot;cell&quot; of \(\mathbf{X}\).</li>
 <li>Problem: if multiple ${X}$es, many observations will be all alone in their cells.</li>
-<li>Rosenbaum &amp; Rubin&#39;s (1983) solution is match on \(\widehat{\mathrm{Pr}}(Z=1| \mathbf{X}=\mathbf{x})\), the PS.</li>
-<li>Remaining problem: In a cell \(\mathbf{x}_0\) s.t. \(\mathrm{Pr}(Z=1| \mathbf{X}=\mathbf{x}_0)=1\), there&#39;s no data to estimate \(\mathrm{Pr}(Y_c \in \cdot |  \mathbf{X}=\mathbf{x}_0)\), even as \(n \uparrow \infty\).  (Whether or not you match or otherwise use PSes.)</li>
-<li>The second problem leads people to reduce analytic sample to region of common support on \(\widehat{\mathrm{PS}}\) (the method of &quot;strict overlap&quot;).</li>
+<li>Rosenbaum &amp; Rubin&#39;s (1983) solution is match on \(\widehat{\mathrm{Pr}}(Z=1| \mathbf{X}=\mathbf{x})\), the estimated propensity score (PS).</li>
+<li>Second problem: In a cell \(\mathbf{x}_0\) s.t. \(\mathrm{Pr}(Z=1| \mathbf{X}=\mathbf{x}_0)=1\), there&#39;s no data to estimate \(\mathrm{Pr}(Y_c \in \cdot |  \mathbf{X}=\mathbf{x}_0)\), even as \(n \uparrow \infty\).  (Whether you match on the PS, weight for it, ...)</li>
+<li>The second problem motivates the method of strict overlap, i.e. reducing analytic sample to region of common support on \(\widehat{\mathrm{PS}}\): \[\cap_{z=0,1}[\min(\{\widehat{PS}_i:Z_i=z\}), \max(\{\widehat{PS}_i:Z_i=z\})] .\] </li>
 </ul>
 
   </article>
@@ -125,7 +125,7 @@
 <div style='float:left;width:48%;' class='centered'>
   <ul>
 <li>Medellin, Colombia (population 2 million)</li>
-<li>As of early 2000s, 60\% poverty rate, 20\% unemployment, homicide 185 per 100K</li>
+<li>As of early 2000s, 60% poverty rate, 20% unemployment, homicide 185 per 100K</li>
 <li>High residential segregation, w/ concentrated poverty in surrounding hills.</li>
 <li>2004-2006: gondolas connect some but not all to city center.</li>
 <li>Cerda et al (2012, <em>Am J. Epideomiol.</em>) study effects on neighborhood violence, propensity matching treatment neighborhoods to control.</li>
@@ -190,18 +190,18 @@
 
 <slide class="" id="slide-7" style="background:;">
   <hgroup>
-    <h2>Matching within PS calipers (R.&amp; R.)</h2>
+    <h2>Matching within PS calipers (Rosenbaum &amp; Rubin)</h2>
   </hgroup>
   <article data-timings="">
     <ul class = "build incremental">
-<li>For matching, useful to specify a tolerance or <em>caliper</em>. </li>
-<li>Absent unmeasured confounding, matches with small PS differences mimic paired random assignment. </li>
-<li>In effect, caliper adjudicates &quot;closeness&quot; to region of common support. </li>
+<li>For matching, useful to specify a tolerance or <em>caliper</em> (Althauser &amp; Rubin, 1970). </li>
+<li>Absent unmeasured confounding, matches with small PS differences mimic paired random assignment (R.&amp;R. 1983). </li>
+<li>In effect, PS caliper (R.&amp;R. 1985) adjudicates &quot;closeness&quot; to region of common support. </li>
 </ul>
 
 <div style='float:left;width:58%;' class='centered'>
   <ul class = "build incremental">
-<li>R. &amp; R. (1985, <em>Amer. Statist.</em>), Rubin &amp; Thomas (2000, <em>JASA</em>) recommend \(s_p(\widehat{\mathrm{PS}})/4\).</li>
+<li>R. &amp; R. (1985), Rubin &amp; Thomas (2000) recommend \(s_p(\widehat{\mathrm{PS}})/4\).</li>
 <li>(Not \(\widehat{\mathrm{PS}}\) the estimated probability, \(\widehat{\mathrm{PS}}\) the estimated index function.
 I.e., logits of estimated probabilities.)</li>
 <li>The other widely used method (e.g. Austin &amp; Lee 2009, Lunt 2013), besides requiring strict overlap.</li>
@@ -222,7 +222,8 @@ I.e., logits of estimated probabilities.)</li>
   </hgroup>
   <article data-timings="">
     <ul class = "build incremental">
-<li>In the Medellin study, \(.25s_p(\widehat{\mathrm{PS}})\) caliper still excludes 14/25 treatment neighborhoods.</li>
+<li>\(s_p\) approaches a positive limit, not 0. For large \(n\), matches as crude as \(.25s_p\) aren&#39;t very RCT-like.  (Even if there&#39;s no unmeasured confounding.) </li>
+<li>In the Medellin study (smallish \(n\)), \(.25s_p(\widehat{\mathrm{PS}})\) caliper excludes 56% of treatment group.</li>
 <li>At the same time, in that study it&#39;s tenable (\(p=.10\)) that all PSes are the same!</li>
 </ul>
 
@@ -262,18 +263,20 @@ I.e., logits of estimated probabilities.)</li>
 
 <slide class="" id="slide-10" style="background:;">
   <hgroup>
-    <h2>Calipering to insure that PS differences tend to 0</h2>
+    <h2>Sampling variability of paired PS differences</h2>
   </hgroup>
   <article data-timings="">
     <ul class = "build incremental">
-<li>Pairings (denoted &quot;\(i \sim j\)&quot;) should satisfy \(\max_{i \sim j} |(\vec{x}_i - \vec{x}_j)\beta| \downarrow 0\) as \(n \uparrow \infty\).</li>
-<li>Can this be accomplished with a requirement of form \(|(\vec{x}_i - \vec{x}_j)\hat\beta| \leq w_n\), since \(|(\vec{x}_i - \vec{x}_j)\beta| \leq |(\vec{x}_i - \vec{x}_j)(\hat\beta - \hat\beta)| + |(\vec{x}_i - \vec{x}_j)\hat\beta|\)?</li>
-<li>(\(w_n = s_p/4\) means \(w_n \stackrel{P}{\rightarrow} \text{const} > 0\). This won&#39;t do; need \(w_n \stackrel{P}{\rightarrow} 0\).)</li>
-<li>Scanning pairs \(i,j\leq n\), \(|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \leq |\vec{x}_i - \vec{x}_j|_2|\hat\beta - \beta|_2\).</li>
-<li>Expect \(\max_{i,j}|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \approx (\max_{i,j}|\vec{x}_i - \vec{x}_j|_2)|\hat\beta - \beta|_2\).</li>
-<li>Even w/ \(|x_{ij}|\) bounded, uniformly in \(i,j\), and \(n\), this is \(O(p^{1/2})O_P([p/n]^{1/2}) = O_P(p/n^{1/2})\).  We&#39;ll need to assume \(p/n^{1/2} \downarrow 0\). </li>
-<li>In that case, a \(w_n\) that&#39;s \(O_P(p/n^{1/2})\) will do the trick.</li>
-<li>E.g., a \(w_n\) measuring average size of \(|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)|\).</li>
+<li>Intuition: Even if we had matched <strong>perfectly</strong> on the PS, there would still be matched differences in \(\widehat{\mathrm{PS}}\).  Let&#39;s estimate the size of these differences &amp; use result to define caliper.<br>
+
+<ul>
+<li>Should imply that as \(n\uparrow \infty\), caliper \(\downarrow 0\). Then, \(\hat\beta \stackrel{P}{\rightarrow} \beta \Rightarrow\) should mean paired PS differences \(\downarrow 0\).</li>
+<li>Excludes treatment subjects whose PSes are distinguishably different from all controls&#39;.<br></li>
+</ul></li>
+<li>To limit model sensitivity, work on index scale.</li>
+<li>If \(\mathbf{d} = \mathbf{x}_1 - \mathbf{x}_2\), \(\mathbf{d}(\hat{\beta} - \beta)\) is the error of estimation of paired PS difference \(\mathbf{d}\beta\).</li>
+<li>Considering all \({n \choose 2}\) possible pairs \(r\), the expected MS estimation error of paired PS differences can be expressed as the Frobenius inner product, \(\langle \cdot, \cdot \rangle_F\), of two covariances:<br>
+\[ \mathbf{E}_\beta \left[{n \choose 2}^{-1}\sum_r (\mathbf{d}_r (\hat{\beta} - \beta))^2 \right] = 2\langle S^{(x)}, \mathbf{E}_\beta \{(\hat\beta - \beta) (\hat{\beta} -\beta)' \}\rangle_F . \]</li>
 </ul>
 
   </article>
@@ -282,20 +285,19 @@ I.e., logits of estimated probabilities.)</li>
 
 <slide class="" id="slide-11" style="background:;">
   <hgroup>
-    <h2>Sampling variability of paired PS differences</h2>
+    <h2>Sampling variability of paired PS diffs (ii)</h2>
   </hgroup>
   <article data-timings="">
     <ul class = "build incremental">
-<li>Intuition: Even if we had matched <strong>perfectly</strong> on the PS, there would still be matched differences in \(\widehat{\mathrm{PS}}\).  Let&#39;s estimate the size of these differences &amp; use result to define caliper.<br>
-
-<ul>
-<li>caliper \(\downarrow 0\) as \(n\uparrow \infty\). So, \(\hat\beta {\rightarrow} \beta \Rightarrow\) paired PS differences \(\downarrow 0\).</li>
-<li>excludes treatment subjects whose PSes are distinguishably different from all controls&#39;.<br></li>
-</ul></li>
-<li>To limit model sensitivity, work on index scale.</li>
-<li>If \(\mathbf{d} = \mathbf{x}_1 - \mathbf{x}_2\), \(\mathbf{d}(\hat{\beta} - \beta)\) is the error of estimation of paired PS difference \(\mathbf{d}\beta\).</li>
-<li>Considering all \({n \choose 2}\) possible pairs \(r\), the expected MS estimation error of paired PS differences can be expressed as a &quot;Frobenius inner product&quot;:<br>
-\[ \mathbf{E}_\beta \sum_r (\mathbf{d}_r (\hat{\beta} - \beta))^2/{n \choose 2} = 2\langle S^{(x)}, \mathbf{E}_\beta \{(\hat\beta - \beta) (\hat{\beta} -\beta)' \}\rangle_F . \]</li>
+<li>But <strong>all possible</strong> pairs include many that are quite different on the PS.  We wanted to characterize \(\mathbf{E} (\mathbf{d}_r(\hat{\beta} - \beta))^2\) among pairs \(r\) s.t. \(\mathbf{d}_r\beta \approx 0\).<br></li>
+<li><p>Since there may be few or no such pairs, instead &quot;residualize&quot; all pairs for the true PS, leaving remaining differences in place.  For \(i=1,\ldots, p\), define \(d_{(i)}^\perp =\) residual of \(d_{(i)}\) regression on \(\mathbf{d}\beta\); \(\mathbf{d}^\perp = (d^\perp_1\,d^\perp_2\, \ldots\, d^\perp_p)\).  (By construction, \(\mathbf{d}_r^\perp \beta =0\) for all \(r\).)  </p></li>
+<li><p>Rather than the mean-square of PS-difference estimation errors, \({n \choose 2}^{-1} \mathbf{E} \sum_r (\mathbf{d}_r(\hat{\beta} - \beta))^2\), consider the mean-square PS-difference estimation error, net of differences in the true PS: 
+\[
+{n \choose 2}^{-1}\mathbf{E}_\beta \sum_r (\mathbf{d}_r^\perp (\hat{\beta} - \beta))^2 =
+2 \langle S^\perp, C_\hat\beta \rangle_F,
+\]
+where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathbf{x}^{\perp \mathbf{x}\beta})\) and \(x^{\perp \mathbf{x}\beta} = e(x |\mathbf{1}, \mathbf{x}\beta)\). </p></li>
+<li><p>Plugging in \(\hat{S}^\perp = \widehat{\mathrm{Cov}}(\mathbf{x}^{\perp \mathbf{x}\hat{\beta}})\), \(\hat{C}_\hat\beta\)  from the regression fit gives the &quot;propensity-paired standard error&quot; (PPSE).</p></li>
 </ul>
 
   </article>
@@ -303,27 +305,6 @@ I.e., logits of estimated probabilities.)</li>
 </slide>
 
 <slide class="" id="slide-12" style="background:;">
-  <hgroup>
-    <h2>Sampling variability of paired PS diffs (ii)</h2>
-  </hgroup>
-  <article data-timings="">
-    <ul class = "build incremental">
-<li>But <strong>all possible</strong> pairs include many that are quite different on the PS.  We wanted to characterize \(\mathbf{E} (\mathbf{d}_r(\hat{\beta} - \beta))^2\) among pairs \(r\) s.t. \(\mathbf{d}_r\beta \approx 0\).<br></li>
-<li><p>Since there may be few or no such pairs, instead &quot;residualize&quot; all pairs for the true PS, leaving remaining differences in place.  For \(i=1,\ldots, p\), define \(d_{(i)}^\perp =\) residual of \(d_{(i)}\) regression on \(\mathbf{d}\beta\); \(\mathbf{d}^\perp = (d^\perp_1\,d^\perp_2\, \ldots\, d^\perp_p)\).  By construction, \(\mathbf{d}_r^\perp \beta =0\) for all \(r\).  </p></li>
-<li><p>Rather than the mean-square of PS-difference estimation errors, \({n \choose 2}^{-1} \mathbf{E} \sum_r (\mathbf{d}_r(\hat{\beta} - \beta))^2\), consider the mean-square PS-difference estimation error, net of differences in the true PS: 
-\[
-{n \choose 2}^{-1}\mathbf{E}_\beta \sum_r (\mathbf{d}_r^\perp (\hat{\beta} - \beta))^2 =
-2 \langle S^\perp, C_\hat\beta \rangle_F,
-\]
-where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathbf{x}^{\perp \mathbf{x}\beta})\), \(x^{\perp \mathbf{x}\beta} = e(x |\mathbf{1}, \mathbf{x}\beta)\). </p></li>
-<li><p>Plugging in \(\hat{S}^\perp = \frac{1}{n-1}e(\mathbf{x} | 1, \mathbf{x}\hat{\beta})'e(\mathbf{x} | 1, \mathbf{x}\hat{\beta}) )\) and a \(\hat{C}_\hat\beta\)  extracted from the regression fit gives the &quot;propensity-paired standard error&quot; (PPSE).</p></li>
-</ul>
-
-  </article>
-  <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-13" style="background:;">
   <hgroup>
     <h1>Outline</h1>
   </hgroup>
@@ -339,7 +320,7 @@ where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\math
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-14" style="background:;">
+<slide class="" id="slide-13" style="background:;">
   <hgroup>
     <h2>Example 2: Real or cosmetic reform in police practices?</h2>
   </hgroup>
@@ -358,7 +339,7 @@ where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\math
   <!-- Presenter Notes -->
 </slide>
 
-<slide class="" id="slide-15" style="background:;">
+<slide class="" id="slide-14" style="background:;">
   <hgroup>
     <h2>Applications</h2>
   </hgroup>
@@ -382,6 +363,26 @@ where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\math
 
     </section>
   </aside>
+</slide>
+
+<slide class="" id="slide-15" style="background:;">
+  <hgroup>
+    <h2>Calipering to insure that PS differences tend to 0</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul class = "build incremental">
+<li>Pairings (denoted &quot;\(i \sim j\)&quot;) should satisfy \(\max_{i \sim j} |(\vec{x}_i - \vec{x}_j)\beta| \downarrow 0\) as \(n \uparrow \infty\).</li>
+<li>Can this be accomplished with a requirement \(\max_{i \sim j} |(\vec{x}_i - \vec{x}_j)\hat\beta| \leq w_n\), some \(w_n \downarrow 0\)?  (In light of \(|(\vec{x}_i - \vec{x}_j)\beta| \leq |(\vec{x}_i - \vec{x}_j)(\hat\beta - \hat\beta)| + |(\vec{x}_i - \vec{x}_j)\hat\beta|\).)</li>
+<li>(\(w_n = s_p/4\) would mean \(w_n \stackrel{P}{\rightarrow} \text{const} > 0\). Again, this won&#39;t do; we need \(w_n \stackrel{P}{\rightarrow} 0\).)</li>
+<li>For any \(i,j\leq n\), \(|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \leq |\vec{x}_i - \vec{x}_j|_2|\hat\beta - \beta|_2\).</li>
+<li>Expect \(\max_{i,j}|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \approx (\max_{i,j}|\vec{x}_i - \vec{x}_j|_2)|\hat\beta - \beta|_2\).</li>
+<li>Even with bounded $x$s, this is \(O(p^{1/2})O_P\left[(p/n)^{1/2}\right] = O_P(p/n^{1/2})\) (He &amp; Shao, 2000).</li>
+<li>We&#39;ll need to <strong>assume</strong> \(p/n^{1/2} \downarrow 0\) --- not only does \(n \gg p\), also  \(n \gg p^2\)! </li>
+<li>In that case, any \(w_n\) that&#39;s \(O_P(p/n^{1/2})\) will do the trick.  E.g.,  \(w_n \equiv 2.5\text{PPSE}\).</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
 </slide>
 
 <slide class="" id="slide-16" style="background:;">
@@ -452,7 +453,7 @@ where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\math
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=7 title='Matching within PS calipers (R.&amp; R.)'>
+        data-slide=7 title='Matching within PS calipers (Rosenbaum &amp; Rubin)'>
          7
       </a>
     </li>
@@ -470,37 +471,37 @@ where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\math
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=10 title='Calipering to insure that PS differences tend to 0'>
+        data-slide=10 title='Sampling variability of paired PS differences'>
          10
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=11 title='Sampling variability of paired PS differences'>
+        data-slide=11 title='Sampling variability of paired PS diffs (ii)'>
          11
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=12 title='Sampling variability of paired PS diffs (ii)'>
+        data-slide=12 title='Outline'>
          12
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=13 title='Outline'>
+        data-slide=13 title='Example 2: Real or cosmetic reform in police practices?'>
          13
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=14 title='Example 2: Real or cosmetic reform in police practices?'>
+        data-slide=14 title='Applications'>
          14
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=15 title='Applications'>
+        data-slide=15 title='Calipering to insure that PS differences tend to 0'>
          15
       </a>
     </li>
