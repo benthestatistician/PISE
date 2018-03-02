@@ -108,7 +108,7 @@ mode        : selfcontained # {standalone, draft}
 
 --- &twocolleftwider
 
-## Matching within PS calipers (Rosenbaum & Rubin) 
+## Matching with PS calipers (Rosenbaum & Rubin) 
 
 >- For matching, useful to specify a tolerance or _caliper_ (Althauser & Rubin, 1970). 
 >- Absent unmeasured confounding, matches with small PS differences mimic paired random assignment (R.&R. 1983). 
@@ -224,7 +224,7 @@ Vagrancy arrests in the 60s and 70s
 
 ---
 
-## Calipering to insure that PS differences tend to 0
+## Calipers to ensure that PS differences tend to 0
 
 >- Pairings (denoted "$i \sim j$") should satisfy $\max_{i \sim j} |(\vec{x}_i - \vec{x}_j)\beta| \downarrow 0$ as $n \uparrow \infty$.
 >- Can this be accomplished with a requirement $\max_{i \sim j} |(\vec{x}_i - \vec{x}_j)\hat\beta| \leq w_n$, some $w_n \downarrow 0$?  (In light of $|(\vec{x}_i - \vec{x}_j)\beta| \leq |(\vec{x}_i - \vec{x}_j)(\hat\beta - \hat\beta)| + |(\vec{x}_i - \vec{x}_j)\hat\beta|$.)
@@ -232,7 +232,7 @@ Vagrancy arrests in the 60s and 70s
 >- For any $i,j\leq n$, $|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \leq |\vec{x}_i - \vec{x}_j|_2|\hat\beta - \beta|_2$.
 >- Expect $\max_{i,j}|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \approx (\max_{i,j}|\vec{x}_i - \vec{x}_j|_2)|\hat\beta - \beta|_2$.
 >- Even with bounded $x$s, this is $O(p^{1/2})O_P\left[(p/n)^{1/2}\right] = O_P(p/n^{1/2})$ (He & Shao, 2000).
->- We'll need to **assume** $p/n^{1/2} \downarrow 0$ --- not only does $n \gg p$, also  $n \gg p^2$! 
+>- We'll need to **assume** $p/n^{1/2} \downarrow 0$ --- not only $n \gg p$, also  $n \gg p^2$! 
 >- In that case, any $w_n$ that's $O_P(p/n^{1/2})$ will do the trick.  E.g.,  $w_n \equiv 2.5\text{PPSE}$.
 
 ---
