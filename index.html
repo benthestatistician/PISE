@@ -190,7 +190,7 @@
 
 <slide class="" id="slide-7" style="background:;">
   <hgroup>
-    <h2>Matching within PS calipers (R.&amp; R.)</h2>
+    <h2>Matching with PS calipers (Rosenbaum &amp; Rubin)</h2>
   </hgroup>
   <article data-timings="">
     <ul class = "build incremental">
@@ -385,13 +385,28 @@ where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\math
 <li>In vagrancy study, PPSE criterion excluded 2/121 Txes, wheres .2\(s_p\) would have excluded 9.</li>
 </ul>
 
+    </section>
+  </aside>
+</slide>
+
 <p>&lt;!--
 --- &amp;twocol</p>
 
-<h2>Multiple PS calipers in the vagrancy study (Ex 2)</h2>
-
-    </section>
-  </aside>
+<slide class="" id="slide-15" style="background:;">
+  <hgroup>
+    <h2>Calipers to ensure that PS differences tend to 0</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul class = "build incremental">
+<li>Pairings (denoted &quot;\(i \sim j\)&quot;) should satisfy \(\max_{i \sim j} |(\vec{x}_i - \vec{x}_j)\beta| \downarrow 0\) as \(n \uparrow \infty\).</li>
+<li>Can this be accomplished with a requirement \(\max_{i \sim j} |(\vec{x}_i - \vec{x}_j)\hat\beta| \leq w_n\), some \(w_n \downarrow 0\)?  (In light of \(|(\vec{x}_i - \vec{x}_j)\beta| \leq |(\vec{x}_i - \vec{x}_j)(\hat\beta - \hat\beta)| + |(\vec{x}_i - \vec{x}_j)\hat\beta|\).)</li>
+<li>(\(w_n = s_p/4\) would mean \(w_n \stackrel{P}{\rightarrow} \text{const} > 0\). Again, this won&#39;t do; we need \(w_n \stackrel{P}{\rightarrow} 0\).)</li>
+<li>For any \(i,j\leq n\), \(|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \leq |\vec{x}_i - \vec{x}_j|_2|\hat\beta - \beta|_2\).</li>
+<li>Expect \(\max_{i,j}|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \approx (\max_{i,j}|\vec{x}_i - \vec{x}_j|_2)|\hat\beta - \beta|_2\).</li>
+<li>Even with bounded $x$s, this is \(O(p^{1/2})O_P\left[(p/n)^{1/2}\right] = O_P(p/n^{1/2})\) (He &amp; Shao, 2000).</li>
+<li>We&#39;ll need to <strong>assume</strong> \(p/n^{1/2} \downarrow 0\) --- not only \(n \gg p\), also  \(n \gg p^2\)! </li>
+<li>In that case, any \(w_n\) that&#39;s \(O_P(p/n^{1/2})\) will do the trick.  E.g.,  \(w_n \equiv 2.5\text{PPSE}\).</li>
+</ul>
 </slide>
 
 <slide class="" id="slide-16" style="background:;">
@@ -462,7 +477,11 @@ where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\math
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
+<<<<<<< HEAD
         data-slide=7 title='Matching within PS calipers (R.&amp; R.)'>
+=======
+        data-slide=7 title='Matching with PS calipers (Rosenbaum &amp; Rubin)'>
+>>>>>>> d571e72... Be robust to font size differences
          7
       </a>
     </li>
@@ -510,7 +529,11 @@ where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\math
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
+<<<<<<< HEAD
         data-slide=15 title='Applications'>
+=======
+        data-slide=15 title='Calipers to ensure that PS differences tend to 0'>
+>>>>>>> d571e72... Be robust to font size differences
          15
       </a>
     </li>
