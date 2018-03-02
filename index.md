@@ -1,7 +1,7 @@
 ---
 title       : Propensity score calipers and the overlap condition
 author      : Ben Hansen, UMich Statistics (bbh@umich.edu).  Project site - 
-date        : IMA Precision Medicine workshop, September 2017
+date        : SREE, March 2018
 job         : github.com/benthestatistician/PISE (code/manuscript), benthestatistician.github.io/PISE (slides)
 framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
 highlighter : highlight.js  # {highlight.js, prettify, highlight}
@@ -86,7 +86,7 @@ mode        : selfcontained # {standalone, draft}
 >- $\bar{x}_t$s and $\bar{x}_c$s not too far apart, but PS matching brought them closer.
 >- Figure shows PS we matched on - the $X\hat{\beta}$ from a logistic regression (Cerda et al 2012, _Am J Epi_).
 >- Region of strict overlap contains only 6/25 $t$s and 4/23 $c$s!
->- Yet Cerda et al full-matched all 48 neighborhoods.
+>- Yet Cerda et al matched all 48 neighborhoods.  (Using "full matching", which permits many-to-one matches.)
 
 *** =right
 
@@ -159,11 +159,11 @@ mode        : selfcontained # {standalone, draft}
 
 ## Calipers as insurance that PS differences tend to 0
 
->- Pairings (denoted "$i \sim j$") should satisfy $\sup_{i \sim j} |(\vec{x}_i - \vec{x}_j)\beta| \downarrow 0$ as $n \uparrow \infty$.
+>- Pairings (denoted "$i \sim j$") should satisfy $\max_{i \sim j} |(\vec{x}_i - \vec{x}_j)\beta| \downarrow 0$ as $n \uparrow \infty$.
 >- Can this be accomplished with a requirement of form $|(\vec{x}_i - \vec{x}_j)\hat\beta| \leq w_n$, since $|(\vec{x}_i - \vec{x}_j)\beta| \leq |(\vec{x}_i - \vec{x}_j)(\hat\beta - \hat\beta)| + |(\vec{x}_i - \vec{x}_j)\hat\beta|$?
->- ($w_n = s_p/4$ won't do.  We need $w_n \stackrel{P}{\rightarrow} 0$.  In itself, even this won't be quite enough.)
+>- ($w_n = s_p/4$ means $w_n \stackrel{P}{\rightarrow} \text{const} > 0$. This won't do; need $w_n \stackrel{P}{\rightarrow} 0$.  In itself, even this won't be quite enough.)
 >- Scanning pairs $i,j\leq n$, $|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \leq |\vec{x}_i - \vec{x}_j|_2|\hat\beta - \beta|_2$.
->- Expect $\sup_{i,j}|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \approx (\sup_{i,j}|\vec{x}_i - \vec{x}_j|_2)|\hat\beta - \beta|_2$.
+>- Expect $\max_{i,j}|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \approx (\max_{i,j}|\vec{x}_i - \vec{x}_j|_2)|\hat\beta - \beta|_2$.
 >- Even w/ $|x_{ij}|$ bounded, uniformly in $i,j$, and $n$, this is $O(p^{1/2})O_P([p/n]^{1/2}) = O_P(p/n^{1/2})$.  We'll need to assume $p/n^{1/2} \downarrow 0$. 
 >- In that case, a $w_n$ that's $O_P(p/n^{1/2})$ will do the trick.
 >- E.g., a $w_n$ measuring average size of $|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)|$.
@@ -270,16 +270,17 @@ Vagrancy arrests in the 60s and 70s
 
 ### Discussion
 
->- Getting consistency out of PPSE caliper requires $p^2/n \downarrow 0$.  If $p/n \downarrow 0$, still interpretable as an SE of sorts. 
->- No need to restrict yourself to a single index score.
->- With a saturated PS model, observed information may be poorly conditioned.  The method of PPSE estimation as described here requires some elaboration (see code on github).
->- Likeness of observations ("like to like") is interpreted in terms of PS variables.  If too strict or too loose, then adjust PS variables.  
+>- Roughly speaking, the PPSE is the r.m.s. of $\vec{x}_i\hat\beta-\vec{x}_j\hat\beta$ among pairs $(i,j)$ s.t. $\vec{x}_i\beta = \vec{x}_j\beta$. 
+>- If $p^2/n \downarrow 0$, then PPSE $\stackrel{P}{\rightarrow} 0$, and matching within $k$ PPSEs suffices for $\max_{i\sim j} |\vec{x}_i\beta-\vec{x}_j\beta| \stackrel{P}{\rightarrow} 0$.
+>- If $p^2/n \not\rightarrow 0$, no caliper imposed on $\vec{x}_i\hat\beta-\vec{x}_j\hat\beta$ entails $\max_{i\sim j} |\vec{x}_i\beta-\vec{x}_j\beta| \stackrel{P}{\rightarrow} 0$.
+>- If your matches are farther than a few PPSEs, you're matching outside region of overlap. 
+>- I like calipers of $k=2.5$ PPSEs.
+
 
 <!-- Matches between 1 and 3 PPSEs might be considered "marginal" (Austin & Lee, 2009).-->
 
 ### Recommendations: 
 
->- I like calipers of 2.5 PPSEs
->- I'm using sandwich estimates of $\mathrm{Cov} (\hat\beta) $, w/ some special sauce to limit numerical instability.
+>- I'm using sandwich estimates of $\mathrm{Cov} (\hat\beta) $, w/ some special sauce (cf. github.com/benthestatistician/PISE) to limit numerical instability.
 >- Our `optmatch` R package (Fredrickson et al, 2016) does optimal pair and full matching (Gu & Rosenbaum, 1993; Hansen & Klopfer, 2006; Stuart & Green, 2008), readily accommodating PS calipers.
 
