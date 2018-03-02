@@ -157,11 +157,11 @@ mode        : selfcontained # {standalone, draft}
 
 ---
 
-## Calipers as insurance that PS differences tend to 0
+## Calipering to insure that PS differences tend to 0
 
 >- Pairings (denoted "$i \sim j$") should satisfy $\max_{i \sim j} |(\vec{x}_i - \vec{x}_j)\beta| \downarrow 0$ as $n \uparrow \infty$.
 >- Can this be accomplished with a requirement of form $|(\vec{x}_i - \vec{x}_j)\hat\beta| \leq w_n$, since $|(\vec{x}_i - \vec{x}_j)\beta| \leq |(\vec{x}_i - \vec{x}_j)(\hat\beta - \hat\beta)| + |(\vec{x}_i - \vec{x}_j)\hat\beta|$?
->- ($w_n = s_p/4$ means $w_n \stackrel{P}{\rightarrow} \text{const} > 0$. This won't do; need $w_n \stackrel{P}{\rightarrow} 0$.  In itself, even this won't be quite enough.)
+>- ($w_n = s_p/4$ means $w_n \stackrel{P}{\rightarrow} \text{const} > 0$. This won't do; need $w_n \stackrel{P}{\rightarrow} 0$.)
 >- Scanning pairs $i,j\leq n$, $|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \leq |\vec{x}_i - \vec{x}_j|_2|\hat\beta - \beta|_2$.
 >- Expect $\max_{i,j}|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \approx (\max_{i,j}|\vec{x}_i - \vec{x}_j|_2)|\hat\beta - \beta|_2$.
 >- Even w/ $|x_{ij}|$ bounded, uniformly in $i,j$, and $n$, this is $O(p^{1/2})O_P([p/n]^{1/2}) = O_P(p/n^{1/2})$.  We'll need to assume $p/n^{1/2} \downarrow 0$. 
@@ -177,7 +177,7 @@ mode        : selfcontained # {standalone, draft}
 >    - excludes treatment subjects whose PSes are distinguishably different from all controls'.    
 >- To limit model sensitivity, work on index scale.
 >- If $\mathbf{d} = \mathbf{x}_1 - \mathbf{x}_2$, $\mathbf{d}(\hat{\beta} - \beta)$ is the error of estimation of paired PS difference $\mathbf{d}\beta$.
->- Considering all ${n \choose 2} $ possible pairs $r$, the expected MS estimation error of paired PS differences can be expressed as a Frobenius inner product:   
+>- Considering all ${n \choose 2}$ possible pairs $r$, the expected MS estimation error of paired PS differences can be expressed as a "Frobenius inner product":   
 \[ \mathbf{E}_\beta \sum_r (\mathbf{d}_r (\hat{\beta} - \beta))^2/{n \choose 2} = 2\langle S^{(x)}, \mathbf{E}_\beta \{(\hat\beta - \beta) (\hat{\beta} -\beta)' \}\rangle_F . \]
 
 ---
@@ -217,7 +217,7 @@ Vagrancy arrests in the 60s and 70s
 >- ... and we matched them to otherwise similar agencies in terms of year, region of U.S., population, prior use of vagrancy arrests and a propensity score. 
 
 
-
+<!--
 --- &twocol
 
 ## Example 3: Vascular closure devices vs manual closure following percutaneous coronary intervention
@@ -234,7 +234,7 @@ Vagrancy arrests in the 60s and 70s
 
 <embed height="400px" width="400px" src="./images/Stent-PCI.jpg">
 
-
+-->
 
 ---
 
@@ -243,14 +243,16 @@ Vagrancy arrests in the 60s and 70s
 
 >- For the Medellin example, 2.5 PPSEs works out to 4 logits ($3.9s_p$). 
 >- No neighborhoods excluded. Recall that the alternatives excluded at least 12!
->- In the vagrancy study, 2.5 PPSEs = 3.8 logits ($.5s_p$). 
->- In the VCD example 2.5 PPSEs= 0.15 logits ($.3s_p$). 
+>- In the vagrancy study, 2.5 PPSEs = 2.3 logits ($1.9s_p$). 
+>- Excludes a modest number of "treatment" cases (12/121).
 >- Larger sample $\Rightarrow$ smaller PPSE. 
+>- Even in larger samples I've worked with, tends to be more permissive than $.25s_p$ rule.
 
 *** =pnotes
 
 - In vagrancy study, PPSE criterion excluded 2/121 Txes, wheres .2$s_p$ would have excluded 9.
 
+<!--
 --- &twocol
 
 ## Multiple PS calipers in the vagrancy study (Ex 2)
@@ -263,6 +265,8 @@ Vagrancy arrests in the 60s and 70s
 *** =right
 
 <embed height="450px" width="450px" src="./images/boxplot-vagrancy-2ndstage.jpg">
+
+-->
 
 ---
 

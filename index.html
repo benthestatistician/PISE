@@ -262,13 +262,13 @@ I.e., logits of estimated probabilities.)</li>
 
 <slide class="" id="slide-10" style="background:;">
   <hgroup>
-    <h2>Calipers as insurance that PS differences tend to 0</h2>
+    <h2>Calipering to insure that PS differences tend to 0</h2>
   </hgroup>
   <article data-timings="">
     <ul class = "build incremental">
 <li>Pairings (denoted &quot;\(i \sim j\)&quot;) should satisfy \(\max_{i \sim j} |(\vec{x}_i - \vec{x}_j)\beta| \downarrow 0\) as \(n \uparrow \infty\).</li>
 <li>Can this be accomplished with a requirement of form \(|(\vec{x}_i - \vec{x}_j)\hat\beta| \leq w_n\), since \(|(\vec{x}_i - \vec{x}_j)\beta| \leq |(\vec{x}_i - \vec{x}_j)(\hat\beta - \hat\beta)| + |(\vec{x}_i - \vec{x}_j)\hat\beta|\)?</li>
-<li>(\(w_n = s_p/4\) means \(w_n \stackrel{P}{\rightarrow} \text{const} > 0\). This won&#39;t do; need \(w_n \stackrel{P}{\rightarrow} 0\).  In itself, even this won&#39;t be quite enough.)</li>
+<li>(\(w_n = s_p/4\) means \(w_n \stackrel{P}{\rightarrow} \text{const} > 0\). This won&#39;t do; need \(w_n \stackrel{P}{\rightarrow} 0\).)</li>
 <li>Scanning pairs \(i,j\leq n\), \(|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \leq |\vec{x}_i - \vec{x}_j|_2|\hat\beta - \beta|_2\).</li>
 <li>Expect \(\max_{i,j}|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \approx (\max_{i,j}|\vec{x}_i - \vec{x}_j|_2)|\hat\beta - \beta|_2\).</li>
 <li>Even w/ \(|x_{ij}|\) bounded, uniformly in \(i,j\), and \(n\), this is \(O(p^{1/2})O_P([p/n]^{1/2}) = O_P(p/n^{1/2})\).  We&#39;ll need to assume \(p/n^{1/2} \downarrow 0\). </li>
@@ -294,7 +294,7 @@ I.e., logits of estimated probabilities.)</li>
 </ul></li>
 <li>To limit model sensitivity, work on index scale.</li>
 <li>If \(\mathbf{d} = \mathbf{x}_1 - \mathbf{x}_2\), \(\mathbf{d}(\hat{\beta} - \beta)\) is the error of estimation of paired PS difference \(\mathbf{d}\beta\).</li>
-<li>Considering all ${n \choose 2} $ possible pairs \(r\), the expected MS estimation error of paired PS differences can be expressed as a Frobenius inner product:<br>
+<li>Considering all \({n \choose 2}\) possible pairs \(r\), the expected MS estimation error of paired PS differences can be expressed as a &quot;Frobenius inner product&quot;:<br>
 \[ \mathbf{E}_\beta \sum_r (\mathbf{d}_r (\hat{\beta} - \beta))^2/{n \choose 2} = 2\langle S^{(x)}, \mathbf{E}_\beta \{(\hat\beta - \beta) (\hat{\beta} -\beta)' \}\rangle_F . \]</li>
 </ul>
 
@@ -354,34 +354,16 @@ where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\math
 <li class='..'>and we matched them to otherwise similar agencies in terms of year, region of U.S., population, prior use of vagrancy arrests and a propensity score. </li>
 </ul>
 
+<p>&lt;!--
+--- &amp;twocol</p>
+
+<h2>Example 3: Vascular closure devices vs manual closure following percutaneous coronary intervention</h2>
+
   </article>
   <!-- Presenter Notes -->
 </slide>
 
 <slide class="" id="slide-15" style="background:;">
-  <hgroup>
-    <h2>Example 3: Vascular closure devices vs manual closure following percutaneous coronary intervention</h2>
-  </hgroup>
-  <article data-timings="">
-    
-<div style='float:left;width:48%;' class='centered'>
-  <ul class = "build incremental">
-<li>Once this stent has been threaded up into your heart, the hole in your femoral artery needs to be closed. </li>
-<li>VCDs are more comfortable than manual closure -- are they as safe?</li>
-<li>Gurm et al (2013, <em>Ann Intern Med</em>) used data from a 32-hospital collaborative in Michgan to conduct a propensity-matched study. </li>
-<li>Large matching problem: $n_t=31$K; $n_c=54$K.<br></li>
-</ul>
-
-</div>
-<div style='float:right;width:48%;'>
-  <p><embed height="400px" width="400px" src="./images/Stent-PCI.jpg"></p>
-
-</div>
-  </article>
-  <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-16" style="background:;">
   <hgroup>
     <h2>Applications</h2>
   </hgroup>
@@ -389,9 +371,10 @@ where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\math
     <ul class = "build incremental">
 <li>For the Medellin example, 2.5 PPSEs works out to 4 logits (\(3.9s_p\)). </li>
 <li>No neighborhoods excluded. Recall that the alternatives excluded at least 12!</li>
-<li>In the vagrancy study, 2.5 PPSEs = 3.8 logits (\(.5s_p\)). </li>
-<li>In the VCD example 2.5 PPSEs= 0.15 logits (\(.3s_p\)). </li>
+<li>In the vagrancy study, 2.5 PPSEs = 2.3 logits (\(1.9s_p\)). </li>
+<li>Excludes a modest number of &quot;treatment&quot; cases (12/121).</li>
 <li>Larger sample \(\Rightarrow\) smaller PPSE. </li>
+<li>Even in larger samples I&#39;ve worked with, tends to be more permissive than \(.25s_p\) rule.</li>
 </ul>
 
   </article>
@@ -402,29 +385,16 @@ where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\math
 <li>In vagrancy study, PPSE criterion excluded 2/121 Txes, wheres .2\(s_p\) would have excluded 9.</li>
 </ul>
 
+<p>&lt;!--
+--- &amp;twocol</p>
+
+<h2>Multiple PS calipers in the vagrancy study (Ex 2)</h2>
+
     </section>
   </aside>
 </slide>
 
-<slide class="" id="slide-17" style="background:;">
-  <hgroup>
-    <h2>Multiple PS calipers in the vagrancy study (Ex 2)</h2>
-  </hgroup>
-  <article data-timings="">
-    
-<div style='float:left;width:48%;' class='centered'>
-  <p><embed height="450px" width="450px" src="./images/boxplot-vagrancy-1ststage.jpg"></p>
-
-</div>
-<div style='float:right;width:48%;'>
-  <p><embed height="450px" width="450px" src="./images/boxplot-vagrancy-2ndstage.jpg"></p>
-
-</div>
-  </article>
-  <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-18" style="background:;">
+<slide class="" id="slide-16" style="background:;">
   <hgroup>
     <h3>Discussion</h3>
   </hgroup>
@@ -510,7 +480,7 @@ where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\math
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=10 title='Calipers as insurance that PS differences tend to 0'>
+        data-slide=10 title='Calipering to insure that PS differences tend to 0'>
          10
       </a>
     </li>
@@ -540,26 +510,14 @@ where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\math
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=15 title='Example 3: Vascular closure devices vs manual closure following percutaneous coronary intervention'>
+        data-slide=15 title='Applications'>
          15
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=16 title='Applications'>
+        data-slide=16 title='Discussion'>
          16
-      </a>
-    </li>
-    <li>
-      <a href="#" target="_self" rel='tooltip' 
-        data-slide=17 title='Multiple PS calipers in the vagrancy study (Ex 2)'>
-         17
-      </a>
-    </li>
-    <li>
-      <a href="#" target="_self" rel='tooltip' 
-        data-slide=18 title='Discussion'>
-         18
       </a>
     </li>
   </ul>
