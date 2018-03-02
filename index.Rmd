@@ -217,23 +217,6 @@ Vagrancy arrests in the 60s and 70s
 >- ... and we matched them to otherwise similar agencies in terms of year, region of U.S., population, prior use of vagrancy arrests and a propensity score. 
 
 
---- &twocol
-
-## Example 3: Vascular closure devices vs manual closure following percutaneous coronary intervention
-
-
-*** =left
-
->- Once this stent has been threaded up into your heart, the hole in your femoral artery needs to be closed. 
->- VCDs are more comfortable than manual closure -- are they as safe?
->- Gurm et al (2013, _Ann Intern Med_) used data from a 32-hospital collaborative in Michgan to conduct a propensity-matched study. 
->- Large matching problem: $n_t=31$K; $n_c=54$K.  
-
-*** =right
-
-<embed height="400px" width="400px" src="./images/Stent-PCI.jpg">
-
-
 ---
 
 ## Applications
@@ -248,21 +231,7 @@ Vagrancy arrests in the 60s and 70s
 
 *** =pnotes
 
-- In vagrancy study, PPSE criterion excluded 2/121 Txes, wheres .2$s_p$ would have excluded 9.
-
-
---- &twocol
-
-## Multiple PS calipers in the vagrancy study (Ex 2)
-
-
-*** =left
-
-<embed height="450px" width="450px" src="./images/boxplot-vagrancy-1ststage.jpg">
-
-*** =right
-
-<embed height="450px" width="450px" src="./images/boxplot-vagrancy-2ndstage.jpg">
+- In vagrancy study, PPSE criterion excluded 12/121 Txes, wheres .2$s_p$ would have excluded more.
 
 
 ---
