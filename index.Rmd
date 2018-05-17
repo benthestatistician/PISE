@@ -1,8 +1,8 @@
 ---
-title       : Diminishing propensity score calipers
-author      : Ben Hansen, UMich Statistics (bbh@umich.edu).  Project site - 
-date        : SREE, March 2018
-job         : github.com/benthestatistician/PISE (code/manuscript), benthestatistician.github.io/PISE (slides)
+title       : Propensity score calipers and the overlap condition
+author      : Ben Hansen, UMich Statistics (bbh@umich.edu).
+date        : IISA, May 2018
+job         : benthestatistician.github.io/PISE (slides)
 framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
 highlighter : highlight.js  # {highlight.js, prettify, highlight}
 hitheme     : tomorrow      #
@@ -180,7 +180,7 @@ mode        : selfcontained # {standalone, draft}
 2 \langle S^\perp, C_\hat\beta \rangle_F,
 \]
 where $S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathbf{x}^{\perp \mathbf{x}\beta})$ and $x^{\perp \mathbf{x}\beta} = e(x |\mathbf{1}, \mathbf{x}\beta)$. 
->- Plugging in $\hat{S}^\perp = \widehat{\mathrm{Cov}}(\mathbf{x}^{\perp \mathbf{x}\hat{\beta}})$, $\hat{C}_\hat\beta$  from the regression fit gives the "propensity-paired standard error" (PPSE).
+>- Plugging in $\hat{S}^\perp = \mathrm{Cov}(\mathbf{x}^{\perp \mathbf{x}\hat{\beta}})$ and an estimate of ${C}_\hat\beta$ gives a squared "propensity-paired standard error" (PPSE).
 
 ---
 
@@ -233,7 +233,7 @@ Vagrancy arrests in the 60s and 70s
 >- Expect $\max_{i,j}|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \approx (\max_{i,j}|\vec{x}_i - \vec{x}_j|_2)|\hat\beta - \beta|_2$.
 >- Even with bounded $x$s, this is $O(p^{1/2})O_P\left[(p/n)^{1/2}\right] = O_P(p/n^{1/2})$ (He & Shao, 2000).
 >- We'll need to **assume** $p/n^{1/2} \downarrow 0$ --- not only $n \gg p$, also  $n \gg p^2$! 
->- In that case, any $w_n$ that's $O_P(p/n^{1/2})$ will do the trick.  E.g.,  $w_n \equiv 2.5\text{PPSE}$.
+>- A similar condition ($p^2 \log(p)/n \downarrow 0$) suffices for validity $\hat{C}_{\hat\beta}$, the Huber-White estimate of $\mathrm{Cov} (\hat\beta)$.  And for $\text{PPSE} = \left[2\langle \hat{S}^\perp, \hat{C}_{\hat\beta}\rangle_F\right]^{1/2}  \downarrow 0$ as $n \uparrow \infty$. 
 
 ---
 

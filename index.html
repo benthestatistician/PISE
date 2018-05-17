@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Diminishing propensity score calipers</title>
+  <title>Propensity score calipers and the overlap condition</title>
   <meta charset="utf-8">
-  <meta name="description" content="Diminishing propensity score calipers">
-  <meta name="author" content="Ben Hansen, UMich Statistics (bbh@umich.edu).  Project site -">
+  <meta name="description" content="Propensity score calipers and the overlap condition">
+  <meta name="author" content="Ben Hansen, UMich Statistics (bbh@umich.edu).">
   <meta name="generator" content="slidify" />
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta http-equiv="X-UA-Compatible" content="chrome=1">
@@ -31,9 +31,9 @@
     <!-- LOGO SLIDE -->
         <slide class="title-slide segue nobackground">
   <hgroup class="auto-fadein">
-    <h1>Diminishing propensity score calipers</h1>
+    <h1>Propensity score calipers and the overlap condition</h1>
     <h2></h2>
-    <p>Ben Hansen, UMich Statistics (bbh@umich.edu).  Project site -<br/>github.com/benthestatistician/PISE (code/manuscript), benthestatistician.github.io/PISE (slides)</p>
+    <p>Ben Hansen, UMich Statistics (bbh@umich.edu).<br/>benthestatistician.github.io/PISE (slides)</p>
   </hgroup>
   <article></article>  
 </slide>
@@ -297,7 +297,7 @@ I.e., logits of estimated probabilities.)</li>
 2 \langle S^\perp, C_\hat\beta \rangle_F,
 \]
 where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathbf{x}^{\perp \mathbf{x}\beta})\) and \(x^{\perp \mathbf{x}\beta} = e(x |\mathbf{1}, \mathbf{x}\beta)\). </p></li>
-<li><p>Plugging in \(\hat{S}^\perp = \widehat{\mathrm{Cov}}(\mathbf{x}^{\perp \mathbf{x}\hat{\beta}})\), \(\hat{C}_\hat\beta\)  from the regression fit gives the &quot;propensity-paired standard error&quot; (PPSE).</p></li>
+<li><p>Plugging in \(\hat{S}^\perp = \mathrm{Cov}(\mathbf{x}^{\perp \mathbf{x}\hat{\beta}})\) and an estimate of \({C}_\hat\beta\) gives a squared &quot;propensity-paired standard error&quot; (PPSE).</p></li>
 </ul>
 
   </article>
@@ -378,7 +378,7 @@ where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\math
 <li>Expect \(\max_{i,j}|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \approx (\max_{i,j}|\vec{x}_i - \vec{x}_j|_2)|\hat\beta - \beta|_2\).</li>
 <li>Even with bounded $x$s, this is \(O(p^{1/2})O_P\left[(p/n)^{1/2}\right] = O_P(p/n^{1/2})\) (He &amp; Shao, 2000).</li>
 <li>We&#39;ll need to <strong>assume</strong> \(p/n^{1/2} \downarrow 0\) --- not only \(n \gg p\), also  \(n \gg p^2\)! </li>
-<li>In that case, any \(w_n\) that&#39;s \(O_P(p/n^{1/2})\) will do the trick.  E.g.,  \(w_n \equiv 2.5\text{PPSE}\).</li>
+<li>A similar condition (\(p^2 \log(p)/n \downarrow 0\)) suffices for validity \(\hat{C}_{\hat\beta}\), the Huber-White estimate of \(\mathrm{Cov} (\hat\beta)\).  And for \(\text{PPSE} = \left[2\langle \hat{S}^\perp, \hat{C}_{\hat\beta}\rangle_F\right]^{1/2}  \downarrow 0\) as \(n \uparrow \infty\). </li>
 </ul>
 
   </article>
