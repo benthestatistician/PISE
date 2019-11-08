@@ -1,31 +1,33 @@
-## Propensity score calipers and the overlap condition
+## Diminishing caliper matching for propensity and other index scores
 
-Propensity scores (Rosenbaum and Rubin, 1983) are used widely to
-address measured confounding in quasiexperiments. They also arise in
-connection with the antecedent question of whether non-equivalent
-treatment and control groups are suitable for comparison at all, with or
-without covariate adjustments.
 
-"Common support," the assumption that propensity scores are
-bounded away from 1, is so named because it means that the support of
-the treatment group in covariate spaces is contained within that of the
-control group.  This is less simple to check than is often
-supposed: even if treatment and control groups' values of the
-_true_ propensity score overlap, when arranged in order of _estimated_
-propensity scores they may appear not to. The naive
-method of discarding those members of the treatment group whose
-estimated propensity scores fall above all the controls', and those
-members of the control group whose propensity scores fall below all
-those estimated within the treatment group, is needlessly wasteful of
-sample size.
+To estimate intervention effects without the benefit of random
+assignment, an often useful beginning is to pair intervention group
+members to ostensibly similar counterparts receiving a control
+condition.  In practice exact matches are rare, particularly if there
+are many measured covariates. Instead, matches may be made within
+_calipers_ (Althauser & Rubin, 1970) of a unidimensional index.
+Modern indices arise by modeling specific aspects of the data.  The
+most widely used matching indices are propensity scores (Rosenbaum &
+Rubin, 1983), followed by risk or prognostic scores (Miettinen, 1976;
+Hansen, 2008).
 
-It is possible to address common support by restricting the range of the
-estimated propensity score within which comparisons are permitted, but
-this requires careful determination of the tolerance enforced for
-matching discrepancies; available heuristics and guidelines attend only
-to some of the issues that must be considered. I present a new formula
-for determining caliper widths for matching based on propensity scores,
-and other constructed index functions. The method is compatible with
-conventional means of propensity score estimation, although it relaxes
-some of the more tenuous of the conventional assumptions, in particular
-permitting the dimension of the parameter to grow with n.
+Adjudicating how close is close enough for matching is the murkiest
+aspect of the undertaking.  Heuristics in wide use today pre-date the
+use of model-based matching indices, fail to adapt to the size of the
+model and sample, and lack theoretical support.  In some cases
+these heuristics allow pairings of demonstrably dissimilar subjects;
+in others they declare wide swaths of the sample to be unmatchable,
+needlessly wasting data.
+
+This talk presents a new way to determine calipers.  Compatible with
+common index model specifications, its widths diminish as _n_
+increases, toward an asymptote of 0.  If the index model is
+consistently estimated, then matched contrast-based impact estimates
+will be consistent as well, provided matches are made within these
+diminishing calipers. This result assumes no hidden bias, an
+untestable condition, alongside of additional conditions that can be
+enforced. In particular, it restricts growth of the index parameter's
+dimension relative to _n_, to a rate intermediate to those required for
+ordinary M-estimates to be consistent or root-_n_ consistent (He &
+Shao, 2000).
