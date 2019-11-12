@@ -13,7 +13,7 @@ mode        : selfcontained # {standalone, draft}
 
 1. <span class = 'red'>Problem: subject comparability in groupwise comparisons</span>
 2. Propensity score caliper matching
-3. PPSE calipers
+3. Diminishing calipers
 4. Applications & discussion    
 
 
@@ -33,8 +33,8 @@ mode        : selfcontained # {standalone, draft}
 > - Observations well outside support of contrasting group should be excluded.
 > - Wasteful to exclude members of $\{ i: Z_i=1\}$ because their $x$ is barely outside $\mathrm{range}(\{x_j: Z_j=0\})$.
 > -  May distort research question, too.
-> - Implicitly, our (pseudo) metric is $d_{Y_{c}} (x, w) =  |E(Y_{c}|X=x) - E(Y_{c}|X=w)|$.  Or: $d_{Y_{t}} =  |E(Y_{t}|x) - E(Y_{t}|w)|$, $d_{Y_{c}} + d_{Y_{t}}$...
-> - Or $d_{Z}(x, w)=|g(P(Z=1| X=x)) - g(P(Z=1| X=w))|$, $g(\cdot)$ increasing (cf. Rosenbaum & Rubin, 1983, or Rubin, 1997).
+> - We should include if close in pseudometric $d_{Y_{c}} (x, w) =  |E(Y_{c}|X=x) - E(Y_{c}|X=w)|$.  Or $d_{Y_{t}} =  |E(Y_{t}|x) - E(Y_{t}|w)|$, $d_{Y_{c}} + d_{Y_{t}}$...
+> - ...or $d_{Z}(x, w)=|g\{E(Z| X=x)\} - g\{E(Z| X=w)\}|$, some increasing $g(\cdot)$ such as $\text{logit}(\cdot)$ (cf. Rosenbaum & Rubin, 1983, or Rubin, 1997).
 
 ---
 
@@ -55,9 +55,9 @@ mode        : selfcontained # {standalone, draft}
 >    - Overlap: $\mathrm{Pr}(Z=1  | \mathbf{X}) < 1$.      
 >- No unmeasured confounding says, there are natural experiments in each "cell" of $\mathbf{X}$.
 >- Problem: if multiple ${X}$es, many observations will be all alone in their cells.
->- Rosenbaum & Rubin's (1983) solution is match on $\widehat{\mathrm{Pr}}(Z=1| \mathbf{X}=\mathbf{x})$, the estimated propensity score (PS).
+>- Rosenbaum & Rubin's (1983) solution is match on an estimate of the propensity score (PS), $\widehat{\mathrm{Pr}}(Z=1| \mathbf{X}=\mathbf{x})$. (Or $g\{\widehat{\mathrm{Pr}}(Z=1| \mathbf{x})\}$, e.g. $g\equiv$ logit.)
 >- Second problem: In a cell $\mathbf{x}_0$ s.t. $\mathrm{Pr}(Z=1| \mathbf{X}=\mathbf{x}_0)=1$, there's no data to estimate $\mathrm{Pr}(Y_c \in \cdot |  \mathbf{X}=\mathbf{x}_0)$, even as $n \uparrow \infty$.  (Whether you match on the PS, weight for it, ...)
->- The second problem motivates the method of strict overlap, i.e. reducing analytic sample to region of common support on $\widehat{\mathrm{PS}}$: $$\cap_{z=0,1}[\min(\{\widehat{PS}_i:Z_i=z\}), \max(\{\widehat{PS}_i:Z_i=z\})] .$$ 
+>- The second problem motivates the (clearly flawed) method of strict overlap, i.e. reducing analytic sample to region of common support on $\widehat{\mathrm{PS}}$: $$\cap_{z=0,1}[\min(\{\widehat{PS}_i:Z_i=z\}), \max(\{\widehat{PS}_i:Z_i=z\})] .$$ 
 
 
 --- &twocol
@@ -87,8 +87,8 @@ mode        : selfcontained # {standalone, draft}
 
 *** =left
 
->- Small matching problem: $n_t=25$, $n_c=23$ (neighborhoods).
->- $\bar{x}_t$s and $\bar{x}_c$s not too far apart, but PS matching brought them closer.
+>- Small matching problem: $n_1=25$, $n_0=23$ (neighborhoods).
+>- \(|\bar{x}_{z=1} - \bar{x}_{z=0}|\)s not too large, but PS matching made them smaller.
 >- Figure shows PS we matched on - the $X\hat{\beta}$ from a logistic regression (Cerda et al 2012, _Am J Epi_).
 >- Region of strict overlap contains only 6/25 $t$s and 4/23 $c$s!
 >- Yet Cerda et al matched all 48 neighborhoods.  (Using "full matching", which permits many-to-one matches.)
@@ -103,7 +103,7 @@ mode        : selfcontained # {standalone, draft}
 
 1. Problem: subject comparability in groupwise comparisons
 2. <span class = 'red'>Propensity score caliper matching</span>
-3. PPSE calipers
+3. Diminishing calipers
 4. Applications & discussion    
 
 
@@ -156,7 +156,7 @@ mode        : selfcontained # {standalone, draft}
 
 1. Problem: subject comparability in groupwise comparisons
 2. Propensity score caliper matching
-3. <span class = 'red'>PPSE calipers</span>
+3. <span class = 'red'>Diminishing calipers</span>
 4. Applications & discussion    
 
 
@@ -193,7 +193,7 @@ where $S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathb
 
 1. Problem: subject comparability in groupwise comparisons
 2. Propensity score caliper matching
-3. PPSE calipers
+3. Diminishing calipers
 4. <span class = 'red'>Applications & discussion</span>
 
 ---
@@ -219,7 +219,7 @@ Vagrancy arrests in the 60s and 70s
 >- Once this stent has been threaded up into your heart, the hole in your femoral artery needs to be closed. 
 >- VCDs are more comfortable than manual closure -- are they as safe?
 >- Gurm et al (2013, _Ann Intern Med_) used data from a 32-hospital collaborative in Michgan to conduct a propensity-matched study. 
->- Large matching problem: $n_t=31$K; $n_c=54$K.  
+>- Large matching problem: $n_1=31$K; $n_0=54$K.  
 
 *** =right
 
