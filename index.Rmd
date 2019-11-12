@@ -1,8 +1,7 @@
 ---
 title       : Diminishing propensity score calipers
-author      : Ben Hansen, UMich Statistics (bbh@umich.edu).  Project site - 
-date        : SREE, March 2018
-job         : github.com/benthestatistician/PISE (code/manuscript), benthestatistician.github.io/PISE (slides)
+author      : Ben B. Hansen (bbh@umich.edu)
+date        : UM Statistics, Nov. 2019
 framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
 highlighter : highlight.js  # {highlight.js, prettify, highlight}
 hitheme     : tomorrow      #
@@ -12,7 +11,7 @@ mode        : selfcontained # {standalone, draft}
 
 # Outline
 
-1. <span class = 'red'>Problem: determining the region of  overlap</span>
+1. <span class = 'red'>Problem: subject comparability in groupwise comparisons</span>
 2. Propensity score caliper matching
 3. PPSE calipers
 4. Applications & discussion    
@@ -22,7 +21,7 @@ mode        : selfcontained # {standalone, draft}
 
 --- &twocol    
 
-## Overlap & bias in comparisons w/ 1 covariate
+## Comparability of subjects in groupwise comparisons: canonical scenario with 1-dimensional covariate
 
 *** =left
 
@@ -31,15 +30,20 @@ mode        : selfcontained # {standalone, draft}
 
 *** =right
 
-> - Overlap? 
->     - Observations well outside region of overlap should be excluded.
->     - Wasteful to exclude members of $\{ i: Z_i=1\}$ because  their $x$ is just outside $\mathrm{range}(\{x_j: Z_j=0\})$.
->     -  May distort research question, too.
->     - Close/far distinctions presuppose a model.
+> - Observations well outside support of contrasting group should be excluded.
+> - Wasteful to exclude members of $\{ i: Z_i=1\}$ because their $x$ is barely outside $\mathrm{range}(\{x_j: Z_j=0\})$.
+> -  May distort research question, too.
+> - Implicitly, our (pseudo) metric is $d_{Y_{c}} (x, w) =  |E(Y_{c}|X=x) - E(Y_{c}|X=w)|$.  Or: $d_{Y_{t}} =  |E(Y_{t}|x) - E(Y_{t}|w)|$, $d_{Y_{c}} + d_{Y_{t}}$...
+> - Or $d_{Z}(x, w)=|g(P(Z=1| X=x)) - g(P(Z=1| X=w))|$, $g(\cdot)$ increasing (cf. Rosenbaum & Rubin, 1983, or Rubin, 1997).
 
-> - Balance - i.e., is $\bar{x}_t \approx \bar{x}_c$?
->    - The question presupposes overlap.  (OW mean comparisons can be misleading.)
->    - A topic for another day...
+---
+
+##  Covariate balance -- a separate topic
+
+> - Groupwise comparability is often discussed in terms of whether $\bar{x}_{z=1} \approx \bar{x}_{z=0}$, all or most $X$s.
+> - The question presupposes at least rough comparability of subjects: otherwise, mean comparisons can be misleading.
+<embed src="./images/balancing-stones.jpg">
+> - A topic for another day...
 
 ---
 
@@ -97,7 +101,7 @@ mode        : selfcontained # {standalone, draft}
 --- 
 # Outline
 
-1. Problem: determining the region of  overlap
+1. Problem: subject comparability in groupwise comparisons
 2. <span class = 'red'>Propensity score caliper matching</span>
 3. PPSE calipers
 4. Applications & discussion    
@@ -150,7 +154,7 @@ mode        : selfcontained # {standalone, draft}
 
 # Outline
 
-1. Problem: determining the region of  overlap</span>
+1. Problem: subject comparability in groupwise comparisons
 2. Propensity score caliper matching
 3. <span class = 'red'>PPSE calipers</span>
 4. Applications & discussion    
@@ -187,7 +191,7 @@ where $S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathb
 
 # Outline
 
-1. Problem: determining the region of  overlap
+1. Problem: subject comparability in groupwise comparisons
 2. Propensity score caliper matching
 3. PPSE calipers
 4. <span class = 'red'>Applications & discussion</span>
