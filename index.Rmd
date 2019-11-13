@@ -33,8 +33,9 @@ mode        : selfcontained # {standalone, draft}
 > - Observations well outside support of contrasting group should be excluded.
 > - Wasteful to exclude members of $\{ i: Z_i=1\}$ because their $x$ is barely outside $\mathrm{range}(\{x_j: Z_j=0\})$.
 > -  May distort research question, too.
-> - We should include if close in pseudometric $d_{Y_{c}} (x, w) =  |E(Y_{c}|X=x) - E(Y_{c}|X=w)|$.  Or $d_{Y_{t}} =  |E(Y_{t}|x) - E(Y_{t}|w)|$, $d_{Y_{c}} + d_{Y_{t}}$...
-> - ...or $d_{Z}(x, w)=|g\{E(Z| X=x)\} - g\{E(Z| X=w)\}|$, some increasing $g(\cdot)$ such as $\text{logit}(\cdot)$ (cf. Rosenbaum & Rubin, 1983, or Rubin, 1997).
+> - We say $x$ is close to $w$ when we expect $E(Y_{c}|X=x) \approx E(Y_{c}|X=w)$.
+> - (...or that $\text{Pr}(Z| X=x) \approx \text{Pr}(Z| X=w)$.)
+> - When we lack confidence that $E(Y_{c}|X=x) \approx E(Y_{c}|X=w)$ (or $\text{Pr}(Z| X=x) \approx \text{Pr}(Z| X=w)$), then $x$ and $w$ are not close.   
 
 ---
 
