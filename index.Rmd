@@ -177,16 +177,23 @@ mode        : selfcontained # {standalone, draft}
 
 ## Sampling variability of paired PS diffs (ii)
 
->- But **all possible** pairs include many that are quite different on the PS.  We wanted to characterize $\mathbf{E} (\mathbf{d}_r(\hat{\beta} - \beta))^2$ among pairs $r$ s.t. $\mathbf{d}_r\beta \approx 0$.  
+>- As $\mathrm{Cov}(\hat\beta)$ is hard to estimate directly, consider $\mathrm{Cov}(\tilde\beta)$, $\tilde\beta = \beta + n^{-1}\sum_{i=1}^{n}\mathrm{IC}({Z}_{i}, \mathbf{x}_{i}; \beta)$.
+>- Also **all possible** pairs include many that are quite different on the PS.  We wanted to characterize $\mathbf{E} (\mathbf{d}_r(\hat{\beta} - \beta))^2$ among pairs $r$ s.t. $\mathbf{d}_r\beta \approx 0$.  
 >- Since there may be few or no such pairs, instead "residualize" all pairs for the true PS, leaving remaining differences in place.  For $i=1,\ldots, p$, define $d_{(i)}^\perp =$ residual of $d_{(i)}$ regression on $\mathbf{d}\beta$; $\mathbf{d}^\perp = (d^\perp_1\,d^\perp_2\, \ldots\, d^\perp_p)$.  (By construction, $\mathbf{d}_r^\perp \beta =0$ for all $r$.)  
 
->- Rather than the mean-square of PS-difference estimation errors, ${n \choose 2}^{-1} \mathbf{E} \sum_r (\mathbf{d}_r(\hat{\beta} - \beta))^2$, consider the mean-square PS-difference estimation error, net of differences in the true PS: 
+>- Rather than the mean-square of PS-difference estimation errors, ${n \choose 2}^{-1} \mathbf{E} \sum_r (\mathbf{d}_r(\hat{\beta} - \beta))^2$, consider a mean-square in $\tilde\beta$, net of differences in the true PS: 
 \[
-{n \choose 2}^{-1}\mathbf{E}_\beta \sum_r (\mathbf{d}_r^\perp (\hat{\beta} - \beta))^2 =
-2 \langle S^\perp, C_\hat\beta \rangle_F,
+{n \choose 2}^{-1}\mathbf{E}_\beta \sum_r (\mathbf{d}_r^\perp (\tilde{\beta} - \beta))^2 =
+2 \langle S^\perp, C_{\tilde\beta} \rangle_F,
 \]
 where $S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathbf{x}^{\perp \mathbf{x}\beta})$ and $x^{\perp \mathbf{x}\beta} = e(x |\mathbf{1}, \mathbf{x}\beta)$. 
->- Plug in $\hat{S}^\perp = \widehat{\mathrm{Cov}}(\mathbf{x}^{\perp \mathbf{x}\hat{\beta}})$, $\hat{C}_\hat\beta$  from the regression fit gives the "paired index standard error" (PISE).
+>- Plug in $\hat{S}^\perp = \widehat{\mathrm{Cov}}(\mathbf{x}^{\perp \mathbf{x}\hat{\beta}})$, $\hat{C}_\hat\beta$  from the regression fit to give the "paired index standard error" (PISE).
+
+*** =pnotes
+
+- IC = influence curve, i.e. linear-in-data approximation to nonlinear estimator. 
+- ...
+- Note both modifications -- $\tilde\beta$ not $\hat\beta$, $S^\perp$ not $S$ -- make the mean-square smaller.
 
 ---
 
@@ -226,7 +233,7 @@ where $S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathb
 ---
 
 
-## Calipers to ensure that PS differences tend to 0
+## Calipers to ensure that index differences tend to 0
 
 >- Pairings (denoted "$i \sim j$") should satisfy $\max_{i \sim j} |( \mathbf{x}_i - \mathbf{x}_j)\beta| \downarrow 0$ as $n \uparrow \infty$.
 >- Can this be accomplished with a requirement $\max_{i \sim j} |(\mathbf{x}_i - \mathbf{x}_j)\hat\beta| \leq w_n$, some $w_n \downarrow 0$?  (In light of $|(\mathbf{x}_i - \mathbf{x}_j)\beta| \leq |(\mathbf{x}_i - \mathbf{x}_j)(\hat\beta - \hat\beta)| + |(\mathbf{x}_i - \mathbf{x}_j)\hat\beta|$.)
