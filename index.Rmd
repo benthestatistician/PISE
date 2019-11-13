@@ -193,7 +193,10 @@ where $S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathb
 ## Application to Medellin study
 
 >- Here 2.5 PISEs works out to 4 logits ($3.9s_p$).
->- No neighborhoods excluded. Recall that the alternatives excluded at least 12!
+   
+>- No neighborhoods excluded.
+   <embed src="images/psmodfit0-1.png">
+>- (I'll improve treatment of this example presently, but still this is worth noting. Recall that the alternatives excluded at least 12!)
 
 ---
 
