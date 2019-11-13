@@ -186,13 +186,13 @@ mode        : selfcontained # {standalone, draft}
 2 \langle S^\perp, C_\hat\beta \rangle_F,
 \]
 where $S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathbf{x}^{\perp \mathbf{x}\beta})$ and $x^{\perp \mathbf{x}\beta} = e(x |\mathbf{1}, \mathbf{x}\beta)$. 
->- Plugging in $\hat{S}^\perp = \widehat{\mathrm{Cov}}(\mathbf{x}^{\perp \mathbf{x}\hat{\beta}})$, $\hat{C}_\hat\beta$  from the regression fit gives the "propensity-paired standard error" (PPSE).
+>- Plug in $\hat{S}^\perp = \widehat{\mathrm{Cov}}(\mathbf{x}^{\perp \mathbf{x}\hat{\beta}})$, $\hat{C}_\hat\beta$  from the regression fit gives the "paired index standard error" (PISE).
 
 ---
 
 ## Application to Medellin study
 
->- Here 2.5 PPSEs works out to 4 logits ($3.9s_p$). 
+>- Here 2.5 PISEs works out to 4 logits ($3.9s_p$).
 >- No neighborhoods excluded. Recall that the alternatives excluded at least 12!
 
 ---
@@ -232,20 +232,20 @@ where $S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathb
 >- Expect $\max_{i,j}|({x}_i - {x}_j)(\hat\beta - \beta)| \approx (\max_{i,j}|{x}_i - {x}_j|_2)|\hat\beta - \beta|_2$.
 >- Even with bounded $x$s, this is $O(p^{1/2})O_P\left[(p/n)^{1/2}\right] = O_P(p/n^{1/2})$ (He & Shao, 2000).
 >- We'll need to **assume** $p/n^{1/2} \downarrow 0$ --- not only $n \gg p$, also  $n \gg p^2$! 
->- In that case, any $w_n$ that's $O_P(p/n^{1/2})$ will do the trick.  E.g.,  $w_n \equiv 2.5\text{PPSE}$.
+>- In that case, any $w_n$ that's $O_P(p/n^{1/2})$ will do the trick.  E.g.,  $w_n \equiv 2.5\text{PISE}$.
 
 ---
 
 ### Discussion
 
->- Roughly speaking, the PPSE is the r.m.s. of ${x}_i\hat\beta-{x}_j\hat\beta$ among pairs $(i,j)$ s.t. ${x}_i\beta = {x}_j\beta$. 
->- If $p^2/n \downarrow 0$, then PPSE $\stackrel{P}{\rightarrow} 0$, and matching within $k$ PPSEs suffices for $\max_{i\sim j} |{x}_i\beta-{x}_j\beta| \stackrel{P}{\rightarrow} 0$.
+>- Roughly speaking, the PISE is the r.m.s. of ${x}_i\hat\beta-{x}_j\hat\beta$ among pairs $(i,j)$ s.t. ${x}_i\beta = {x}_j\beta$. 
+>- If $p^2/n \downarrow 0$, then PISE $\stackrel{P}{\rightarrow} 0$, and matching within $k$ PISEs suffices for $\max_{i\sim j} |{x}_i\beta-{x}_j\beta| \stackrel{P}{\rightarrow} 0$.
 >- If $p^2/n \not\rightarrow 0$, no caliper imposed on ${x}_i\hat\beta-{x}_j\hat\beta$ entails $\max_{i\sim j} |{x}_i\beta-{x}_j\beta| \stackrel{P}{\rightarrow} 0$.
->- If your matches are farther than a few PPSEs, you're matching outside region of overlap. 
->- I like calipers of $k=2.5$ PPSEs.
+>- If your matches are farther than a few PISEs, you're matching outside region of overlap. 
+>- I like calipers of $k=2.5$ PISEs.
 
 
-<!-- Matches between 1 and 3 PPSEs might be considered "marginal" (Austin & Lee, 2009).-->
+<!-- Matches between 1 and 3 PISEs might be considered "marginal" (Austin & Lee, 2009).-->
 
 ### Recommendations: 
 
