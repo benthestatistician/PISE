@@ -137,7 +137,7 @@ mode        : selfcontained # {standalone, draft}
 
 ## Room for improvement (in caliper = $.25s_p$)
 
->- $s_p$ approaches a positive limit, not 0. For large $n$, matches as crude as $.25s_p$ aren't very RCT-like.  (Even if there's no unmeasured confounding.) 
+>- $s_p$ does not tend to 0. For large $n$, matches as crude as $.25s_p$ aren't very RCT-like.  (Even if there's no unmeasured confounding.) 
 >- In the Medellin study (smallish $n$), $.25s_p(\widehat{\mathrm{PS}})$ caliper excludes 56% of treatment group.
 >- At the same time, in that study it's almost tenable ($p=.04$) that all PSes are the same!
 
@@ -168,7 +168,7 @@ mode        : selfcontained # {standalone, draft}
 >- Intuition: Even if we had matched **perfectly** on the PS, there would still be matched differences in $\widehat{\mathrm{PS}}$.  Let's estimate the size of these differences & use result to define caliper.    
 >    - Should imply that as $n\uparrow \infty$, caliper $\downarrow 0$. Then, $\hat\beta \stackrel{P}{\rightarrow} \beta \Rightarrow$ should mean paired PS differences $\downarrow 0$.
 >    - Excludes treatment subjects whose PSes are distinguishably different from all controls'.    
->- To limit model sensitivity, work on index scale.
+>- Assume well-conditioned g.l.m., dimension $p = o(n/\log (n))$.  (So that $\hat\beta - \beta \stackrel{P}{\rightarrow} 0$.)  
 >- If $\mathbf{d} = \mathbf{x}_1 - \mathbf{x}_2$, $\mathbf{d}(\hat{\beta} - \beta)$ is the error of estimation of paired PS difference $\mathbf{d}\beta$.
 >- Considering all ${n \choose 2}$ possible pairs $r$, the expected MS estimation error of paired PS differences can be expressed as the Frobenius inner product, $\langle \cdot, \cdot \rangle_F$, of two covariances:   
 \[ \mathbf{E}_\beta \left[{n \choose 2}^{-1}\sum_r (\mathbf{d}_r (\hat{\beta} - \beta))^2 \right] = 2\langle S^{(x)}, \mathbf{E}_\beta \{(\hat\beta - \beta) (\hat{\beta} -\beta)' \}\rangle_F . \]
