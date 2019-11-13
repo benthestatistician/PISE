@@ -138,7 +138,7 @@ mode        : selfcontained # {standalone, draft}
 
 >- $s_p$ approaches a positive limit, not 0. For large $n$, matches as crude as $.25s_p$ aren't very RCT-like.  (Even if there's no unmeasured confounding.) 
 >- In the Medellin study (smallish $n$), $.25s_p(\widehat{\mathrm{PS}})$ caliper excludes 56% of treatment group.
->- At the same time, in that study it's tenable ($p=.10$) that all PSes are the same!
+>- At the same time, in that study it's almost tenable ($p=.04$) that all PSes are the same!
 
 *** =left
 
