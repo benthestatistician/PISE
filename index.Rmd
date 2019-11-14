@@ -163,31 +163,31 @@ mode        : selfcontained # {standalone, draft}
 
 ---
 
-## Sampling variability of paired PS differences
+## Sampling variability of paired index differences
 
->- Intuition: Even if we had matched **perfectly** on the PS, there would still be matched differences in $\widehat{\mathrm{PS}}$.  Let's estimate the size of these differences & use result to define caliper.    
->    - Should imply that as $n\uparrow \infty$, caliper $\downarrow 0$. Then, $\hat\beta \stackrel{P}{\rightarrow} \beta \Rightarrow$ should mean paired PS differences $\downarrow 0$.
->    - Excludes treatment subjects whose PSes are distinguishably different from all controls'.    
+>- Intuition: Even if we had matched **perfectly** on index $\mathbf{x}\beta$, there would still be matched differences in $\mathbf{x}\hat\beta$.  Let's estimate the size of these differences & use result to define caliper.    
+>    - Should imply that as $n\uparrow \infty$, caliper $\downarrow 0$. If also $\hat\beta - \beta \stackrel{P}{\rightarrow} 0$, expect $\max_{i \sim j} |(\mathbf{x}_i - \mathbf{x}_j)\beta|\downarrow 0$, where $i \sim j$ denotes that $i$ is matched to $j$.
+>    - Excludes treatment subjects whose $\mathbf{x}\hat\beta$ has larger-than-chance separation from controls' $\mathbf{x}\hat\beta$s.    
 >- Assume well-conditioned g.l.m., dimension $p = o(n/\log (n))$.  (So that $\hat\beta - \beta \stackrel{P}{\rightarrow} 0$.)  
->- If $\mathbf{d} = \mathbf{x}_1 - \mathbf{x}_2$, $\mathbf{d}(\hat{\beta} - \beta)$ is the error of estimation of paired PS difference $\mathbf{d}\beta$.
->- Considering all ${n \choose 2}$ possible pairs $r$, the expected MS estimation error of paired PS differences can be expressed as the Frobenius inner product, $\langle \cdot, \cdot \rangle_F$, of two covariances:   
+>- If $\mathbf{d} = \mathbf{x}_1 - \mathbf{x}_2$, $\mathbf{d}(\hat{\beta} - \beta)$ is the error of estimation of paired difference $\mathbf{d}\beta$.
+>- Considering all ${n \choose 2}$ possible pairs $r$, the expected MS estimation error of paired  differences can be expressed as the Frobenius inner product, $\langle \cdot, \cdot \rangle_F$, of two covariances:   
 \[ \mathbf{E}_\beta \left[{n \choose 2}^{-1}\sum_r (\mathbf{d}_r (\hat{\beta} - \beta))^2 \right] = 2\langle S^{(x)}, \mathbf{E}_\beta \{(\hat\beta - \beta) (\hat{\beta} -\beta)' \}\rangle_F . \]
 
 ---
 
-## Sampling variability of paired PS diffs (ii)
+## Sampling variability of paired index diffs (ii)
 
 >- As $\mathrm{Cov}(\hat\beta)$ is hard to estimate directly, consider $\mathrm{Cov}(\tilde\beta)$, $\tilde\beta = \beta + n^{-1}\sum_{i=1}^{n}\mathrm{IC}({Z}_{i}, \mathbf{x}_{i}; \beta)$.
->- Also **all possible** pairs include many that are quite different on the PS.  We wanted to characterize $\mathbf{E} (\mathbf{d}_r(\hat{\beta} - \beta))^2$ among pairs $r$ s.t. $\mathbf{d}_r\beta \approx 0$.  
->- Since there may be few or no such pairs, instead "residualize" all pairs for the true PS, leaving remaining differences in place.  For $i=1,\ldots, p$, define $d_{(i)}^\perp =$ residual of $d_{(i)}$ regression on $\mathbf{d}\beta$; $\mathbf{d}^\perp = (d^\perp_1\,d^\perp_2\, \ldots\, d^\perp_p)$.  (By construction, $\mathbf{d}_r^\perp \beta =0$ for all $r$.)  
+>- Also **all possible** pairs include many that are quite different on $\mathbf{x}\beta$.  We wanted to characterize $\mathbf{E} (\mathbf{d}_r(\hat{\beta} - \beta))^2$ among pairs $r$ s.t. $\mathbf{d}_r\beta \approx 0$.  
+>- Since there may be few or no such pairs, instead residualize all pairs for the true index, leaving remaining differences in place.  For $i=1,\ldots, p$, define $d_{(i)}^\perp =$ residual of $d_{(i)}$ regression on $\mathbf{d}\beta$; $\mathbf{d}^\perp = (d^\perp_1\,d^\perp_2\, \ldots\, d^\perp_p)$.  (By construction, $\mathbf{d}_r^\perp \beta =0$ for all $r$.)  
 
->- Rather than the mean-square of PS-difference estimation errors, ${n \choose 2}^{-1} \mathbf{E} \sum_r (\mathbf{d}_r(\hat{\beta} - \beta))^2$, consider a mean-square in $\tilde\beta$, net of differences in the true PS: 
+>- Rather than the mean-square of index difference estimation errors, ${n \choose 2}^{-1} \mathbf{E} \sum_r (\mathbf{d}_r(\hat{\beta} - \beta))^2$, consider a mean-square in $\tilde\beta$, net of differences in the true index: 
 \[
 {n \choose 2}^{-1}\mathbf{E}_\beta \sum_r (\mathbf{d}_r^\perp (\tilde{\beta} - \beta))^2 =
 2 \langle S^\perp, C_{\tilde\beta} \rangle_F,
 \]
 where $S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathbf{x}^{\perp \mathbf{x}\beta})$ and $x^{\perp \mathbf{x}\beta} = e(x |\mathbf{1}, \mathbf{x}\beta)$. 
->- Plug in $\hat{S}^\perp = \widehat{\mathrm{Cov}}(\mathbf{x}^{\perp \mathbf{x}\hat{\beta}})$, $\hat{C}_\hat\beta$  from the regression fit to give the "paired index standard error" (PISE).
+>- Plug in $\hat{S}^\perp = \widehat{\mathrm{Cov}}(\mathbf{x}^{\perp \mathbf{x}\hat{\beta}})$, $\hat{C}_\hat\beta$  from the regression fit to give the "index standard error" (ISE).
 
 *** =pnotes
 
@@ -199,7 +199,7 @@ where $S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathb
 
 ## Application to Medellin study
 
->- Here 2.5 PISEs works out to 4 logits ($3.9s_p$).
+>- Here 2.5 ISEs works out to 4 logits ($3.9s_p$).
    
 >- No neighborhoods excluded.
    <embed src="images/psmodfit0-1.png">
@@ -242,23 +242,23 @@ where $S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathb
 >- Expect $\max_{i,j}|(\mathbf{x}_i - \mathbf{x}_j)(\hat\beta - \beta)| \approx (\max_{i,j}|\mathbf{x}_i - \mathbf{x}_j|_2)|\hat\beta - \beta|_2$.
 >- Even with bounded $x$s, this is $O(p^{1/2})O_P\left[(p/n)^{1/2}\right] = O_P(p/n^{1/2})$ (He & Shao, 2000).
 >- We'll need to **assume** $p/n^{1/2} \downarrow 0$ --- not only $n \gg p$, also  $n \gg p^2$! 
->- In that case, any $w_n$ that's $O_P(p/n^{1/2})$ will do the trick.  E.g.,  $w_n \equiv 2.5\text{PISE}$.
+>- In that case, any $w_n$ that's $O_P(p/n^{1/2})$ will do the trick.  E.g.,  $w_n \equiv 2.5\text{ISE}$.
 
 ---
 
 ### Discussion
 
->- Roughly speaking, the PISE is the r.m.s. of $\mathbf{x}_i\hat\beta-\mathbf{x}_j\hat\beta$ among pairs $(i,j)$ s.t. $\mathbf{x}_i\beta = \mathbf{x}_j\beta$. 
->- If $p^2/n \downarrow 0$, then PISE $\stackrel{P}{\rightarrow} 0$, and matching within $k$ PISEs suffices for $\max_{i\sim j} |\mathbf{x}_i\beta-\mathbf{x}_j\beta| \stackrel{P}{\rightarrow} 0$.
+>- Roughly speaking, the ISE is the r.m.s. of $\mathbf{x}_i\hat\beta-\mathbf{x}_j\hat\beta$ among pairs $(i,j)$ s.t. $\mathbf{x}_i\beta = \mathbf{x}_j\beta$. 
+>- If $p^2/n \downarrow 0$, then ISE $\stackrel{P}{\rightarrow} 0$, and matching within $k$ ISEs suffices for $\max_{i\sim j} |\mathbf{x}_i\beta-\mathbf{x}_j\beta| \stackrel{P}{\rightarrow} 0$.
 >- If $p^2/n \not\rightarrow 0$, no caliper imposed on $\mathbf{x}_i\hat\beta-\mathbf{x}_j\hat\beta$ entails $\max_{i\sim j} |\mathbf{x}_i\beta-\mathbf{x}_j\beta| \stackrel{P}{\rightarrow} 0$.
->- If your matches are farther than a few PISEs, you're matching outside region of overlap. 
->- I like calipers of $k=2.5$ PISEs.
+>- If your matches are farther than a few ISEs, you're matching outside region of overlap. 
+>- I like calipers of $k=2.5$ ISEs.
 
 
-<!-- Matches between 1 and 3 PISEs might be considered "marginal" (Austin & Lee, 2009).-->
+<!-- Matches between 1 and 3 ISEs might be considered "marginal" (Austin & Lee, 2009).-->
 
 ### Recommendations: 
 
 >- I'm using sandwich estimates of $\mathrm{Cov} (\hat\beta) $, w/ some special sauce (cf. github.com/benthestatistician/PISE) to limit numerical instability.
->- Our `optmatch` R package (Fredrickson et al, 2016) does optimal pair and full matching (Gu & Rosenbaum, 1993; Hansen & Klopfer, 2006; Stuart & Green, 2008), readily accommodating PS calipers.
+>- Our `optmatch` R package (Fredrickson et al, 2016) does optimal pair and full matching (Gu & Rosenbaum, 1993; Hansen & Klopfer, 2006; Stuart & Green, 2008), readily accommodating index calipers.
 
