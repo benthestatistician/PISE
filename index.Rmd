@@ -163,22 +163,60 @@ mode        : selfcontained # {standalone, draft}
 
 ---
 
-## Sampling variability of paired index differences
+## Sampling variability of paired index differences, i
 
 >- Intuition: Even if we had matched **perfectly** on index $\mathbf{x}\beta$, there would still be matched differences in $\mathbf{x}\hat\beta$.  Let's estimate the size of these differences & use result to define caliper.    
 >    - Should imply that as $n\uparrow \infty$, caliper $\downarrow 0$. If also $\hat\beta - \beta \stackrel{P}{\rightarrow} 0$, expect $\max_{i \sim j} |(\mathbf{x}_i - \mathbf{x}_j)\beta|\downarrow 0$, where $i \sim j$ denotes that $i$ is matched to $j$.
->    - Excludes treatment subjects whose $\mathbf{x}\hat\beta$ has larger-than-chance separation from controls' $\mathbf{x}\hat\beta$s.    
->- Assume well-conditioned g.l.m., dimension $p = o(n/\log (n))$.  (So that $\hat\beta - \beta \stackrel{P}{\rightarrow} 0$.)  
->- If $\mathbf{d} = \mathbf{x}_1 - \mathbf{x}_2$, $\mathbf{d}(\hat{\beta} - \beta)$ is the error of estimation of paired difference $\mathbf{d}\beta$.
+>    - Excludes treatment subjects with larger-than-chance separation from controls on $\mathbf{x}\hat\beta$s.    
+>- Assuming well-conditioned g.l.m., model dimension $p = o({n}/{\log (n)})$, He & Shao (2000) showed that $|\hat\beta - \beta|_2 = O_P[( {p}/{n})^{1/2}]$.  
+>- The error of estimation of paired difference $(\mathbf{x}_i - \mathbf{x}_j)\beta$ is $(\mathbf{x}_i - \mathbf{x}_j)(\hat{\beta} - \beta)$.  Given $\nu$ pairs $(i, j)$, $i < j$ with $i \sim j$, the mean-square of paired errors is
+\[
+\frac{1}{\nu} \sum_{i \sim j; i < j}
+[(\mathbf{x}_i - \mathbf{x}_j)(\hat\beta - \beta)]^2 =
+(\hat\beta - \beta)' \left[\frac{1}{\nu}
+                   \sum_{i \lesssim j} (\mathbf{x}_i - \mathbf{x}_j)'(\mathbf{x}_i - \mathbf{x}_j)\right] =: (\hat\beta - \beta)' (2 S^{ p } )
+(\hat\beta - \beta).
+\]
+
+---
+
+## Sampling variability of paired index differences, ii
+
+>- We wish to estimate the magnitude of $(\hat\beta - \beta)' (2 S^{ p }
+) (\hat\beta - \beta)$, with $S^{ p }=$ covariance of $x$s w/in pairs $i \sim j$.
+>- Assuming $|S^{ p }|_2 = O_P(1)$, $(\hat\beta - \beta)' S^{ p }
+(\hat\beta - \beta) = O_P(p/n)$ (He & Shao, 2000).
+>- Define $\tilde\beta = \beta + n^{-1}\sum_{i=1}^{n}\mathrm{IC}({Z}_{i}, \mathbf{x}_{i}; \beta)$. ("IC"=influence curve.) By other results of H. & S.,
+\[
+(\hat\beta - \beta)' S^{ p }
+(\hat\beta - \beta)  =
+(\tilde\beta - \beta)' S^{ p }
+(\tilde\beta - \beta) + o_P( {p}/{n} ).
+\]
+>- $(\tilde\beta - \beta)' S^{ p }
+(\tilde\beta - \beta)$ is easier to estimate.  For logistic regression & certain other glms, conventional estimates of ${C}_{\tilde\beta} := \text{Cov}(\tilde\beta - \beta)$ satisfy $n|\hat{C}_{\tilde\beta} - {C}_{\tilde\beta}|_2 \stackrel{P}{\rightarrow} 0$, under conditions similar to those H. & S. (2000) used for consistency of $\hat\beta$ (Hansen '19). 
+>- Fixing $S^{ p }$,
+\[
+\mathbf{E}[ (\tilde\beta - \beta)' S^{ p }
+(\tilde\beta - \beta)] = \langle S^{ p }, C_{\tilde\beta} \rangle_F
+\]
+(a Frobenius inner product). A first estimate of paired index differences' variability is thus
+\[
+2\langle S^{ p }, C_{\tilde\beta} \rangle_F .
+\]
+
+
+<!-- 
 >- Considering all ${n \choose 2}$ possible pairs $r$, the expected MS estimation error of paired  differences can be expressed as the Frobenius inner product, $\langle \cdot, \cdot \rangle_F$, of two covariances:   
 \[ \mathbf{E}_\beta \left[{n \choose 2}^{-1}\sum_r (\mathbf{d}_r (\hat{\beta} - \beta))^2 \right] = 2\langle S^{(x)}, \mathbf{E}_\beta \{(\hat\beta - \beta) (\hat{\beta} -\beta)' \}\rangle_F . \]
+-->
 
 ---
 
 ## Sampling variability of paired index diffs (ii)
 
->- As $\mathrm{Cov}(\hat\beta)$ is hard to estimate directly, consider $\mathrm{Cov}(\tilde\beta)$, $\tilde\beta = \beta + n^{-1}\sum_{i=1}^{n}\mathrm{IC}({Z}_{i}, \mathbf{x}_{i}; \beta)$.
->- Also **all possible** pairs include many that are quite different on $\mathbf{x}\beta$.  We wanted to characterize $\mathbf{E} (\mathbf{d}_r(\hat{\beta} - \beta))^2$ among pairs $r$ s.t. $\mathbf{d}_r\beta \approx 0$.  
+>- $S^{ p }$ is based on a designated collection of pairs.  Next goal: a stand-in that's available prior to matching. 
+>- **All possible** pairs include many that are quite different on $\mathbf{x}\beta$.  We wanted to characterize $\mathbf{E} (\mathbf{d}_r(\hat{\beta} - \beta))^2$ among pairs $r$ s.t. $\mathbf{d}_r\beta \approx 0$.  
 >- Since there may be few or no such pairs, instead residualize all pairs for the true index, leaving remaining differences in place.  For $i=1,\ldots, p$, define $d_{(i)}^\perp =$ residual of $d_{(i)}$ regression on $\mathbf{d}\beta$; $\mathbf{d}^\perp = (d^\perp_1\,d^\perp_2\, \ldots\, d^\perp_p)$.  (By construction, $\mathbf{d}_r^\perp \beta =0$ for all $r$.)  
 
 >- Rather than the mean-square of index difference estimation errors, ${n \choose 2}^{-1} \mathbf{E} \sum_r (\mathbf{d}_r(\hat{\beta} - \beta))^2$, consider a mean-square in $\tilde\beta$, net of differences in the true index: 
