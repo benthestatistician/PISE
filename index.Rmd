@@ -194,7 +194,7 @@ mode        : selfcontained # {standalone, draft}
 (\tilde\beta - \beta) + o_P( {p}/{n} ).
 \]
 >- $(\tilde\beta - \beta)' S^{(p)}
-(\tilde\beta - \beta)$ is easier to estimate.  For logistic regression & certain other g.l.m.s, conventional estimates $\hat C$ of $\text{Cov}(\hat\beta)$ satisfy $n|\hat{C} - {C}_{\tilde\beta}|_2 \stackrel{P}{\rightarrow} 0$, ${C}_{\tilde\beta}:= \text{Cov}(\tilde\beta)$, under conditions similar to those H. & S. (2000) used for consistency of $\hat\beta$ (Hansen '19). 
+(\tilde\beta - \beta)$ is easier to estimate.  For logistic regression & certain other g.l.m.s, conventional estimates $\hat{C}_\hat\beta$ of $\text{Cov}(\hat\beta)$ satisfy $n|\hat{C}_\hat\beta - {C}_{\tilde\beta}|_2 \stackrel{P}{\rightarrow} 0$, ${C}_{\tilde\beta}:= \text{Cov}(\tilde\beta)$, under conditions similar to those H. & S. (2000) used for consistency of $\hat\beta$ (Hansen '19). 
 >- Fixing $S^{(p)}$,
 \[
 \mathbf{E}[ (\tilde\beta - \beta)' S^{(p)}
@@ -205,39 +205,33 @@ mode        : selfcontained # {standalone, draft}
 2\langle S^{(p)}, C_{\tilde\beta} \rangle_F .
 \]
 
-
-<!-- 
->- Considering all ${n \choose 2}$ possible pairs $r$, the expected MS estimation error of paired  differences can be expressed as the Frobenius inner product, $\langle \cdot, \cdot \rangle_F$, of two covariances:   
-\[ \mathbf{E}_\beta \left[{n \choose 2}^{-1}\sum_r (\mathbf{d}_r (\hat{\beta} - \beta))^2 \right] = 2\langle S^{(x)}, \mathbf{E}_\beta \{(\hat\beta - \beta) (\hat{\beta} -\beta)' \}\rangle_F . \]
--->
-
 ---
 
-## Sampling variability of paired index diffs (ii)
+## Sampling variability of paired index differences, iii
 
 >- $S^{(p)}$ is based on a designated collection of pairs.  Next goal: a stand-in that's available prior to matching. 
->- **All possible** pairs include many that are quite different on $\mathbf{x}\beta$.  We wanted to characterize $\mathbf{E} (\mathbf{d}_r(\hat{\beta} - \beta))^2$ among pairs $r$ s.t. $\mathbf{d}_r\beta \approx 0$.  
->- Since there may be few or no such pairs, instead residualize all pairs for the true index, leaving remaining differences in place.  For $i=1,\ldots, p$, define $d_{(i)}^\perp =$ residual of $d_{(i)}$ regression on $\mathbf{d}\beta$; $\mathbf{d}^\perp = (d^\perp_1\,d^\perp_2\, \ldots\, d^\perp_p)$.  (By construction, $\mathbf{d}_r^\perp \beta =0$ for all $r$.)  
-
->- Rather than the mean-square of index difference estimation errors, ${n \choose 2}^{-1} \mathbf{E} \sum_r (\mathbf{d}_r(\hat{\beta} - \beta))^2$, consider a mean-square in $\tilde\beta$, net of differences in the true index: 
+>- We'd like to approximate $(\tilde\beta - \beta)' S^{(p)}
+(\tilde\beta - \beta)$ for pairings s.t. $\max_{i\sim j} |(\mathbf{x}_i - \mathbf{x}_j)\beta| \approx 0$. 
+>- To emulate $\max_{i\sim j} |(\mathbf{x}_i - \mathbf{x}_j)\beta|=0$, residualize all possible pairs for the true index, leaving remaining differences in place.  For $i\leq n$ and $k\leq p$, let ${x}_{ik}^{\perp\mathbf{x}\beta} =$ residual of $x_{ik}$ regression on $\mathbf{x}\beta$; $\mathbf{x}_i^{\perp\mathbf{x}\beta} = (x^{\perp\mathbf{x}\beta}_{i1}\,x^{\perp\mathbf{x}\beta}_{i2}\, \ldots\, x^{\perp\mathbf{x}\beta}_{ip})$.  By construction, $\max_{i,j}|(\mathbf{x}_i^{\perp\mathbf{x}\beta} - \mathbf{x}_j^{\perp\mathbf{x}\beta})\beta| =0$.  
+>- Rather than averaging index difference estimation errors across selected pairs, average across all pairs, but after stripping out differences in $\mathbf{x}\beta$: 
 \[
-{n \choose 2}^{-1}\mathbf{E}_\beta \sum_r (\mathbf{d}_r^\perp (\tilde{\beta} - \beta))^2 =
-2 \langle S^\perp, C_{\tilde\beta} \rangle_F,
+{n \choose 2}^{-1}\mathbf{E}_\beta \sum_{1\leq i < j \leq n} [(\mathbf{x}_i^{\perp\mathbf{x}\beta} - \mathbf{x}_j^{\perp\mathbf{x}\beta}) (\tilde{\beta} - \beta)]^2 =
+2 \langle S^{\perp}, C_{\tilde\beta} \rangle_F,
 \]
-where $S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathbf{x}^{\perp \mathbf{x}\beta})$ and $x^{\perp \mathbf{x}\beta} = e(x |\mathbf{1}, \mathbf{x}\beta)$. 
->- Plug in $\hat{S}^\perp = \widehat{\mathrm{Cov}}(\mathbf{x}^{\perp \mathbf{x}\hat{\beta}})$, $\hat{C}_\hat\beta$  from the regression fit to give the "index standard error" (ISE).
+where $S^{\perp} = \frac{1}{2} {n \choose 2}^{-1} \sum_{1\leq i < j \leq n} (\mathbf{x}_i^{\perp\mathbf{x}\beta} - \mathbf{x}_j^{\perp\mathbf{x}\beta})'(\mathbf{x}_i^{\perp\mathbf{x}\beta} - \mathbf{x}_j^{\perp\mathbf{x}\beta}) = \text{Cov}(\mathbf{x}^{\perp\mathbf{x}\beta})$. 
+>- To estimate, plug in $\hat{S}^{\perp} = \widehat{\mathrm{Cov}}(\mathbf{x}^{\perp \mathbf{x}\hat{\beta}})$ and $\hat{C}_\hat\beta$. Then $\langle S^{\perp}, C_{\tilde\beta} \rangle_F = O_P(p/n)$ and $\langle \hat{S}^{\perp}, \hat{C}_{\hat\beta} \rangle_F = O_P(p/n)$, while $\langle S^{\perp}, C_{\tilde\beta} \rangle_F - \langle \hat{S}^{\perp}, \hat{C}_{\hat\beta} \rangle_F = o_P(p/n)$. 
 
 *** =pnotes
 
-- IC = influence curve, i.e. linear-in-data approximation to nonlinear estimator. 
-- ...
 - Note both modifications -- $\tilde\beta$ not $\hat\beta$, $S^\perp$ not $S$ -- make the mean-square smaller.
 
 ---
 
 ## Application to Medellin study
 
->- Here 2.5 ISEs works out to 4 logits ($3.9s_p$).
+-  For caliper, I multiply $\langle \hat{S}^{\perp}, \hat{C}_{\hat\beta} \rangle_F^{1/2}$ by 2.5.
+
+>- Here this works out to 4 logits ($3.9s_p$).
    
 >- No neighborhoods excluded.
    <embed src="images/psmodfit0-1.png">
@@ -280,23 +274,24 @@ where $S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathb
 >- Expect $\max_{i,j}|(\mathbf{x}_i - \mathbf{x}_j)(\hat\beta - \beta)| \approx (\max_{i,j}|\mathbf{x}_i - \mathbf{x}_j|_2)|\hat\beta - \beta|_2$.
 >- Even with bounded $x$s, this is $O(p^{1/2})O_P\left[(p/n)^{1/2}\right] = O_P(p/n^{1/2})$ (He & Shao, 2000).
 >- We'll need to **assume** $p/n^{1/2} \downarrow 0$ --- not only $n \gg p$, also  $n \gg p^2$! 
->- In that case, any $w_n$ that's $O_P(p/n^{1/2})$ will do the trick.  E.g.,  $w_n \equiv 2.5\text{ISE}$.
+>- In that case, any $w_n$ that's $O_P(p/n^{1/2})$ will do the trick.  E.g.,  $w_n \equiv 2.5\langle \hat{S}^{\perp}, \hat{C}_{\hat\beta} \rangle_F^{1/2}$.
 
 ---
 
 ### Discussion
 
->- Roughly speaking, the ISE is the r.m.s. of $\mathbf{x}_i\hat\beta-\mathbf{x}_j\hat\beta$ among pairs $(i,j)$ s.t. $\mathbf{x}_i\beta = \mathbf{x}_j\beta$. 
->- If $p^2/n \downarrow 0$, then ISE $\stackrel{P}{\rightarrow} 0$, and matching within $k$ ISEs suffices for $\max_{i\sim j} |\mathbf{x}_i\beta-\mathbf{x}_j\beta| \stackrel{P}{\rightarrow} 0$.
->- If $p^2/n \not\rightarrow 0$, no caliper imposed on $\mathbf{x}_i\hat\beta-\mathbf{x}_j\hat\beta$ entails $\max_{i\sim j} |\mathbf{x}_i\beta-\mathbf{x}_j\beta| \stackrel{P}{\rightarrow} 0$.
->- If your matches are farther than a few ISEs, you're matching outside region of overlap. 
->- I like calipers of $k=2.5$ ISEs.
+>- Roughly speaking, the diminishing caliper is 2.5 times the r.m.s. of $\mathbf{x}_i\hat\beta-\mathbf{x}_j\hat\beta$ among pairs $(i,j)$ s.t. $\mathbf{x}_i\beta = \mathbf{x}_j\beta$.
+>- Pairs $(i, j)$ s.t. $|(\mathbf{x}_i - \mathbf{x}_j)\hat\beta|$ falls below this caliper are often not distinguishable in $\mathbf{x}\beta$.
+>- If $p = o(n/\log(n))$, and side-conditions are enforced, diminishing calipers diminish to 0 as $n\uparrow \infty$.
+>- Even with calipers & enforcement of conditions, $\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)\beta|$ can bigger than the caliper.
+>- Still, if $p^{3/2} = o(n/\log(n))$, diminishing caliper matching ensures $\max_{i\sim j} |\mathbf{x}_i\beta-\mathbf{x}_j\beta| \stackrel{P}{\rightarrow} 0$.
 
 
-<!-- Matches between 1 and 3 ISEs might be considered "marginal" (Austin & Lee, 2009).-->
+<!-- Matches between 1 and 3 ISEs might be considered "marginal" (Austin & Lee, 2009).
 
 ### Recommendations: 
 
 >- I'm using sandwich estimates of $\mathrm{Cov} (\hat\beta) $, w/ some special sauce (cf. github.com/benthestatistician/PISE) to limit numerical instability.
 >- Our `optmatch` R package (Fredrickson et al, 2016) does optimal pair and full matching (Gu & Rosenbaum, 1993; Hansen & Klopfer, 2006; Stuart & Green, 2008), readily accommodating index calipers.
 
+-->
