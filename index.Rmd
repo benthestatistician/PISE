@@ -1,8 +1,7 @@
 ---
-title       : Propensity score calipers and the overlap condition
-author      : Ben Hansen, UMich Statistics (bbh@umich.edu).
-date        : IISA, May 2018
-job         : benthestatistician.github.io/PISE (slides)
+title       : Diminishing propensity score calipers
+author      : Ben B. Hansen (bbh@umich.edu)
+date        : UM Statistics, Nov. 2019
 framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
 highlighter : highlight.js  # {highlight.js, prettify, highlight}
 hitheme     : tomorrow      #
@@ -12,17 +11,17 @@ mode        : selfcontained # {standalone, draft}
 
 # Outline
 
-1. <span class = 'red'>Problem: determining the region of  overlap</span>
+1. <span class = 'red'>Problem: subject comparability in groupwise comparisons</span>
 2. Propensity score caliper matching
-3. PPSE calipers
-4. Applications & discussion    
-
+3. Diminishing calipers
+4. Enforceable assumptions    
+5. Consequences of diminishing caliper matching
 
 
 
 --- &twocol    
 
-## Overlap & bias in comparisons w/ 1 covariate
+## Comparability of subjects in groupwise comparisons: canonical scenario with 1-dimensional covariate
 
 *** =left
 
@@ -31,15 +30,21 @@ mode        : selfcontained # {standalone, draft}
 
 *** =right
 
-> - Overlap? 
->     - Observations well outside region of overlap should be excluded.
->     - Wasteful to exclude members of $\{ i: Z_i=1\}$ because  their $x$ is just outside $\mathrm{range}(\{x_j: Z_j=0\})$.
->     -  May distort research question, too.
->     - Close/far distinctions presuppose a model.
+> - Observations well outside support of contrasting group should be excluded.
+> - Wasteful to exclude members of $\{ i: Z_i=1\}$ because their $x$ is barely outside $\mathrm{range}(\{x_j: Z_j=0\})$.
+> -  May distort research question, too.
+> - We say $x$ is close to $w$ when we expect $E(Y_{c}|X=x) \approx E(Y_{c}|X=w)$.
+> - (...or that $\text{Pr}(Z| X=x) \approx \text{Pr}(Z| X=w)$.)
+> - When we lack confidence that $E(Y_{c}|X=x) \approx E(Y_{c}|X=w)$ (or $\text{Pr}(Z| X=x) \approx \text{Pr}(Z| X=w)$), then $x$ and $w$ are not close.   
 
-> - Balance - i.e., is $\bar{x}_t \approx \bar{x}_c$?
->    - The question presupposes overlap.  (OW mean comparisons can be misleading.)
->    - A topic for another day...
+---
+
+##  Covariate balance -- a separate topic
+
+> - Groupwise comparability is often discussed in terms of whether $\bar{x}_{z=1} \approx \bar{x}_{z=0}$, all or most $X$s.
+> - The question presupposes at least rough comparability of subjects: otherwise, mean comparisons can be misleading.
+<embed src="./images/balancing-stones.jpg">
+> - A topic for another day...
 
 ---
 
@@ -51,9 +56,9 @@ mode        : selfcontained # {standalone, draft}
 >    - Overlap: $\mathrm{Pr}(Z=1  | \mathbf{X}) < 1$.      
 >- No unmeasured confounding says, there are natural experiments in each "cell" of $\mathbf{X}$.
 >- Problem: if multiple ${X}$es, many observations will be all alone in their cells.
->- Rosenbaum & Rubin's (1983) solution is match on $\widehat{\mathrm{Pr}}(Z=1| \mathbf{X}=\mathbf{x})$, the estimated propensity score (PS).
+>- Rosenbaum & Rubin's (1983) solution is match on an estimate of the propensity score (PS), $\widehat{\mathrm{Pr}}(Z=1| \mathbf{X}=\mathbf{x})$. (Or $g\{\widehat{\mathrm{Pr}}(Z=1| \mathbf{x})\}$, e.g. $g\equiv$ logit.)
 >- Second problem: In a cell $\mathbf{x}_0$ s.t. $\mathrm{Pr}(Z=1| \mathbf{X}=\mathbf{x}_0)=1$, there's no data to estimate $\mathrm{Pr}(Y_c \in \cdot |  \mathbf{X}=\mathbf{x}_0)$, even as $n \uparrow \infty$.  (Whether you match on the PS, weight for it, ...)
->- The second problem motivates the method of strict overlap, i.e. reducing analytic sample to region of common support on $\widehat{\mathrm{PS}}$: $$\cap_{z=0,1}[\min(\{\widehat{PS}_i:Z_i=z\}), \max(\{\widehat{PS}_i:Z_i=z\})] .$$ 
+>- The second problem motivates the (clearly flawed) method of strict overlap, i.e. reducing analytic sample to region of common support on $\widehat{\mathrm{PS}}$: $$\cap_{z=0,1}[\min(\{\widehat{PS}_i:Z_i=z\}), \max(\{\widehat{PS}_i:Z_i=z\})] .$$ 
 
 
 --- &twocol
@@ -83,9 +88,9 @@ mode        : selfcontained # {standalone, draft}
 
 *** =left
 
->- Small matching problem: $n_t=25$, $n_c=23$ (neighborhoods).
->- $\bar{x}_t$s and $\bar{x}_c$s not too far apart, but PS matching brought them closer.
->- Figure shows PS we matched on - the $X\hat{\beta}$ from a logistic regression (Cerda et al 2012, _Am J Epi_).
+>- Small matching problem: $n_1=25$, $n_0=23$ (neighborhoods).
+>- \(|\bar{x}_{z=1} - \bar{x}_{z=0}|\)s not too large, but PS matching made them smaller.
+>- Figure shows PS we matched on - the $\mathbf{x}\hat{\beta}$ from a logistic regression (Cerda et al 2012, _Am J Epi_).
 >- Region of strict overlap contains only 6/25 $t$s and 4/23 $c$s!
 >- Yet Cerda et al matched all 48 neighborhoods.  (Using "full matching", which permits many-to-one matches.)
 
@@ -97,16 +102,17 @@ mode        : selfcontained # {standalone, draft}
 --- 
 # Outline
 
-1. Problem: determining the region of  overlap
+1. Problem: subject comparability in groupwise comparisons
 2. <span class = 'red'>Propensity score caliper matching</span>
-3. PPSE calipers
-4. Applications & discussion    
-
+3. Diminishing calipers
+4. Enforceable assumptions    
+5. Consequences of diminishing caliper matching
 
 
 
 
 --- &twocolleftwider
+
 
 ## Matching with PS calipers (Rosenbaum & Rubin) 
 
@@ -131,9 +137,9 @@ mode        : selfcontained # {standalone, draft}
 
 ## Room for improvement (in caliper = $.25s_p$)
 
->- $s_p$ approaches a positive limit, not 0. For large $n$, matches as crude as $.25s_p$ aren't very RCT-like.  (Even if there's no unmeasured confounding.) 
+>- $s_p$ does not tend to 0. For large $n$, matches as crude as $.25s_p$ aren't very RCT-like.  (Even if there's no unmeasured confounding.) 
 >- In the Medellin study (smallish $n$), $.25s_p(\widehat{\mathrm{PS}})$ caliper excludes 56% of treatment group.
->- At the same time, in that study it's tenable ($p=.10$) that all PSes are the same!
+>- At the same time, in that study it's almost tenable ($p=.04$) that all PSes are the same!
 
 *** =left
 
@@ -149,108 +155,201 @@ mode        : selfcontained # {standalone, draft}
 
 # Outline
 
-1. Problem: determining the region of  overlap</span>
+1. Problem: subject comparability in groupwise comparisons
 2. Propensity score caliper matching
-3. <span class = 'red'>PPSE calipers</span>
-4. Applications & discussion    
-
-
----
-
-## Sampling variability of paired PS differences
-
->- Intuition: Even if we had matched **perfectly** on the PS, there would still be matched differences in $\widehat{\mathrm{PS}}$.  Let's estimate the size of these differences & use result to define caliper.    
->    - Should imply that as $n\uparrow \infty$, caliper $\downarrow 0$. Then, $\hat\beta \stackrel{P}{\rightarrow} \beta \Rightarrow$ should mean paired PS differences $\downarrow 0$.
->    - Excludes treatment subjects whose PSes are distinguishably different from all controls'.    
->- To limit model sensitivity, work on index scale.
->- If $\mathbf{d} = \mathbf{x}_1 - \mathbf{x}_2$, $\mathbf{d}(\hat{\beta} - \beta)$ is the error of estimation of paired PS difference $\mathbf{d}\beta$.
->- Considering all ${n \choose 2}$ possible pairs $r$, the expected MS estimation error of paired PS differences can be expressed as the Frobenius inner product, $\langle \cdot, \cdot \rangle_F$, of two covariances:   
-\[ \mathbf{E}_\beta \left[{n \choose 2}^{-1}\sum_r (\mathbf{d}_r (\hat{\beta} - \beta))^2 \right] = 2\langle S^{(x)}, \mathbf{E}_\beta \{(\hat\beta - \beta) (\hat{\beta} -\beta)' \}\rangle_F . \]
+3. <span class = 'red'>Diminishing calipers</span>
+4. Enforceable assumptions    
+5. Consequences of diminishing caliper matching
 
 ---
 
-## Sampling variability of paired PS diffs (ii)
+## Sampling variability of paired index differences, i
 
->- But **all possible** pairs include many that are quite different on the PS.  We wanted to characterize $\mathbf{E} (\mathbf{d}_r(\hat{\beta} - \beta))^2$ among pairs $r$ s.t. $\mathbf{d}_r\beta \approx 0$.  
->- Since there may be few or no such pairs, instead "residualize" all pairs for the true PS, leaving remaining differences in place.  For $i=1,\ldots, p$, define $d_{(i)}^\perp =$ residual of $d_{(i)}$ regression on $\mathbf{d}\beta$; $\mathbf{d}^\perp = (d^\perp_1\,d^\perp_2\, \ldots\, d^\perp_p)$.  (By construction, $\mathbf{d}_r^\perp \beta =0$ for all $r$.)  
-
->- Rather than the mean-square of PS-difference estimation errors, ${n \choose 2}^{-1} \mathbf{E} \sum_r (\mathbf{d}_r(\hat{\beta} - \beta))^2$, consider the mean-square PS-difference estimation error, net of differences in the true PS: 
+>- Intuition: Even if we had matched **perfectly** on index $\mathbf{x}\beta$, there would still be matched differences in $\mathbf{x}\hat\beta$.  Let's estimate the size of these differences & use result to define caliper.    
+>    - Should imply that as $n\uparrow \infty$, caliper $\downarrow 0$. If also $\hat\beta - \beta \stackrel{P}{\rightarrow} 0$, expect $\max_{i \sim j} |(\mathbf{x}_i - \mathbf{x}_j)\beta|\downarrow 0$, where $i \sim j$ denotes that $i$ is matched to $j$.
+>    - Excludes treatment subjects with larger-than-chance separation from controls on $\mathbf{x}\hat\beta$s.    
+>- Assuming well-conditioned g.l.m., model dimension $p = o({n}/{\log (n)})$, He & Shao (2000) showed that $|\hat\beta - \beta|_2 = O_P[( {p}/{n})^{1/2}]$.  
+>- The error of estimation of paired difference $(\mathbf{x}_i - \mathbf{x}_j)\beta$ is $(\mathbf{x}_i - \mathbf{x}_j)(\hat{\beta} - \beta)$.  Given $\nu$ pairs $(i, j)$, $i < j$ with $i \sim j$, the mean-square of paired errors is
 \[
-{n \choose 2}^{-1}\mathbf{E}_\beta \sum_r (\mathbf{d}_r^\perp (\hat{\beta} - \beta))^2 =
-2 \langle S^\perp, C_\hat\beta \rangle_F,
+\frac{1}{\nu} \sum_{i \sim j; i < j}
+[(\mathbf{x}_i - \mathbf{x}_j)(\hat\beta - \beta)]^2 =
+(\hat\beta - \beta)' \left[\frac{1}{\nu}
+                   \sum_{i \lesssim j} (\mathbf{x}_i - \mathbf{x}_j)'(\mathbf{x}_i - \mathbf{x}_j)\right] =: (\hat\beta - \beta)' (2 S^{(p)} )
+(\hat\beta - \beta).
 \]
-where $S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathbf{x}^{\perp \mathbf{x}\beta})$ and $x^{\perp \mathbf{x}\beta} = e(x |\mathbf{1}, \mathbf{x}\beta)$. 
->- Plugging in $\hat{S}^\perp = \mathrm{Cov}(\mathbf{x}^{\perp \mathbf{x}\hat{\beta}})$ and an estimate of ${C}_\hat\beta$ gives a squared "propensity-paired standard error" (PPSE).
+
+---
+
+## Sampling variability of paired index differences, ii
+
+>- We wish to estimate the magnitude of $(\hat\beta - \beta)' (2 S^{(p)}
+) (\hat\beta - \beta)$, with $S^{(p)}=$ covariance of $x$s w/in pairs $i \sim j$.
+>- Assuming $|S^{(p)}|_2 = O_P(1)$, $(\hat\beta - \beta)' S^{(p)}
+(\hat\beta - \beta) = O_P(p/n)$ (He & Shao, 2000).
+>- Write $\tilde\beta = \beta + n^{-1}\sum_{i=1}^{n}\mathrm{IC}(Y_i, {Z}_{i}, \mathbf{x}_{i}; \beta)$. ("IC"=influence curve.) By other results of H.&S.,
+\[
+(\hat\beta - \beta)' S^{(p)}
+(\hat\beta - \beta)  =
+(\tilde\beta - \beta)' S^{(p)}
+(\tilde\beta - \beta) + o_P( {p}/{n} ).
+\]
+>- $(\tilde\beta - \beta)' S^{(p)}
+(\tilde\beta - \beta)$ is easier to estimate.  For logistic regression & certain other g.l.m.s, conventional estimates $\hat{C}_\hat\beta$ of $\text{Cov}(\hat\beta)$ satisfy $n|\hat{C}_\hat\beta - {C}_{\tilde\beta}|_2 \stackrel{P}{\rightarrow} 0$, ${C}_{\tilde\beta}:= \text{Cov}(\tilde\beta)$, under conditions similar to those H. & S. (2000) used for consistency of $\hat\beta$ (Hansen '19). 
+>- Fixing $S^{(p)}$,
+\[
+\mathbf{E}[ (\tilde\beta - \beta)' S^{(p)}
+(\tilde\beta - \beta)] = \langle S^{(p)}, C_{\tilde\beta} \rangle_F
+\]
+(a Frobenius inner product). A first estimate of paired index differences' variability is thus
+\[
+2\langle S^{(p)}, C_{\tilde\beta} \rangle_F .
+\]
+
+---
+
+## Sampling variability of paired index differences, iii
+
+>- $S^{(p)}$ is based on a designated collection of pairs.  Next goal: a stand-in that's available prior to matching. 
+>- We'd like to approximate $(\tilde\beta - \beta)' S^{(p)}
+(\tilde\beta - \beta)$ for pairings s.t. $\max_{i\sim j} |(\mathbf{x}_i - \mathbf{x}_j)\beta| \approx 0$. 
+>- To emulate $\max_{i\sim j} |(\mathbf{x}_i - \mathbf{x}_j)\beta|=0$, residualize all possible pairs for the true index, leaving remaining differences in place.  For $i\leq n$ and $k\leq p$, let ${x}_{ik}^{\perp\mathbf{x}\beta} =$ residual of $x_{ik}$ regression on $\mathbf{x}\beta$; $\mathbf{x}_i^{\perp\mathbf{x}\beta} = (x^{\perp\mathbf{x}\beta}_{i1}\,x^{\perp\mathbf{x}\beta}_{i2}\, \ldots\, x^{\perp\mathbf{x}\beta}_{ip})$.  By construction, $\max_{i,j}|(\mathbf{x}_i^{\perp\mathbf{x}\beta} - \mathbf{x}_j^{\perp\mathbf{x}\beta})\beta| =0$.  
+>- Rather than averaging index difference estimation errors across selected pairs, average across all pairs, but after stripping out differences in $\mathbf{x}\beta$: 
+\[
+{n \choose 2}^{-1}\mathbf{E}_\beta \sum_{1\leq i < j \leq n} [(\mathbf{x}_i^{\perp\mathbf{x}\beta} - \mathbf{x}_j^{\perp\mathbf{x}\beta}) (\tilde{\beta} - \beta)]^2 =
+2 \langle S^{\perp}, C_{\tilde\beta} \rangle_F,
+\]
+where $S^{\perp} = \frac{1}{2} {n \choose 2}^{-1} \sum_{1\leq i < j \leq n} (\mathbf{x}_i^{\perp\mathbf{x}\beta} - \mathbf{x}_j^{\perp\mathbf{x}\beta})'(\mathbf{x}_i^{\perp\mathbf{x}\beta} - \mathbf{x}_j^{\perp\mathbf{x}\beta}) = \text{Cov}(\mathbf{x}^{\perp\mathbf{x}\beta})$. 
+>- To estimate, plug in $\hat{S}^{\perp} = \widehat{\mathrm{Cov}}(\mathbf{x}^{\perp \mathbf{x}\hat{\beta}})$ and $\hat{C}_\hat\beta$. Then $\langle S^{\perp}, C_{\tilde\beta} \rangle_F = O_P(p/n)$ and $\langle \hat{S}^{\perp}, \hat{C}_{\hat\beta} \rangle_F = O_P(p/n)$, while $\langle S^{\perp}, C_{\tilde\beta} \rangle_F - \langle \hat{S}^{\perp}, \hat{C}_{\hat\beta} \rangle_F = o_P(p/n)$. 
+
+*** =pnotes
+
+- Note both modifications -- $\tilde\beta$ not $\hat\beta$, $S^\perp$ not $S$ -- make the mean-square smaller.
+
+---
+
+## Application to Medellin study
+
+-  For caliper, I multiply $\langle \hat{S}^{\perp}, \hat{C}_{\hat\beta} \rangle_F^{1/2}$ by 2.5.
+
+>- Here this works out to 4 logits ($3.9s_p$).
+   
+>- No neighborhoods excluded.
+   <embed src="images/psmodfit0-1.png">
+>- (I'll improve treatment of this example presently, but still this is worth noting. Recall that the alternatives excluded at least 12!)
 
 ---
 
 # Outline
 
-1. Problem: determining the region of  overlap
+1. Problem: subject comparability in groupwise comparisons
 2. Propensity score caliper matching
-3. PPSE calipers
-4. <span class = 'red'>Applications & discussion</span>
+3. Diminishing calipers
+4. <span class = 'red'>Enforceable assumptions</span>
+5. Consequences of diminishing caliper matching
 
 ---
 
-## Example 2: Real or cosmetic reform in police practices?
+##  Enforcing $\lim\sup_{i \sim j} p^{-1}|\mathbf{x}_i - \mathbf{x}_j|_2^2 < \infty$
 
-Vagrancy arrests in the 60s and 70s
+> - Even with $\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)\hat\beta|$ beneath the caliper, to control $\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)\beta|$ we can't let $\mathbf{x}_i$ & $\mathbf{x}_j$ get too far apart (in other dimensions). 
+> - One could assume $\mathbf{x}$s to be bounded, or sub-Gaussian....
+> - Or, one could match with a cap on $|\mathbf{x}_i^{\perp \mathbf{x}\hat\beta} - \mathbf{x}_j^{\perp \mathbf{x}\hat\beta}|_2$, over and above the caliper on $|(\mathbf{x}_i - \mathbf{x}_j)\hat\beta|$. (Side benefit: speeds the matching process.) 
+> - Fun fact about Mahalanobis distance: Across all pairs $(i, j)$, $\text{Avg}\left[(\mathbf{x}_i - \mathbf{x}_j) S_x^{-1} (\mathbf{x}_i - \mathbf{x}_j)\right] = p$.  And $\text{Avg}\left[(\mathbf{x}_i^{\perp \mathbf{x}\hat\beta} - \mathbf{x}_j^{\perp \mathbf{x}\hat\beta}) (\hat{S}_x^{\perp})^{-1} (\mathbf{x}_i^{\perp \mathbf{x}\hat\beta} - \mathbf{x}_j^{\perp \mathbf{x}\hat\beta})\right] = p-1$. 
+> - By a similar reason, in linear regression "leverages" average to $p/n$. Just as $2p/n$ or $3p/n$ are regarded as large leverages, I propose to limit limit squared Mahalanobis distance in $\mathbf{x}^{\perp \mathbf{x}\hat\beta}$ to $2.5(p-1)$. 
+> - I.e., "leverage radius" = $\sqrt{2.5(p-1)}$.
 
->- Before 1960, arrests for vagrancy were relatively common in U.S.; by 1980, relatively rare.
->- Increasingly forbidden by laws, court rulings, administrative decisions.
->- Did pretextual arrests decline, a civil rights victory, or were they simply shifted to other categories (displacement)?
->- Using administrative records assembled by R. Goluboff, D. Thacher and I identified 121 (local agency, year) instances, of $n=5600$ at-risk agency-years, that experienced a sharp, anomalaous decline in vagrancy arrests.
->- ... and we matched them to otherwise similar agencies in terms of year, region of U.S., population, prior use of vagrancy arrests and a propensity score. 
+---
+
+##  Enforcing $\lim\inf \lambda_{\text{min}}[\mathcal{I}(\beta)] >0$
+
+- Consistency of $\hat\beta$ requires the spectrum of the Fisher information to be bounded away from 0 (He & Shao, 2000).
+- Diminishing caliper calculations tend to bring this problem to light. Spectral condition numbers & index standard errors ($\sqrt{\langle \hat{S}^\perp, \hat{C}_\hat\beta\rangle_F}$) for 3 fits of the same logiistic regression:
+
+|  fitter  |   kappa | i.s.e. (logits)|
+| -------- | ------: | ---: |
+| `stats::glm` (Davies, Ihaka, R Core)     | 1690000 | 2.45 |
+| `brglm::brglm`  (Kosmidis, Firth)  |   11100 | 1.61 |
+| `arm::bayesglm` (Gelman, Su, et al) |    7440 | 1.59 |
+
+- Cerda et al's analysis of the Medellin example uses `brglm`.  This shows `bayesglm` would have been the better choice.  
+
+---
+
+## Re-analysis of Medellin example
+
+>- Using `arm::bayesglm()`, the diminishing caliper is again 4 logits.
+>- But now it excludes 279/575 pairs.  In the treatment group, 24/25 have eligible controls for matching; among controls, 22/23 are matchable.   
+   <embed src="images/ps_mod_boxplot-1.png">
+>- Adding the leverage radius, 314/575 pairs are excluded, as are 3/25 treatment group members and 2/23 controls. 
+>- (The intervention still helped.)
+
+--- &twocol
+
+## Example 2: Vascular closure devices vs manual closure following percutaneous coronary intervention
+
+
+*** =left
+
+>- Once this stent has been threaded up into your heart, the hole in your femoral artery needs to be closed. 
+>- VCDs are more comfortable than manual closure -- are they as safe?
+>- Gurm et al (2013, _Ann Intern Med_) used data from a 32-hospital collaborative in Michgan to conduct a propensity-matched study. 
+>- Large matching problem: $n_1=31$K; $n_0=54$K.  
+
+*** =right
+
+<embed height="400px" width="400px" src="./images/Stent-PCI.jpg">
+
+---
+
+## Two propensity scores for the VCD example
+
+- Matching used both a "focused" PS, $p=50$, and an "inclusive" PS, $p=200$.
+- Corresponding calipers: 0.175 logits, 0.372 logits.
+- Both are diminished relative to Medellin example.
+- Still bigger than $.25s_p$: in standard units, 0.37, 0.617.  
 
 
 ---
 
-## Applications
+# Outline
 
-
->- For the Medellin example, 2.5 PPSEs works out to 4 logits ($3.9s_p$). 
->- No neighborhoods excluded. Recall that the alternatives excluded at least 12!
->- In the vagrancy study, 2.5 PPSEs = 2.3 logits ($1.9s_p$). 
->- Excludes a modest number of "treatment" cases (12/121).
->- Larger sample $\Rightarrow$ smaller PPSE. 
->- Even in larger samples I've worked with, tends to be more permissive than $.25s_p$ rule.
-
-*** =pnotes
-
-- In vagrancy study, PPSE criterion excluded 12/121 Txes, wheres .2$s_p$ would have excluded more.
-
-
+1. Problem: subject comparability in groupwise comparisons
+2. Propensity score caliper matching
+3. Diminishing calipers
+4. Enforceable assumptions
+5. <span class = 'red'>Consequences of diminishing caliper matching</span>
 
 ---
 
-## Calipers to ensure that PS differences tend to 0
 
->- Pairings (denoted "$i \sim j$") should satisfy $\max_{i \sim j} |(\vec{x}_i - \vec{x}_j)\beta| \downarrow 0$ as $n \uparrow \infty$.
->- Can this be accomplished with a requirement $\max_{i \sim j} |(\vec{x}_i - \vec{x}_j)\hat\beta| \leq w_n$, some $w_n \downarrow 0$?  (In light of $|(\vec{x}_i - \vec{x}_j)\beta| \leq |(\vec{x}_i - \vec{x}_j)(\hat\beta - \hat\beta)| + |(\vec{x}_i - \vec{x}_j)\hat\beta|$.)
+
+## Calipers to ensure that index differences tend to 0
+
+>- We'd like to see $\max_{i \sim j} |( \mathbf{x}_i - \mathbf{x}_j)\beta| \downarrow 0$ as $n \uparrow \infty$.
+>- Since
+Can this be accomplished with a requirement $\max_{i \sim j} |(\mathbf{x}_i - \mathbf{x}_j)\hat\beta| \leq w_n$, some $w_n \downarrow 0$?  (In light of $|(\mathbf{x}_i - \mathbf{x}_j)\beta| \leq |(\mathbf{x}_i - \mathbf{x}_j)(\beta - \tilde\beta)| + |(\mathbf{x}_i - \mathbf{x}_j)(\tilde\beta - \hat\beta)| + |(\mathbf{x}_i - \mathbf{x}_j)\hat\beta|$.)
 >- ($w_n = s_p/4$ would mean $w_n \stackrel{P}{\rightarrow} \text{const} > 0$. Again, this won't do; we need $w_n \stackrel{P}{\rightarrow} 0$.)
->- For any $i,j\leq n$, $|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \leq |\vec{x}_i - \vec{x}_j|_2|\hat\beta - \beta|_2$.
->- Expect $\max_{i,j}|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \approx (\max_{i,j}|\vec{x}_i - \vec{x}_j|_2)|\hat\beta - \beta|_2$.
->- Even with bounded $x$s, this is $O(p^{1/2})O_P\left[(p/n)^{1/2}\right] = O_P(p/n^{1/2})$ (He & Shao, 2000).
->- We'll need to **assume** $p/n^{1/2} \downarrow 0$ --- not only $n \gg p$, also  $n \gg p^2$! 
->- A similar condition ($p^2 \log(p)/n \downarrow 0$) suffices for validity $\hat{C}_{\hat\beta}$, the Huber-White estimate of $\mathrm{Cov} (\hat\beta)$.  And for $\text{PPSE} = \left[2\langle \hat{S}^\perp, \hat{C}_{\hat\beta}\rangle_F\right]^{1/2}  \downarrow 0$ as $n \uparrow \infty$. 
+>- Leverage radius, concentration of norm give control of $\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)(\beta - \tilde\beta)| = \max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)\frac{1}{n}\sum_i \text{IC}(Y_i, {Z}_{i}, \mathbf{x}_{i}; \beta)|$. 
+>- Control of $\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)(\tilde\beta - \hat\beta)|$ is trickier.  With leverage radius as above, requires $p^{3/2} = o(n/\log(n))$. 
+>- Per He & Shao (& others), consistency of $\hat\beta$ requires $p = o(n/\log(n))$, whereas $n^{1/2}(\hat\beta - \beta) \approx \mathcal{N}(0,\Sigma)$ requires $p^2 = o(n/\log(n))$.
+>- If $\max_{i \sim j} |( \mathbf{x}_i - \mathbf{x}_j)\beta| \downarrow 0$, then $M$-estimators involving matched contrasts have the same limits as they would if $( \mathbf{x}_i - \mathbf{x}_j)\beta = 0$.
 
 ---
-
 
 ### Discussion
 
->- Roughly speaking, the PPSE is the r.m.s. of $\vec{x}_i\hat\beta-\vec{x}_j\hat\beta$ among pairs $(i,j)$ s.t. $\vec{x}_i\beta = \vec{x}_j\beta$. 
->- If $p^2/n \downarrow 0$, then PPSE $\stackrel{P}{\rightarrow} 0$, and matching within $k$ PPSEs suffices for $\max_{i\sim j} |\vec{x}_i\beta-\vec{x}_j\beta| \stackrel{P}{\rightarrow} 0$.
->- If $p^2/n \not\rightarrow 0$, no caliper imposed on $\vec{x}_i\hat\beta-\vec{x}_j\hat\beta$ entails $\max_{i\sim j} |\vec{x}_i\beta-\vec{x}_j\beta| \stackrel{P}{\rightarrow} 0$.
->- If your matches are farther than a few PPSEs, you're matching outside region of overlap. 
->- I like calipers of $k=2.5$ PPSEs.
+>- Roughly speaking, the diminishing caliper is 2.5 times the r.m.s. of $\mathbf{x}_i\hat\beta-\mathbf{x}_j\hat\beta$ among pairs $(i,j)$ s.t. $\mathbf{x}_i\beta = \mathbf{x}_j\beta$.
+>- Pairs $(i, j)$ s.t. $|(\mathbf{x}_i - \mathbf{x}_j)\hat\beta|$ falls below this caliper are often not distinguishable in $\mathbf{x}\beta$.
+>- If $p = o(n/\log(n))$, and side-conditions are enforced, diminishing calipers diminish to 0 as $n\uparrow \infty$.
+>- Still, in 2 examples it was wider than conventional alternatives. 
+>- Even with calipers & enforcement of conditions, $\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)\beta|$ can bigger than the caliper.
+>- Still, if $p^{3/2} = o(n/\log(n))$, diminishing caliper matching ensures $\max_{i\sim j} |\mathbf{x}_i\beta-\mathbf{x}_j\beta| \stackrel{P}{\rightarrow} 0$.
 
 
-<!-- Matches between 1 and 3 PPSEs might be considered "marginal" (Austin & Lee, 2009).-->
+<!-- Matches between 1 and 3 ISEs might be considered "marginal" (Austin & Lee, 2009). -->
 
-### Recommendations: 
+### Software recommendations: 
 
->- I'm using sandwich estimates of $\mathrm{Cov} (\hat\beta) $, w/ some special sauce (cf. github.com/benthestatistician/PISE) to limit numerical instability.
->- Our `optmatch` R package (Fredrickson et al, 2016) does optimal pair and full matching (Gu & Rosenbaum, 1993; Hansen & Klopfer, 2006; Stuart & Green, 2008), readily accommodating PS calipers.
+-  `arm::bayesglm()` gave much better conditioned models. 
+- Our `optmatch` R package (Fredrickson et al, 2016) does optimal pair and full matching (Gu & Rosenbaum, 1993; Hansen & Klopfer, 2006; Stuart & Green, 2008), readily accommodating index calipers.
 

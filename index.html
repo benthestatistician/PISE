@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Propensity score calipers and the overlap condition</title>
+  <title>Diminishing propensity score calipers</title>
   <meta charset="utf-8">
-  <meta name="description" content="Propensity score calipers and the overlap condition">
-  <meta name="author" content="Ben Hansen, UMich Statistics (bbh@umich.edu).">
+  <meta name="description" content="Diminishing propensity score calipers">
+  <meta name="author" content="Ben B. Hansen (bbh@umich.edu)">
   <meta name="generator" content="slidify" />
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta http-equiv="X-UA-Compatible" content="chrome=1">
@@ -30,36 +30,45 @@
     
     <!-- LOGO SLIDE -->
         <slide class="title-slide segue nobackground">
+  
   <hgroup class="auto-fadein">
-    <h1>Propensity score calipers and the overlap condition</h1>
+    <h1>Diminishing propensity score calipers</h1>
     <h2></h2>
-    <p>Ben Hansen, UMich Statistics (bbh@umich.edu).<br/>benthestatistician.github.io/PISE (slides)</p>
+    <p>Ben B. Hansen (bbh@umich.edu)<br/></p>
   </hgroup>
+  
   <article></article>  
+  
 </slide>
     
 
     <!-- SLIDES -->
     <slide class="" id="slide-1" style="background:;">
+  
   <hgroup>
     <h1>Outline</h1>
   </hgroup>
+  
   <article data-timings="">
     <ol>
-<li><span class = 'red'>Problem: determining the region of  overlap</span></li>
+<li><span class = 'red'>Problem: subject comparability in groupwise comparisons</span></li>
 <li>Propensity score caliper matching</li>
-<li>PPSE calipers</li>
-<li>Applications &amp; discussion<br></li>
+<li>Diminishing calipers</li>
+<li>Enforceable assumptions<br></li>
+<li>Consequences of diminishing caliper matching</li>
 </ol>
 
   </article>
   <!-- Presenter Notes -->
+  
 </slide>
 
 <slide class="" id="slide-2" style="background:;">
+  
   <hgroup>
-    <h2>Overlap &amp; bias in comparisons w/ 1 covariate</h2>
+    <h2>Comparability of subjects in groupwise comparisons: canonical scenario with 1-dimensional covariate</h2>
   </hgroup>
+  
   <article data-timings="">
     
 <div style='float:left;width:48%;' class='centered'>
@@ -71,31 +80,45 @@
 </div>
 <div style='float:right;width:48%;'>
   <ul class = "build incremental">
-<li><p>Overlap? </p>
-
-<ul>
-<li>Observations well outside region of overlap should be excluded.</li>
-<li>Wasteful to exclude members of \(\{ i: Z_i=1\}\) because  their \(x\) is just outside \(\mathrm{range}(\{x_j: Z_j=0\})\).</li>
+<li>Observations well outside support of contrasting group should be excluded.</li>
+<li>Wasteful to exclude members of \(\{ i: Z_i=1\}\) because their \(x\) is barely outside \(\mathrm{range}(\{x_j: Z_j=0\})\).</li>
 <li> May distort research question, too.</li>
-<li>Close/far distinctions presuppose a model.</li>
-</ul></li>
-<li><p>Balance - i.e., is \(\bar{x}_t \approx \bar{x}_c\)?</p>
-
-<ul>
-<li>The question presupposes overlap.  (OW mean comparisons can be misleading.)</li>
-<li>A topic for another day...</li>
-</ul></li>
+<li>We say \(x\) is close to \(w\) when we expect \(E(Y_{c}|X=x) \approx E(Y_{c}|X=w)\).</li>
+<li>(...or that \(\text{Pr}(Z| X=x) \approx \text{Pr}(Z| X=w)\).)</li>
+<li>When we lack confidence that \(E(Y_{c}|X=x) \approx E(Y_{c}|X=w)\) (or \(\text{Pr}(Z| X=x) \approx \text{Pr}(Z| X=w)\)), then \(x\) and \(w\) are not close.<br></li>
 </ul>
 
 </div>
   </article>
   <!-- Presenter Notes -->
+  
 </slide>
 
 <slide class="" id="slide-3" style="background:;">
+  
+  <hgroup>
+    <h2>Covariate balance -- a separate topic</h2>
+  </hgroup>
+  
+  <article data-timings="">
+    <ul class = "build incremental">
+<li>Groupwise comparability is often discussed in terms of whether \(\bar{x}_{z=1} \approx \bar{x}_{z=0}\), all or most $X$s.</li>
+<li>The question presupposes at least rough comparability of subjects: otherwise, mean comparisons can be misleading.
+<embed src="./images/balancing-stones.jpg"></li>
+<li>A topic for another day...</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+  
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  
   <hgroup>
     <h2>Statistical assumptions for general $X$es</h2>
   </hgroup>
+  
   <article data-timings="">
     <ul class = "build incremental">
 <li>Now, multiple $X$es: \(\mathbf{X}\), not \(X\).</li>
@@ -107,19 +130,22 @@
 </ul></li>
 <li>No unmeasured confounding says, there are natural experiments in each &quot;cell&quot; of \(\mathbf{X}\).</li>
 <li>Problem: if multiple ${X}$es, many observations will be all alone in their cells.</li>
-<li>Rosenbaum &amp; Rubin&#39;s (1983) solution is match on \(\widehat{\mathrm{Pr}}(Z=1| \mathbf{X}=\mathbf{x})\), the estimated propensity score (PS).</li>
+<li>Rosenbaum &amp; Rubin&#39;s (1983) solution is match on an estimate of the propensity score (PS), \(\widehat{\mathrm{Pr}}(Z=1| \mathbf{X}=\mathbf{x})\). (Or \(g\{\widehat{\mathrm{Pr}}(Z=1| \mathbf{x})\}\), e.g. \(g\equiv\) logit.)</li>
 <li>Second problem: In a cell \(\mathbf{x}_0\) s.t. \(\mathrm{Pr}(Z=1| \mathbf{X}=\mathbf{x}_0)=1\), there&#39;s no data to estimate \(\mathrm{Pr}(Y_c \in \cdot |  \mathbf{X}=\mathbf{x}_0)\), even as \(n \uparrow \infty\).  (Whether you match on the PS, weight for it, ...)</li>
-<li>The second problem motivates the method of strict overlap, i.e. reducing analytic sample to region of common support on \(\widehat{\mathrm{PS}}\): \[\cap_{z=0,1}[\min(\{\widehat{PS}_i:Z_i=z\}), \max(\{\widehat{PS}_i:Z_i=z\})] .\] </li>
+<li>The second problem motivates the (clearly flawed) method of strict overlap, i.e. reducing analytic sample to region of common support on \(\widehat{\mathrm{PS}}\): \[\cap_{z=0,1}[\min(\{\widehat{PS}_i:Z_i=z\}), \max(\{\widehat{PS}_i:Z_i=z\})] .\] </li>
 </ul>
 
   </article>
   <!-- Presenter Notes -->
+  
 </slide>
 
-<slide class="" id="slide-4" style="background:;">
+<slide class="" id="slide-5" style="background:;">
+  
   <hgroup>
     <h2>Example 1: violence &amp; public infrastructure in Medell&iacute;n</h2>
   </hgroup>
+  
   <article data-timings="">
     
 <div style='float:left;width:48%;' class='centered'>
@@ -138,6 +164,7 @@
 </div>
   </article>
   <!-- Presenter Notes -->
+  
   <aside class="note" id="">
     <section>
       <ul>
@@ -146,19 +173,22 @@
 
     </section>
   </aside>
+  
 </slide>
 
-<slide class="" id="slide-5" style="background:;">
+<slide class="" id="slide-6" style="background:;">
+  
   <hgroup>
     <h2>Propensity scores in the Medellin study</h2>
   </hgroup>
+  
   <article data-timings="">
     
 <div style='float:left;width:58%;' class='centered'>
   <ul class = "build incremental">
-<li>Small matching problem: \(n_t=25\), \(n_c=23\) (neighborhoods).</li>
-<li>$\bar{x}_t$s and $\bar{x}_c$s not too far apart, but PS matching brought them closer.</li>
-<li>Figure shows PS we matched on - the \(X\hat{\beta}\) from a logistic regression (Cerda et al 2012, <em>Am J Epi</em>).</li>
+<li>Small matching problem: \(n_1=25\), \(n_0=23\) (neighborhoods).</li>
+<li>\(|\bar{x}_{z=1} - \bar{x}_{z=0}|\)s not too large, but PS matching made them smaller.</li>
+<li>Figure shows PS we matched on - the \(\mathbf{x}\hat{\beta}\) from a logistic regression (Cerda et al 2012, <em>Am J Epi</em>).</li>
 <li>Region of strict overlap contains only 6/25 $t$s and 4/23 $c$s!</li>
 <li>Yet Cerda et al matched all 48 neighborhoods.  (Using &quot;full matching&quot;, which permits many-to-one matches.)</li>
 </ul>
@@ -170,28 +200,35 @@
 </div>
   </article>
   <!-- Presenter Notes -->
+  
 </slide>
 
-<slide class="" id="slide-6" style="background:;">
+<slide class="" id="slide-7" style="background:;">
+  
   <hgroup>
     <h1>Outline</h1>
   </hgroup>
+  
   <article data-timings="">
     <ol>
-<li>Problem: determining the region of  overlap</li>
+<li>Problem: subject comparability in groupwise comparisons</li>
 <li><span class = 'red'>Propensity score caliper matching</span></li>
-<li>PPSE calipers</li>
-<li>Applications &amp; discussion<br></li>
+<li>Diminishing calipers</li>
+<li>Enforceable assumptions<br></li>
+<li>Consequences of diminishing caliper matching</li>
 </ol>
 
   </article>
   <!-- Presenter Notes -->
+  
 </slide>
 
-<slide class="" id="slide-7" style="background:;">
+<slide class="" id="slide-8" style="background:;">
+  
   <hgroup>
     <h2>Matching with PS calipers (Rosenbaum &amp; Rubin)</h2>
   </hgroup>
+  
   <article data-timings="">
     <ul class = "build incremental">
 <li>For matching, useful to specify a tolerance or <em>caliper</em> (Althauser &amp; Rubin, 1970). </li>
@@ -214,17 +251,20 @@ I.e., logits of estimated probabilities.)</li>
 </div>
   </article>
   <!-- Presenter Notes -->
+  
 </slide>
 
-<slide class="" id="slide-8" style="background:;">
+<slide class="" id="slide-9" style="background:;">
+  
   <hgroup>
     <h2>Room for improvement (in caliper = \(.25s_p\))</h2>
   </hgroup>
+  
   <article data-timings="">
     <ul class = "build incremental">
-<li>\(s_p\) approaches a positive limit, not 0. For large \(n\), matches as crude as \(.25s_p\) aren&#39;t very RCT-like.  (Even if there&#39;s no unmeasured confounding.) </li>
+<li>\(s_p\) does not tend to 0. For large \(n\), matches as crude as \(.25s_p\) aren&#39;t very RCT-like.  (Even if there&#39;s no unmeasured confounding.) </li>
 <li>In the Medellin study (smallish \(n\)), \(.25s_p(\widehat{\mathrm{PS}})\) caliper excludes 56% of treatment group.</li>
-<li>At the same time, in that study it&#39;s tenable (\(p=.10\)) that all PSes are the same!</li>
+<li>At the same time, in that study it&#39;s almost tenable (\(p=.04\)) that all PSes are the same!</li>
 </ul>
 
 <div style='float:left;width:48%;' class='centered'>
@@ -243,275 +283,545 @@ I.e., logits of estimated probabilities.)</li>
 </div>
   </article>
   <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-9" style="background:;">
-  <hgroup>
-    <h1>Outline</h1>
-  </hgroup>
-  <article data-timings="">
-    <ol>
-<li>Problem: determining the region of  overlap</span></li>
-<li>Propensity score caliper matching</li>
-<li><span class = 'red'>PPSE calipers</span></li>
-<li>Applications &amp; discussion<br></li>
-</ol>
-
-  </article>
-  <!-- Presenter Notes -->
+  
 </slide>
 
 <slide class="" id="slide-10" style="background:;">
-  <hgroup>
-    <h2>Sampling variability of paired PS differences</h2>
-  </hgroup>
-  <article data-timings="">
-    <ul class = "build incremental">
-<li>Intuition: Even if we had matched <strong>perfectly</strong> on the PS, there would still be matched differences in \(\widehat{\mathrm{PS}}\).  Let&#39;s estimate the size of these differences &amp; use result to define caliper.<br>
-
-<ul>
-<li>Should imply that as \(n\uparrow \infty\), caliper \(\downarrow 0\). Then, \(\hat\beta \stackrel{P}{\rightarrow} \beta \Rightarrow\) should mean paired PS differences \(\downarrow 0\).</li>
-<li>Excludes treatment subjects whose PSes are distinguishably different from all controls&#39;.<br></li>
-</ul></li>
-<li>To limit model sensitivity, work on index scale.</li>
-<li>If \(\mathbf{d} = \mathbf{x}_1 - \mathbf{x}_2\), \(\mathbf{d}(\hat{\beta} - \beta)\) is the error of estimation of paired PS difference \(\mathbf{d}\beta\).</li>
-<li>Considering all \({n \choose 2}\) possible pairs \(r\), the expected MS estimation error of paired PS differences can be expressed as the Frobenius inner product, \(\langle \cdot, \cdot \rangle_F\), of two covariances:<br>
-\[ \mathbf{E}_\beta \left[{n \choose 2}^{-1}\sum_r (\mathbf{d}_r (\hat{\beta} - \beta))^2 \right] = 2\langle S^{(x)}, \mathbf{E}_\beta \{(\hat\beta - \beta) (\hat{\beta} -\beta)' \}\rangle_F . \]</li>
-</ul>
-
-  </article>
-  <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-11" style="background:;">
-  <hgroup>
-    <h2>Sampling variability of paired PS diffs (ii)</h2>
-  </hgroup>
-  <article data-timings="">
-    <ul class = "build incremental">
-<li>But <strong>all possible</strong> pairs include many that are quite different on the PS.  We wanted to characterize \(\mathbf{E} (\mathbf{d}_r(\hat{\beta} - \beta))^2\) among pairs \(r\) s.t. \(\mathbf{d}_r\beta \approx 0\).<br></li>
-<li><p>Since there may be few or no such pairs, instead &quot;residualize&quot; all pairs for the true PS, leaving remaining differences in place.  For \(i=1,\ldots, p\), define \(d_{(i)}^\perp =\) residual of \(d_{(i)}\) regression on \(\mathbf{d}\beta\); \(\mathbf{d}^\perp = (d^\perp_1\,d^\perp_2\, \ldots\, d^\perp_p)\).  (By construction, \(\mathbf{d}_r^\perp \beta =0\) for all \(r\).)  </p></li>
-<li><p>Rather than the mean-square of PS-difference estimation errors, \({n \choose 2}^{-1} \mathbf{E} \sum_r (\mathbf{d}_r(\hat{\beta} - \beta))^2\), consider the mean-square PS-difference estimation error, net of differences in the true PS: 
-\[
-{n \choose 2}^{-1}\mathbf{E}_\beta \sum_r (\mathbf{d}_r^\perp (\hat{\beta} - \beta))^2 =
-2 \langle S^\perp, C_\hat\beta \rangle_F,
-\]
-where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\mathbf{x}^{\perp \mathbf{x}\beta})\) and \(x^{\perp \mathbf{x}\beta} = e(x |\mathbf{1}, \mathbf{x}\beta)\). </p></li>
-<li><p>Plugging in \(\hat{S}^\perp = \mathrm{Cov}(\mathbf{x}^{\perp \mathbf{x}\hat{\beta}})\) and an estimate of \({C}_\hat\beta\) gives a squared &quot;propensity-paired standard error&quot; (PPSE).</p></li>
-</ul>
-
-  </article>
-  <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-12" style="background:;">
+  
   <hgroup>
     <h1>Outline</h1>
   </hgroup>
+  
   <article data-timings="">
     <ol>
-<li>Problem: determining the region of  overlap</li>
+<li>Problem: subject comparability in groupwise comparisons</li>
 <li>Propensity score caliper matching</li>
-<li>PPSE calipers</li>
-<li><span class = 'red'>Applications &amp; discussion</span></li>
+<li><span class = 'red'>Diminishing calipers</span></li>
+<li>Enforceable assumptions<br></li>
+<li>Consequences of diminishing caliper matching</li>
 </ol>
 
   </article>
   <!-- Presenter Notes -->
+  
+</slide>
+
+<slide class="" id="slide-11" style="background:;">
+  
+  <hgroup>
+    <h2>Sampling variability of paired index differences, i</h2>
+  </hgroup>
+  
+  <article data-timings="">
+    <ul class = "build incremental">
+<li>Intuition: Even if we had matched <strong>perfectly</strong> on index \(\mathbf{x}\beta\), there would still be matched differences in \(\mathbf{x}\hat\beta\).  Let&#39;s estimate the size of these differences &amp; use result to define caliper.<br>
+
+<ul>
+<li>Should imply that as \(n\uparrow \infty\), caliper \(\downarrow 0\). If also \(\hat\beta - \beta \stackrel{P}{\rightarrow} 0\), expect \(\max_{i \sim j} |(\mathbf{x}_i - \mathbf{x}_j)\beta|\downarrow 0\), where \(i \sim j\) denotes that \(i\) is matched to \(j\).</li>
+<li>Excludes treatment subjects with larger-than-chance separation from controls on $\mathbf{x}\hat\beta$s.<br></li>
+</ul></li>
+<li>Assuming well-conditioned g.l.m., model dimension \(p = o({n}/{\log (n)})\), He &amp; Shao (2000) showed that \(|\hat\beta - \beta|_2 = O_P[( {p}/{n})^{1/2}]\).<br></li>
+<li>The error of estimation of paired difference \((\mathbf{x}_i - \mathbf{x}_j)\beta\) is \((\mathbf{x}_i - \mathbf{x}_j)(\hat{\beta} - \beta)\).  Given \(\nu\) pairs \((i, j)\), \(i < j\) with \(i \sim j\), the mean-square of paired errors is
+\[
+\frac{1}{\nu} \sum_{i \sim j; i < j}
+[(\mathbf{x}_i - \mathbf{x}_j)(\hat\beta - \beta)]^2 =
+(\hat\beta - \beta)' \left[\frac{1}{\nu}
+               \sum_{i \lesssim j} (\mathbf{x}_i - \mathbf{x}_j)'(\mathbf{x}_i - \mathbf{x}_j)\right] =: (\hat\beta - \beta)' (2 S^{(p)} )
+(\hat\beta - \beta).
+\]</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+  
+</slide>
+
+<slide class="" id="slide-12" style="background:;">
+  
+  <hgroup>
+    <h2>Sampling variability of paired index differences, ii</h2>
+  </hgroup>
+  
+  <article data-timings="">
+    <ul class = "build incremental">
+<li>We wish to estimate the magnitude of \((\hat\beta - \beta)' (2 S^{(p)}
+) (\hat\beta - \beta)\), with \(S^{(p)}=\) covariance of $x$s w/in pairs \(i \sim j\).</li>
+<li>Assuming \(|S^{(p)}|_2 = O_P(1)\), \((\hat\beta - \beta)' S^{(p)}
+(\hat\beta - \beta) = O_P(p/n)\) (He &amp; Shao, 2000).</li>
+<li>Write \(\tilde\beta = \beta + n^{-1}\sum_{i=1}^{n}\mathrm{IC}(Y_i, {Z}_{i}, \mathbf{x}_{i}; \beta)\). (&quot;IC&quot;=influence curve.) By other results of H.&amp;S.,
+\[
+(\hat\beta - \beta)' S^{(p)}
+(\hat\beta - \beta)  =
+(\tilde\beta - \beta)' S^{(p)}
+(\tilde\beta - \beta) + o_P( {p}/{n} ).
+\]</li>
+<li>\((\tilde\beta - \beta)' S^{(p)}
+(\tilde\beta - \beta)\) is easier to estimate.  For logistic regression &amp; certain other g.l.m.s, conventional estimates \(\hat{C}_\hat\beta\) of \(\text{Cov}(\hat\beta)\) satisfy \(n|\hat{C}_\hat\beta - {C}_{\tilde\beta}|_2 \stackrel{P}{\rightarrow} 0\), \({C}_{\tilde\beta}:= \text{Cov}(\tilde\beta)\), under conditions similar to those H. &amp; S. (2000) used for consistency of \(\hat\beta\) (Hansen &#39;19). </li>
+<li>Fixing \(S^{(p)}\),
+\[
+\mathbf{E}[ (\tilde\beta - \beta)' S^{(p)}
+(\tilde\beta - \beta)] = \langle S^{(p)}, C_{\tilde\beta} \rangle_F
+\]
+(a Frobenius inner product). A first estimate of paired index differences&#39; variability is thus
+\[
+2\langle S^{(p)}, C_{\tilde\beta} \rangle_F .
+\]</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+  
 </slide>
 
 <slide class="" id="slide-13" style="background:;">
+  
   <hgroup>
-    <h2>Example 2: Real or cosmetic reform in police practices?</h2>
+    <h2>Sampling variability of paired index differences, iii</h2>
   </hgroup>
-  <article data-timings="">
-    <p>Vagrancy arrests in the 60s and 70s</p>
-
-<ul class = "build incremental">
-<li>Before 1960, arrests for vagrancy were relatively common in U.S.; by 1980, relatively rare.</li>
-<li>Increasingly forbidden by laws, court rulings, administrative decisions.</li>
-<li>Did pretextual arrests decline, a civil rights victory, or were they simply shifted to other categories (displacement)?</li>
-<li>Using administrative records assembled by R. Goluboff, D. Thacher and I identified 121 (local agency, year) instances, of \(n=5600\) at-risk agency-years, that experienced a sharp, anomalaous decline in vagrancy arrests.</li>
-<li class='..'>and we matched them to otherwise similar agencies in terms of year, region of U.S., population, prior use of vagrancy arrests and a propensity score. </li>
-</ul>
-
-  </article>
-  <!-- Presenter Notes -->
-</slide>
-
-<slide class="" id="slide-14" style="background:;">
-  <hgroup>
-    <h2>Applications</h2>
-  </hgroup>
+  
   <article data-timings="">
     <ul class = "build incremental">
-<li>For the Medellin example, 2.5 PPSEs works out to 4 logits (\(3.9s_p\)). </li>
-<li>No neighborhoods excluded. Recall that the alternatives excluded at least 12!</li>
-<li>In the vagrancy study, 2.5 PPSEs = 2.3 logits (\(1.9s_p\)). </li>
-<li>Excludes a modest number of &quot;treatment&quot; cases (12/121).</li>
-<li>Larger sample \(\Rightarrow\) smaller PPSE. </li>
-<li>Even in larger samples I&#39;ve worked with, tends to be more permissive than \(.25s_p\) rule.</li>
+<li>\(S^{(p)}\) is based on a designated collection of pairs.  Next goal: a stand-in that&#39;s available prior to matching. </li>
+<li>We&#39;d like to approximate \((\tilde\beta - \beta)' S^{(p)}
+(\tilde\beta - \beta)\) for pairings s.t. \(\max_{i\sim j} |(\mathbf{x}_i - \mathbf{x}_j)\beta| \approx 0\). </li>
+<li>To emulate \(\max_{i\sim j} |(\mathbf{x}_i - \mathbf{x}_j)\beta|=0\), residualize all possible pairs for the true index, leaving remaining differences in place.  For \(i\leq n\) and \(k\leq p\), let \({x}_{ik}^{\perp\mathbf{x}\beta} =\) residual of \(x_{ik}\) regression on \(\mathbf{x}\beta\); \(\mathbf{x}_i^{\perp\mathbf{x}\beta} = (x^{\perp\mathbf{x}\beta}_{i1}\,x^{\perp\mathbf{x}\beta}_{i2}\, \ldots\, x^{\perp\mathbf{x}\beta}_{ip})\).  By construction, \(\max_{i,j}|(\mathbf{x}_i^{\perp\mathbf{x}\beta} - \mathbf{x}_j^{\perp\mathbf{x}\beta})\beta| =0\).<br></li>
+<li>Rather than averaging index difference estimation errors across selected pairs, average across all pairs, but after stripping out differences in \(\mathbf{x}\beta\): 
+\[
+{n \choose 2}^{-1}\mathbf{E}_\beta \sum_{1\leq i < j \leq n} [(\mathbf{x}_i^{\perp\mathbf{x}\beta} - \mathbf{x}_j^{\perp\mathbf{x}\beta}) (\tilde{\beta} - \beta)]^2 =
+2 \langle S^{\perp}, C_{\tilde\beta} \rangle_F,
+\]
+where \(S^{\perp} = \frac{1}{2} {n \choose 2}^{-1} \sum_{1\leq i < j \leq n} (\mathbf{x}_i^{\perp\mathbf{x}\beta} - \mathbf{x}_j^{\perp\mathbf{x}\beta})'(\mathbf{x}_i^{\perp\mathbf{x}\beta} - \mathbf{x}_j^{\perp\mathbf{x}\beta}) = \text{Cov}(\mathbf{x}^{\perp\mathbf{x}\beta})\). </li>
+<li>To estimate, plug in \(\hat{S}^{\perp} = \widehat{\mathrm{Cov}}(\mathbf{x}^{\perp \mathbf{x}\hat{\beta}})\) and \(\hat{C}_\hat\beta\). Then \(\langle S^{\perp}, C_{\tilde\beta} \rangle_F = O_P(p/n)\) and \(\langle \hat{S}^{\perp}, \hat{C}_{\hat\beta} \rangle_F = O_P(p/n)\), while \(\langle S^{\perp}, C_{\tilde\beta} \rangle_F - \langle \hat{S}^{\perp}, \hat{C}_{\hat\beta} \rangle_F = o_P(p/n)\). </li>
 </ul>
 
   </article>
   <!-- Presenter Notes -->
+  
   <aside class="note" id="">
     <section>
       <ul>
-<li>In vagrancy study, PPSE criterion excluded 12/121 Txes, wheres .2\(s_p\) would have excluded more.</li>
+<li>Note both modifications -- \(\tilde\beta\) not \(\hat\beta\), \(S^\perp\) not \(S\) -- make the mean-square smaller.</li>
 </ul>
 
     </section>
   </aside>
+  
+</slide>
+
+<slide class="" id="slide-14" style="background:;">
+  
+  <hgroup>
+    <h2>Application to Medellin study</h2>
+  </hgroup>
+  
+  <article data-timings="">
+    <ul>
+<li> For caliper, I multiply \(\langle \hat{S}^{\perp}, \hat{C}_{\hat\beta} \rangle_F^{1/2}\) by 2.5.</li>
+</ul>
+
+<ul class = "build incremental">
+<li><p>Here this works out to 4 logits (\(3.9s_p\)).</p></li>
+<li><p>No neighborhoods excluded.
+<embed src="images/psmodfit0-1.png"></p></li>
+<li><p>(I&#39;ll improve treatment of this example presently, but still this is worth noting. Recall that the alternatives excluded at least 12!)</p></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+  
 </slide>
 
 <slide class="" id="slide-15" style="background:;">
+  
   <hgroup>
-    <h2>Calipers to ensure that PS differences tend to 0</h2>
+    <h1>Outline</h1>
   </hgroup>
+  
   <article data-timings="">
-    <ul class = "build incremental">
-<li>Pairings (denoted &quot;\(i \sim j\)&quot;) should satisfy \(\max_{i \sim j} |(\vec{x}_i - \vec{x}_j)\beta| \downarrow 0\) as \(n \uparrow \infty\).</li>
-<li>Can this be accomplished with a requirement \(\max_{i \sim j} |(\vec{x}_i - \vec{x}_j)\hat\beta| \leq w_n\), some \(w_n \downarrow 0\)?  (In light of \(|(\vec{x}_i - \vec{x}_j)\beta| \leq |(\vec{x}_i - \vec{x}_j)(\hat\beta - \hat\beta)| + |(\vec{x}_i - \vec{x}_j)\hat\beta|\).)</li>
-<li>(\(w_n = s_p/4\) would mean \(w_n \stackrel{P}{\rightarrow} \text{const} > 0\). Again, this won&#39;t do; we need \(w_n \stackrel{P}{\rightarrow} 0\).)</li>
-<li>For any \(i,j\leq n\), \(|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \leq |\vec{x}_i - \vec{x}_j|_2|\hat\beta - \beta|_2\).</li>
-<li>Expect \(\max_{i,j}|(\vec{x}_i - \vec{x}_j)(\hat\beta - \beta)| \approx (\max_{i,j}|\vec{x}_i - \vec{x}_j|_2)|\hat\beta - \beta|_2\).</li>
-<li>Even with bounded $x$s, this is \(O(p^{1/2})O_P\left[(p/n)^{1/2}\right] = O_P(p/n^{1/2})\) (He &amp; Shao, 2000).</li>
-<li>We&#39;ll need to <strong>assume</strong> \(p/n^{1/2} \downarrow 0\) --- not only \(n \gg p\), also  \(n \gg p^2\)! </li>
-<li>A similar condition (\(p^2 \log(p)/n \downarrow 0\)) suffices for validity \(\hat{C}_{\hat\beta}\), the Huber-White estimate of \(\mathrm{Cov} (\hat\beta)\).  And for \(\text{PPSE} = \left[2\langle \hat{S}^\perp, \hat{C}_{\hat\beta}\rangle_F\right]^{1/2}  \downarrow 0\) as \(n \uparrow \infty\). </li>
-</ul>
+    <ol>
+<li>Problem: subject comparability in groupwise comparisons</li>
+<li>Propensity score caliper matching</li>
+<li>Diminishing calipers</li>
+<li><span class = 'red'>Enforceable assumptions</span></li>
+<li>Consequences of diminishing caliper matching</li>
+</ol>
 
   </article>
   <!-- Presenter Notes -->
+  
 </slide>
 
 <slide class="" id="slide-16" style="background:;">
+  
   <hgroup>
-    <h3>Discussion</h3>
+    <h2>Enforcing \(\lim\sup_{i \sim j} p^{-1}|\mathbf{x}_i - \mathbf{x}_j|_2^2 < \infty\)</h2>
   </hgroup>
+  
   <article data-timings="">
     <ul class = "build incremental">
-<li>Roughly speaking, the PPSE is the r.m.s. of \(\vec{x}_i\hat\beta-\vec{x}_j\hat\beta\) among pairs \((i,j)\) s.t. \(\vec{x}_i\beta = \vec{x}_j\beta\). </li>
-<li>If \(p^2/n \downarrow 0\), then PPSE \(\stackrel{P}{\rightarrow} 0\), and matching within \(k\) PPSEs suffices for \(\max_{i\sim j} |\vec{x}_i\beta-\vec{x}_j\beta| \stackrel{P}{\rightarrow} 0\).</li>
-<li>If \(p^2/n \not\rightarrow 0\), no caliper imposed on \(\vec{x}_i\hat\beta-\vec{x}_j\hat\beta\) entails \(\max_{i\sim j} |\vec{x}_i\beta-\vec{x}_j\beta| \stackrel{P}{\rightarrow} 0\).</li>
-<li>If your matches are farther than a few PPSEs, you&#39;re matching outside region of overlap. </li>
-<li>I like calipers of \(k=2.5\) PPSEs.</li>
-</ul>
-
-<!-- Matches between 1 and 3 PPSEs might be considered "marginal" (Austin & Lee, 2009).-->
-
-<h3>Recommendations:</h3>
-
-<ul class = "build incremental">
-<li>I&#39;m using sandwich estimates of $\mathrm{Cov} (\hat\beta) $, w/ some special sauce (cf. github.com/benthestatistician/PISE) to limit numerical instability.</li>
-<li>Our <code>optmatch</code> R package (Fredrickson et al, 2016) does optimal pair and full matching (Gu &amp; Rosenbaum, 1993; Hansen &amp; Klopfer, 2006; Stuart &amp; Green, 2008), readily accommodating PS calipers.</li>
+<li>Even with \(\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)\hat\beta|\) beneath the caliper, to control \(\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)\beta|\) we can&#39;t let \(\mathbf{x}_i\) &amp; \(\mathbf{x}_j\) get too far apart (in other dimensions). </li>
+<li>One could assume $\mathbf{x}$s to be bounded, or sub-Gaussian....</li>
+<li>Or, one could match with a cap on \(|\mathbf{x}_i^{\perp \mathbf{x}\hat\beta} - \mathbf{x}_j^{\perp \mathbf{x}\hat\beta}|_2\), over and above the caliper on \(|(\mathbf{x}_i - \mathbf{x}_j)\hat\beta|\). (Side benefit: speeds the matching process.) </li>
+<li>Fun fact about Mahalanobis distance: Across all pairs \((i, j)\), \(\text{Avg}\left[(\mathbf{x}_i - \mathbf{x}_j) S_x^{-1} (\mathbf{x}_i - \mathbf{x}_j)\right] = p\).  And \(\text{Avg}\left[(\mathbf{x}_i^{\perp \mathbf{x}\hat\beta} - \mathbf{x}_j^{\perp \mathbf{x}\hat\beta}) (\hat{S}_x^{\perp})^{-1} (\mathbf{x}_i^{\perp \mathbf{x}\hat\beta} - \mathbf{x}_j^{\perp \mathbf{x}\hat\beta})\right] = p-1\). </li>
+<li>By a similar reason, in linear regression &quot;leverages&quot; average to \(p/n\). Just as \(2p/n\) or \(3p/n\) are regarded as large leverages, I propose to limit limit squared Mahalanobis distance in \(\mathbf{x}^{\perp \mathbf{x}\hat\beta}\) to \(2.5(p-1)\). </li>
+<li>I.e., &quot;leverage radius&quot; = \(\sqrt{2.5(p-1)}\).</li>
 </ul>
 
   </article>
   <!-- Presenter Notes -->
+  
+</slide>
+
+<slide class="" id="slide-17" style="background:;">
+  
+  <hgroup>
+    <h2>Enforcing \(\lim\inf \lambda_{\text{min}}[\mathcal{I}(\beta)] >0\)</h2>
+  </hgroup>
+  
+  <article data-timings="">
+    <ul>
+<li>Consistency of \(\hat\beta\) requires the spectrum of the Fisher information to be bounded away from 0 (He &amp; Shao, 2000).</li>
+<li>Diminishing caliper calculations tend to bring this problem to light. Spectral condition numbers &amp; index standard errors (\(\sqrt{\langle \hat{S}^\perp, \hat{C}_\hat\beta\rangle_F}\)) for 3 fits of the same logiistic regression:</li>
+</ul>
+
+<table><thead>
+<tr>
+<th>fitter</th>
+<th align="right">kappa</th>
+<th align="right">i.s.e. (logits)</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code>stats::glm</code> (Davies, Ihaka, R Core)</td>
+<td align="right">1690000</td>
+<td align="right">2.45</td>
+</tr>
+<tr>
+<td><code>brglm::brglm</code>  (Kosmidis, Firth)</td>
+<td align="right">11100</td>
+<td align="right">1.61</td>
+</tr>
+<tr>
+<td><code>arm::bayesglm</code> (Gelman, Su, et al)</td>
+<td align="right">7440</td>
+<td align="right">1.59</td>
+</tr>
+</tbody></table>
+
+<ul>
+<li>Cerda et al&#39;s analysis of the Medellin example uses <code>brglm</code>.  This shows <code>bayesglm</code> would have been the better choice.<br></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+  
+</slide>
+
+<slide class="" id="slide-18" style="background:;">
+  
+  <hgroup>
+    <h2>Re-analysis of Medellin example</h2>
+  </hgroup>
+  
+  <article data-timings="">
+    <ul class = "build incremental">
+<li>Using <code>arm::bayesglm()</code>, the diminishing caliper is again 4 logits.</li>
+<li>But now it excludes 279/575 pairs.  In the treatment group, 24/25 have eligible controls for matching; among controls, 22/23 are matchable.<br>
+<embed src="images/ps_mod_boxplot-1.png"></li>
+<li>Adding the leverage radius, 314/575 pairs are excluded, as are 3/25 treatment group members and 2/23 controls. </li>
+<li>(The intervention still helped.)</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+  
+</slide>
+
+<slide class="" id="slide-19" style="background:;">
+  
+  <hgroup>
+    <h2>Example 2: Vascular closure devices vs manual closure following percutaneous coronary intervention</h2>
+  </hgroup>
+  
+  <article data-timings="">
+    
+<div style='float:left;width:48%;' class='centered'>
+  <ul class = "build incremental">
+<li>Once this stent has been threaded up into your heart, the hole in your femoral artery needs to be closed. </li>
+<li>VCDs are more comfortable than manual closure -- are they as safe?</li>
+<li>Gurm et al (2013, <em>Ann Intern Med</em>) used data from a 32-hospital collaborative in Michgan to conduct a propensity-matched study. </li>
+<li>Large matching problem: $n_1=31$K; $n_0=54$K.<br></li>
+</ul>
+
+</div>
+<div style='float:right;width:48%;'>
+  <p><embed height="400px" width="400px" src="./images/Stent-PCI.jpg"></p>
+
+</div>
+  </article>
+  <!-- Presenter Notes -->
+  
+</slide>
+
+<slide class="" id="slide-20" style="background:;">
+  
+  <hgroup>
+    <h2>Two propensity scores for the VCD example</h2>
+  </hgroup>
+  
+  <article data-timings="">
+    <ul>
+<li>Matching used both a &quot;focused&quot; PS, \(p=50\), and an &quot;inclusive&quot; PS, \(p=200\).</li>
+<li>Corresponding calipers: 0.175 logits, 0.372 logits.</li>
+<li>Both are diminished relative to Medellin example.</li>
+<li>Still bigger than \(.25s_p\): in standard units, 0.37, 0.617.<br></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+  
+</slide>
+
+<slide class="" id="slide-21" style="background:;">
+  
+  <hgroup>
+    <h1>Outline</h1>
+  </hgroup>
+  
+  <article data-timings="">
+    <ol>
+<li>Problem: subject comparability in groupwise comparisons</li>
+<li>Propensity score caliper matching</li>
+<li>Diminishing calipers</li>
+<li>Enforceable assumptions</li>
+<li><span class = 'red'>Consequences of diminishing caliper matching</span></li>
+</ol>
+
+  </article>
+  <!-- Presenter Notes -->
+  
+</slide>
+
+<slide class="" id="slide-22" style="background:;">
+  
+  <hgroup>
+    <h2>Calipers to ensure that index differences tend to 0</h2>
+  </hgroup>
+  
+  <article data-timings="">
+    <ul class = "build incremental">
+<li>We&#39;d like to see \(\max_{i \sim j} |( \mathbf{x}_i - \mathbf{x}_j)\beta| \downarrow 0\) as \(n \uparrow \infty\).</li>
+<li>Since
+Can this be accomplished with a requirement \(\max_{i \sim j} |(\mathbf{x}_i - \mathbf{x}_j)\hat\beta| \leq w_n\), some \(w_n \downarrow 0\)?  (In light of \(|(\mathbf{x}_i - \mathbf{x}_j)\beta| \leq |(\mathbf{x}_i - \mathbf{x}_j)(\beta - \tilde\beta)| + |(\mathbf{x}_i - \mathbf{x}_j)(\tilde\beta - \hat\beta)| + |(\mathbf{x}_i - \mathbf{x}_j)\hat\beta|\).)</li>
+<li>(\(w_n = s_p/4\) would mean \(w_n \stackrel{P}{\rightarrow} \text{const} > 0\). Again, this won&#39;t do; we need \(w_n \stackrel{P}{\rightarrow} 0\).)</li>
+<li>Leverage radius, concentration of norm give control of \(\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)(\beta - \tilde\beta)| = \max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)\frac{1}{n}\sum_i \text{IC}(Y_i, {Z}_{i}, \mathbf{x}_{i}; \beta)|\). </li>
+<li>Control of \(\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)(\tilde\beta - \hat\beta)|\) is trickier.  With leverage radius as above, requires \(p^{3/2} = o(n/\log(n))\). </li>
+<li>Per He &amp; Shao (&amp; others), consistency of \(\hat\beta\) requires \(p = o(n/\log(n))\), whereas \(n^{1/2}(\hat\beta - \beta) \approx \mathcal{N}(0,\Sigma)\) requires \(p^2 = o(n/\log(n))\).</li>
+<li>If \(\max_{i \sim j} |( \mathbf{x}_i - \mathbf{x}_j)\beta| \downarrow 0\), then \(M\)-estimators involving matched contrasts have the same limits as they would if \(( \mathbf{x}_i - \mathbf{x}_j)\beta = 0\).</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+  
+</slide>
+
+<slide class="" id="slide-23" style="background:;">
+  
+  <hgroup>
+    <h3>Discussion</h3>
+  </hgroup>
+  
+  <article data-timings="">
+    <ul class = "build incremental">
+<li>Roughly speaking, the diminishing caliper is 2.5 times the r.m.s. of \(\mathbf{x}_i\hat\beta-\mathbf{x}_j\hat\beta\) among pairs \((i,j)\) s.t. \(\mathbf{x}_i\beta = \mathbf{x}_j\beta\).</li>
+<li>Pairs \((i, j)\) s.t. \(|(\mathbf{x}_i - \mathbf{x}_j)\hat\beta|\) falls below this caliper are often not distinguishable in \(\mathbf{x}\beta\).</li>
+<li>If \(p = o(n/\log(n))\), and side-conditions are enforced, diminishing calipers diminish to 0 as \(n\uparrow \infty\).</li>
+<li>Still, in 2 examples it was wider than conventional alternatives. </li>
+<li>Even with calipers &amp; enforcement of conditions, \(\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)\beta|\) can bigger than the caliper.</li>
+<li>Still, if \(p^{3/2} = o(n/\log(n))\), diminishing caliper matching ensures \(\max_{i\sim j} |\mathbf{x}_i\beta-\mathbf{x}_j\beta| \stackrel{P}{\rightarrow} 0\).</li>
+</ul>
+
+<!-- Matches between 1 and 3 ISEs might be considered "marginal" (Austin & Lee, 2009). -->
+
+<h3>Software recommendations:</h3>
+
+<ul>
+<li> <code>arm::bayesglm()</code> gave much better conditioned models. </li>
+<li>Our <code>optmatch</code> R package (Fredrickson et al, 2016) does optimal pair and full matching (Gu &amp; Rosenbaum, 1993; Hansen &amp; Klopfer, 2006; Stuart &amp; Green, 2008), readily accommodating index calipers.</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+  
 </slide>
 
     <slide class="backdrop"></slide>
   </slides>
   <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
     <ul>
-      <li>
+      
+    <li>
       <a href="#" target="_self" rel='tooltip' 
         data-slide=1 title='Outline'>
          1
       </a>
     </li>
+    
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=2 title='Overlap &amp; bias in comparisons w/ 1 covariate'>
+        data-slide=2 title='Comparability of subjects in groupwise comparisons: canonical scenario with 1-dimensional covariate'>
          2
       </a>
     </li>
+    
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=3 title='Statistical assumptions for general $X$es'>
+        data-slide=3 title='Covariate balance -- a separate topic'>
          3
       </a>
     </li>
+    
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=4 title='Example 1: violence &amp; public infrastructure in Medell&iacute;n'>
+        data-slide=4 title='Statistical assumptions for general $X$es'>
          4
       </a>
     </li>
+    
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=5 title='Propensity scores in the Medellin study'>
+        data-slide=5 title='Example 1: violence &amp; public infrastructure in Medell&iacute;n'>
          5
       </a>
     </li>
+    
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=6 title='Outline'>
+        data-slide=6 title='Propensity scores in the Medellin study'>
          6
       </a>
     </li>
+    
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=7 title='Matching with PS calipers (Rosenbaum &amp; Rubin)'>
+        data-slide=7 title='Outline'>
          7
       </a>
     </li>
+    
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=8 title='Room for improvement (in caliper = \(.25s_p\))'>
+        data-slide=8 title='Matching with PS calipers (Rosenbaum &amp; Rubin)'>
          8
       </a>
     </li>
+    
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=9 title='Outline'>
+        data-slide=9 title='Room for improvement (in caliper = \(.25s_p\))'>
          9
       </a>
     </li>
+    
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=10 title='Sampling variability of paired PS differences'>
+        data-slide=10 title='Outline'>
          10
       </a>
     </li>
+    
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=11 title='Sampling variability of paired PS diffs (ii)'>
+        data-slide=11 title='Sampling variability of paired index differences, i'>
          11
       </a>
     </li>
+    
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=12 title='Outline'>
+        data-slide=12 title='Sampling variability of paired index differences, ii'>
          12
       </a>
     </li>
+    
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=13 title='Example 2: Real or cosmetic reform in police practices?'>
+        data-slide=13 title='Sampling variability of paired index differences, iii'>
          13
       </a>
     </li>
+    
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=14 title='Applications'>
+        data-slide=14 title='Application to Medellin study'>
          14
       </a>
     </li>
+    
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=15 title='Calipers to ensure that PS differences tend to 0'>
+        data-slide=15 title='Outline'>
          15
       </a>
     </li>
+    
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=16 title='Discussion'>
+        data-slide=16 title='Enforcing \(\lim\sup_{i \sim j} p^{-1}|\mathbf{x}_i - \mathbf{x}_j|_2^2 < \infty\)'>
          16
       </a>
     </li>
-  </ul>
+    
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=17 title='Enforcing \(\lim\inf \lambda_{\text{min}}[\mathcal{I}(\beta)] >0\)'>
+         17
+      </a>
+    </li>
+    
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=18 title='Re-analysis of Medellin example'>
+         18
+      </a>
+    </li>
+    
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=19 title='Example 2: Vascular closure devices vs manual closure following percutaneous coronary intervention'>
+         19
+      </a>
+    </li>
+    
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=20 title='Two propensity scores for the VCD example'>
+         20
+      </a>
+    </li>
+    
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=21 title='Outline'>
+         21
+      </a>
+    </li>
+    
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=22 title='Calipers to ensure that index differences tend to 0'>
+         22
+      </a>
+    </li>
+    
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=23 title='Discussion'>
+         23
+      </a>
+    </li>
+    
+    </ul>
   </div>  <!--[if IE]>
     <script 
       src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
@@ -533,9 +843,11 @@ where \(S^\perp = \frac{1}{2}\mathrm{Cov}(\mathbf{d}^\perp) = \mathrm{Cov}(\math
   <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
   <!-- <script src="https://c328740.ssl.cf1.rackcdn.com/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
   </script> -->
-  <script>window.MathJax || document.write('<script type="text/x-mathjax-config">MathJax.Hub.Config({"HTML-CSS":{imageFont:null}});<\/script><script src="libraries/widgets/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')
+  
+<script>window.MathJax || document.write('<script type="text/x-mathjax-config">MathJax.Hub.Config({"HTML-CSS":{imageFont:null}});<\/script><script src="libraries/widgets/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')
 </script>
-<!-- LOAD HIGHLIGHTER JS FILES -->
+
+  <!-- LOAD HIGHLIGHTER JS FILES -->
   <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
   <script>hljs.initHighlightingOnLoad();</script>
   <!-- DONE LOADING HIGHLIGHTER JS FILES -->
