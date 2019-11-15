@@ -14,8 +14,8 @@ mode        : selfcontained # {standalone, draft}
 1. <span class = 'red'>Problem: subject comparability in groupwise comparisons</span>
 2. Propensity score caliper matching
 3. Diminishing calipers
-4. Applications & discussion    
-
+4. Enforceable assumptions    
+5. Consequences of diminishing caliper matching
 
 
 
@@ -105,8 +105,8 @@ mode        : selfcontained # {standalone, draft}
 1. Problem: subject comparability in groupwise comparisons
 2. <span class = 'red'>Propensity score caliper matching</span>
 3. Diminishing calipers
-4. Applications & discussion    
-
+4. Enforceable assumptions    
+5. Consequences of diminishing caliper matching
 
 
 
@@ -158,8 +158,8 @@ mode        : selfcontained # {standalone, draft}
 1. Problem: subject comparability in groupwise comparisons
 2. Propensity score caliper matching
 3. <span class = 'red'>Diminishing calipers</span>
-4. Applications & discussion    
-
+4. Enforceable assumptions    
+5. Consequences of diminishing caliper matching
 
 ---
 
@@ -186,7 +186,7 @@ mode        : selfcontained # {standalone, draft}
 ) (\hat\beta - \beta)$, with $S^{(p)}=$ covariance of $x$s w/in pairs $i \sim j$.
 >- Assuming $|S^{(p)}|_2 = O_P(1)$, $(\hat\beta - \beta)' S^{(p)}
 (\hat\beta - \beta) = O_P(p/n)$ (He & Shao, 2000).
->- Define $\tilde\beta = \beta + n^{-1}\sum_{i=1}^{n}\mathrm{IC}(Y_i, {Z}_{i}, \mathbf{x}_{i}; \beta)$. ("IC"=influence curve.) By other results of H. & S.,
+>- Write $\tilde\beta = \beta + n^{-1}\sum_{i=1}^{n}\mathrm{IC}(Y_i, {Z}_{i}, \mathbf{x}_{i}; \beta)$. ("IC"=influence curve.) By other results of H.&S.,
 \[
 (\hat\beta - \beta)' S^{(p)}
 (\hat\beta - \beta)  =
@@ -244,7 +244,44 @@ where $S^{\perp} = \frac{1}{2} {n \choose 2}^{-1} \sum_{1\leq i < j \leq n} (\ma
 1. Problem: subject comparability in groupwise comparisons
 2. Propensity score caliper matching
 3. Diminishing calipers
-4. <span class = 'red'>Applications & discussion</span>
+4. <span class = 'red'>Enforceable assumptions</span>
+5. Consequences of diminishing caliper matching
+
+---
+
+##  Enforcing $\lim\sup_{i \sim j} p^{-1}|\mathbf{x}_i - \mathbf{x}_j|_2^2 < \infty$
+
+> - Even with $\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)\hat\beta|$ beneath the caliper, to control $\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)\beta|$ we can't let $\mathbf{x}_i$ & $\mathbf{x}_j$ get too far apart (in other dimensions). 
+> - One could assume $\mathbf{x}$s to be bounded, or sub-Gaussian....
+> - Or, one could match with a cap on $|\mathbf{x}_i^{\perp \mathbf{x}\hat\beta} - \mathbf{x}_j^{\perp \mathbf{x}\hat\beta}|_2$, over and above the caliper on $|(\mathbf{x}_i - \mathbf{x}_j)\hat\beta|$. (Side benefit: speeds the matching process.) 
+> - Fun fact about Mahalanobis distance: Across all pairs $(i, j)$, $\text{Avg}\left[(\mathbf{x}_i - \mathbf{x}_j) S_x^{-1} (\mathbf{x}_i - \mathbf{x}_j)\right] = p$.  And $\text{Avg}\left[(\mathbf{x}_i^{\perp \mathbf{x}\hat\beta} - \mathbf{x}_j^{\perp \mathbf{x}\hat\beta}) (\hat{S}_x^{\perp})^{-1} (\mathbf{x}_i^{\perp \mathbf{x}\hat\beta} - \mathbf{x}_j^{\perp \mathbf{x}\hat\beta})\right] = p-1$. 
+> - By a similar reason, in linear regression "leverages" average to $p/n$. Just as $2p/n$ or $3p/n$ are regarded as large leverages, I propose to limit limit squared Mahalanobis distance in $\mathbf{x}^{\perp \mathbf{x}\hat\beta}$ to $2.5(p-1)$. 
+> - I.e., "leverage radius" = $\sqrt{2.5(p-1)}$.
+
+---
+
+##  Enforcing $\lim\inf \lambda_{\text{min}}[\mathcal{I}(\beta)] >0$
+
+- Consistency of $\hat\beta$ requires the spectrum of the Fisher information to be bounded away from 0 (He & Shao, 2000).
+- Diminishing caliper calculations tend to bring this problem to light. Spectral condition numbers & index standard errors ($\sqrt{\langle \hat{S}^\perp, \hat{C}_\hat\beta\rangle_F}$) for 3 fits of the same logiistic regression:
+
+|  fitter  |   kappa | i.s.e. (logits)|
+| -------- | ------: | ---: |
+| `stats::glm` (Davies, Ihaka, R Core)     | 1690000 | 2.45 |
+| `brglm::brglm`  (Kosmidis, Firth)  |   11100 | 1.61 |
+| `arm::bayesglm` (Gelman, Su, et al) |    7440 | 1.59 |
+
+- Cerda et al's analysis of the Medellin example uses `brglm`.  This shows `bayesglm` would have been the better choice.  
+
+---
+
+## Re-analysis of Medellin example
+
+>- Using `arm::bayesglm()`, the diminishing caliper is again 4 logits.
+>- But now it excludes 279/575 pairs.  In the treatment group, 24/25 have eligible controls for matching; among controls, 22/23 are matchable.   
+   <embed src="images/ps_mod_boxplot-1.png">
+>- Adding the leverage radius, 314/575 pairs are excluded, as are 3/25 treatment group members and 2/23 controls. 
+>- (The intervention still helped.)
 
 --- &twocol
 
@@ -264,17 +301,38 @@ where $S^{\perp} = \frac{1}{2} {n \choose 2}^{-1} \sum_{1\leq i < j \leq n} (\ma
 
 ---
 
+## Two propensity scores for the VCD example
+
+- Matching used both a "focused" PS, $p=50$, and an "inclusive" PS, $p=200$.
+- Corresponding calipers: 0.175 logits, 0.372 logits.
+- Both are diminished relative to Medellin example.
+- Still bigger than $.25s_p$: in standard units, 0.37, 0.617.  
+
+
+---
+
+# Outline
+
+1. Problem: subject comparability in groupwise comparisons
+2. Propensity score caliper matching
+3. Diminishing calipers
+4. Enforceable assumptions
+5. <span class = 'red'>Consequences of diminishing caliper matching</span>
+
+---
+
+
 
 ## Calipers to ensure that index differences tend to 0
 
->- Pairings (denoted "$i \sim j$") should satisfy $\max_{i \sim j} |( \mathbf{x}_i - \mathbf{x}_j)\beta| \downarrow 0$ as $n \uparrow \infty$.
->- Can this be accomplished with a requirement $\max_{i \sim j} |(\mathbf{x}_i - \mathbf{x}_j)\hat\beta| \leq w_n$, some $w_n \downarrow 0$?  (In light of $|(\mathbf{x}_i - \mathbf{x}_j)\beta| \leq |(\mathbf{x}_i - \mathbf{x}_j)(\hat\beta - \hat\beta)| + |(\mathbf{x}_i - \mathbf{x}_j)\hat\beta|$.)
+>- We'd like to see $\max_{i \sim j} |( \mathbf{x}_i - \mathbf{x}_j)\beta| \downarrow 0$ as $n \uparrow \infty$.
+>- Since
+Can this be accomplished with a requirement $\max_{i \sim j} |(\mathbf{x}_i - \mathbf{x}_j)\hat\beta| \leq w_n$, some $w_n \downarrow 0$?  (In light of $|(\mathbf{x}_i - \mathbf{x}_j)\beta| \leq |(\mathbf{x}_i - \mathbf{x}_j)(\beta - \tilde\beta)| + |(\mathbf{x}_i - \mathbf{x}_j)(\tilde\beta - \hat\beta)| + |(\mathbf{x}_i - \mathbf{x}_j)\hat\beta|$.)
 >- ($w_n = s_p/4$ would mean $w_n \stackrel{P}{\rightarrow} \text{const} > 0$. Again, this won't do; we need $w_n \stackrel{P}{\rightarrow} 0$.)
->- For any $i,j\leq n$, $|(\mathbf{x}_i - \mathbf{x}_j)(\hat\beta - \beta)| \leq |\mathbf{x}_i - \mathbf{x}_j|_2|\hat\beta - \beta|_2$.
->- Expect $\max_{i,j}|(\mathbf{x}_i - \mathbf{x}_j)(\hat\beta - \beta)| \approx (\max_{i,j}|\mathbf{x}_i - \mathbf{x}_j|_2)|\hat\beta - \beta|_2$.
->- Even with bounded $x$s, this is $O(p^{1/2})O_P\left[(p/n)^{1/2}\right] = O_P(p/n^{1/2})$ (He & Shao, 2000).
->- We'll need to **assume** $p/n^{1/2} \downarrow 0$ --- not only $n \gg p$, also  $n \gg p^2$! 
->- In that case, any $w_n$ that's $O_P(p/n^{1/2})$ will do the trick.  E.g.,  $w_n \equiv 2.5\langle \hat{S}^{\perp}, \hat{C}_{\hat\beta} \rangle_F^{1/2}$.
+>- Leverage radius, concentration of norm give control of $\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)(\beta - \tilde\beta)| = \max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)\frac{1}{n}\sum_i \text{IC}(Y_i, {Z}_{i}, \mathbf{x}_{i}; \beta)|$. 
+>- Control of $\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)(\tilde\beta - \hat\beta)|$ is trickier.  With leverage radius as above, requires $p^{3/2} = o(n/\log(n))$. 
+>- Per He & Shao (& others), consistency of $\hat\beta$ requires $p = o(n/\log(n))$, whereas $n^{1/2}(\hat\beta - \beta) \approx \mathcal{N}(0,\Sigma)$ requires $p^2 = o(n/\log(n))$.
+>- If $\max_{i \sim j} |( \mathbf{x}_i - \mathbf{x}_j)\beta| \downarrow 0$, then $M$-estimators involving matched contrasts have the same limits as they would if $( \mathbf{x}_i - \mathbf{x}_j)\beta = 0$.
 
 ---
 
@@ -283,15 +341,15 @@ where $S^{\perp} = \frac{1}{2} {n \choose 2}^{-1} \sum_{1\leq i < j \leq n} (\ma
 >- Roughly speaking, the diminishing caliper is 2.5 times the r.m.s. of $\mathbf{x}_i\hat\beta-\mathbf{x}_j\hat\beta$ among pairs $(i,j)$ s.t. $\mathbf{x}_i\beta = \mathbf{x}_j\beta$.
 >- Pairs $(i, j)$ s.t. $|(\mathbf{x}_i - \mathbf{x}_j)\hat\beta|$ falls below this caliper are often not distinguishable in $\mathbf{x}\beta$.
 >- If $p = o(n/\log(n))$, and side-conditions are enforced, diminishing calipers diminish to 0 as $n\uparrow \infty$.
+>- Still, in 2 examples it was wider than conventional alternatives. 
 >- Even with calipers & enforcement of conditions, $\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)\beta|$ can bigger than the caliper.
 >- Still, if $p^{3/2} = o(n/\log(n))$, diminishing caliper matching ensures $\max_{i\sim j} |\mathbf{x}_i\beta-\mathbf{x}_j\beta| \stackrel{P}{\rightarrow} 0$.
 
 
-<!-- Matches between 1 and 3 ISEs might be considered "marginal" (Austin & Lee, 2009).
+<!-- Matches between 1 and 3 ISEs might be considered "marginal" (Austin & Lee, 2009). -->
 
-### Recommendations: 
+### Software recommendations: 
 
->- I'm using sandwich estimates of $\mathrm{Cov} (\hat\beta) $, w/ some special sauce (cf. github.com/benthestatistician/PISE) to limit numerical instability.
->- Our `optmatch` R package (Fredrickson et al, 2016) does optimal pair and full matching (Gu & Rosenbaum, 1993; Hansen & Klopfer, 2006; Stuart & Green, 2008), readily accommodating index calipers.
+-  `arm::bayesglm()` gave much better conditioned models. 
+- Our `optmatch` R package (Fredrickson et al, 2016) does optimal pair and full matching (Gu & Rosenbaum, 1993; Hansen & Klopfer, 2006; Stuart & Green, 2008), readily accommodating index calipers.
 
--->
