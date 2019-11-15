@@ -148,7 +148,7 @@ mode        : selfcontained # {standalone, draft}
 *** =right
 
 >- Moral: in small studies, $.25s_p(\widehat{\mathrm{PS}})$ may be too strict. 
->- In large studies, PS may be estimable w/ much more precision than $.25s_p(\widehat{\mathrm{PS}})$.  At same time, more potential controls. 
+>- In large studies, PS may be estimable w/ more precision than $.25s_p(\widehat{\mathrm{PS}})$.  At same time, more potential controls. 
 >- Moral: in large studies, $.25s_p(\widehat{\mathrm{PS}})$ may be too loose.
 
 --- 
@@ -171,11 +171,14 @@ mode        : selfcontained # {standalone, draft}
 >- Assuming well-conditioned g.l.m., model dimension $p = o({n}/{\log (n)})$, He & Shao (2000) showed that $|\hat\beta - \beta|_2 = O_P[( {p}/{n})^{1/2}]$.  
 >- The error of estimation of paired difference $(\mathbf{x}_i - \mathbf{x}_j)\beta$ is $(\mathbf{x}_i - \mathbf{x}_j)(\hat{\beta} - \beta)$.  Given $\nu$ pairs $(i, j)$, $i < j$ with $i \sim j$, the mean-square of paired errors is
 \[
+\begin{align*}
 \frac{1}{\nu} \sum_{i \sim j; i < j}
-[(\mathbf{x}_i - \mathbf{x}_j)(\hat\beta - \beta)]^2 =
+[(\mathbf{x}_i - \mathbf{x}_j)(\hat\beta - \beta)]^2 &=
 (\hat\beta - \beta)' \left[\frac{1}{\nu}
-                   \sum_{i \lesssim j} (\mathbf{x}_i - \mathbf{x}_j)'(\mathbf{x}_i - \mathbf{x}_j)\right] =: (\hat\beta - \beta)' (2 S^{(p)} )
+                   \sum_{i \lesssim j} (\mathbf{x}_i - \mathbf{x}_j)'(\mathbf{x}_i - \mathbf{x}_j)\right] (\hat\beta - \beta)\\
+		   &=:(\hat\beta - \beta)' (2 S^{(p)} )
 (\hat\beta - \beta).
+\end{align*}		   
 \]
 
 ---
@@ -263,7 +266,7 @@ where $S^{\perp} = \frac{1}{2} {n \choose 2}^{-1} \sum_{1\leq i < j \leq n} (\ma
 ##  Enforcing $\lim\inf \lambda_{\text{min}}[\mathcal{I}(\beta)] >0$
 
 - Consistency of $\hat\beta$ requires the spectrum of the Fisher information to be bounded away from 0 (He & Shao, 2000).
-- Diminishing caliper calculations tend to bring this problem to light. Spectral condition numbers & index standard errors ($\sqrt{\langle \hat{S}^\perp, \hat{C}_\hat\beta\rangle_F}$) for 3 fits of the same logiistic regression:
+- Diminishing caliper calculations tend to bring this problem to light. Spectral condition numbers & index standard errors ($\sqrt{\langle \hat{S}^\perp, \hat{C}_\hat\beta\rangle_F}$) for 3 fits of the same logistic regression:
 
 |  fitter  |   kappa | i.s.e. (logits)|
 | -------- | ------: | ---: |
@@ -326,8 +329,7 @@ where $S^{\perp} = \frac{1}{2} {n \choose 2}^{-1} \sum_{1\leq i < j \leq n} (\ma
 ## Calipers to ensure index differences tend to 0
 
 >- We'd like to see $\max_{i \sim j} |( \mathbf{x}_i - \mathbf{x}_j)\beta| \downarrow 0$ as $n \uparrow \infty$.
->- Since
-Can this be accomplished with a requirement $\max_{i \sim j} |(\mathbf{x}_i - \mathbf{x}_j)\hat\beta| \leq w_n$, some $w_n \downarrow 0$?  (In light of $|(\mathbf{x}_i - \mathbf{x}_j)\beta| \leq |(\mathbf{x}_i - \mathbf{x}_j)(\beta - \tilde\beta)| + |(\mathbf{x}_i - \mathbf{x}_j)(\tilde\beta - \hat\beta)| + |(\mathbf{x}_i - \mathbf{x}_j)\hat\beta|$.)
+>- Can this be accomplished with a requirement $\max_{i \sim j} |(\mathbf{x}_i - \mathbf{x}_j)\hat\beta| \leq w_n$, some $w_n \downarrow 0$?  (In light of $|(\mathbf{x}_i - \mathbf{x}_j)\beta| \leq |(\mathbf{x}_i - \mathbf{x}_j)(\beta - \tilde\beta)| + |(\mathbf{x}_i - \mathbf{x}_j)(\tilde\beta - \hat\beta)| + |(\mathbf{x}_i - \mathbf{x}_j)\hat\beta|$.)
 >- ($w_n = s_p/4$ would mean $w_n \stackrel{P}{\rightarrow} \text{const} > 0$. Again, this won't do; we need $w_n \stackrel{P}{\rightarrow} 0$.)
 >- Leverage radius, concentration of norm give control of $\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)(\beta - \tilde\beta)| = \max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)\frac{1}{n}\sum_i \text{IC}(Y_i, {Z}_{i}, \mathbf{x}_{i}; \beta)|$. 
 >- Control of $\max_{i \sim j}|(\mathbf{x}_i - \mathbf{x}_j)(\tilde\beta - \hat\beta)|$ is trickier.  With leverage radius as above, requires $p^{3/2} = o(n/\log(n))$. 
